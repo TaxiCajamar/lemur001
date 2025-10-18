@@ -93,14 +93,14 @@
         </header>
 
         <div class="container-botoes">
-            <!-- iPhone - VAMOS CRIAR DEPOIS -->
-            <a href="#" class="botao-dispositivo" onclick="alert('iPhone version coming soon!')">
-                <img src="../assets/images/iphone.png" alt="iPhone" class="imagem-dispositivo" />
+            <!-- iPhone -->
+            <a href="#" class="botao-dispositivo" onclick="alert('iPhone em breve!')">
+                <img src="assets/images/iphone.png" alt="iPhone" class="imagem-dispositivo" />
             </a>
 
-            <!-- Android - LINK PRONTO -->
-            <a href="https://lemur-interface-traducao.pages.dev/receiver.html${window.location.search}" class="botao-dispositivo">
-                <img src="../assets/images/andrid.png" alt="Android" class="imagem-dispositivo" />
+            <!-- Android - CORRIGIDO: link relativo -->
+            <a href="receiver.html${window.location.search}" class="botao-dispositivo">
+                <img src="assets/images/andrid.png" alt="Android" class="imagem-dispositivo" />
             </a>
         </div>
     </div>
@@ -108,6 +108,12 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             console.log('📱 Receiver Selector - Informações:', window.location.search);
+            
+            // DEBUG: Mostra o que está sendo passado
+            const params = new URLSearchParams(window.location.search);
+            console.log('🔍 last8:', params.get('last8'));
+            console.log('🔍 token:', params.get('token')); 
+            console.log('🔍 lang:', params.get('lang'));
         });
     </script>
 </body>
