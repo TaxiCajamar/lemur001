@@ -5,7 +5,86 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lemur Tradução</title>
     <style>
-        /* SEU CSS ORIGINAL AQUI */
+        /* ===== ESTILOS GERAIS ===== */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #aee2ff 0%, #88c9ff 100%);
+        }
+
+        .box-principal {
+            max-width: 600px;
+            height: 100%;
+            margin: 0 auto;
+            padding: 2vh 2vw;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ===== CABEÇALHO ===== */
+        .cabecalho {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1em;
+        }
+
+        .titulo-principal {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1a5276;
+            margin: 0.5em 0 0.2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitulo {
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        /* ===== BOTÕES ===== */
+        .container-botoes {
+            display: flex;
+            gap: 0.8em;
+            margin-top: 1em;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .botao-dispositivo {
+            flex: 1;
+            max-width: 200px;
+            aspect-ratio: 9 / 16;
+            border: none;
+            background: none;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        .botao-dispositivo:active {
+            transform: scale(1.05);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .imagem-dispositivo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+        }
     </style>
 </head>
 <body>
@@ -16,13 +95,13 @@
         </header>
 
         <div class="container-botoes">
-            <!-- iPhone -->
-            <a href="#" id="iphoneLink" class="botao-dispositivo">
+            <!-- iPhone à esquerda -->
+            <a href="https://lemur-interface-traducao.pages.dev/receiver.html?last8=TESTE123&token=TOKEN456&lang=pt-BR" class="botao-dispositivo">
                 <img src="assets/images/iphone.png" alt="iPhone" class="imagem-dispositivo" />
             </a>
 
-            <!-- Android -->
-            <a href="#" id="androidLink" class="botao-dispositivo">
+            <!-- Android à direita -->
+            <a href="https://lemur-interface-traducao.pages.dev/receiver.html?last8=TESTE123&token=TOKEN456&lang=pt-BR" class="botao-dispositivo">
                 <img src="assets/images/andrid.png" alt="Android" class="imagem-dispositivo" />
             </a>
         </div>
@@ -30,20 +109,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // ✅ PEGA AS INFORMAÇÕES DA URL (MESMO MÉTODO QUE FUNCIONA)
-            const params = new URLSearchParams(window.location.search);
-            const last8 = params.get('last8') || 'TESTE123';
-            const token = params.get('token') || 'TOKEN456';
-            const lang = params.get('lang') || 'pt-BR';
-            
-            // ✅ MONTA O LINK FUNCIONAL (SEU MÉTODO)
-            const receiverUrl = `https://lemur-interface-traducao.pages.dev/receiver.html?last8=${last8}&token=${token}&lang=${lang}`;
-            
-            // ✅ CONFIGURA OS LINKS
-            document.getElementById('iphoneLink').href = receiverUrl;
-            document.getElementById('androidLink').href = receiverUrl;
-            
-            console.log('✅ Links configurados:', receiverUrl);
+            console.log('📱 Interface mobile carregada');
         });
     </script>
 </body>
