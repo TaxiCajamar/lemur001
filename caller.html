@@ -8,8 +8,8 @@
   
   <style>
     .info-overlay.hidden {
-      opacity: 0 !important;
-      pointer-events: none !important;
+      opacity: 0;
+      pointer-events: none;
     }
     
     /* 🆕 ESTILOS PARA BOTÕES DE REDES SOCIAIS FIXAS (IGUAL AOS OUTROS) */
@@ -175,57 +175,123 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- ✅ CORRIGIDO: Socket.IO DO CDN OFICIAL (IGUAL AOS OUTROS) -->
+  <!-- ============================================= -->
+  <!-- SCRIPTS NA ORDEM CORRETA E SINCRONIZADA -->
+  <!-- ============================================= -->
+
+  <!-- ✅ 1. Socket.IO PRIMEIRO (MESMO CDN) -->
   <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
-  
+
   <script>
-    // ===== CONFIGURAÇÃO GLOBAL SINCRONIZADA =====
+    // ===== CONFIGURAÇÃO GLOBAL IDÊNTICA AO RECEIVER =====
     window.SIGNALING_SERVER_URL = 'https://lemur-signal.onrender.com';
     window.APP_CONFIG = {
       debug: true,
-      autoReconnect: true
+      autoReconnect: true,
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
     };
 
-    // ===== VERIFICAÇÃO DE DEPENDÊNCIAS (IGUAL AOS OUTROS) =====
+    // ===== VERIFICAÇÃO DE DEPENDÊNCIAS ROBUSTA =====
     function verificarDependencias() {
-      if (typeof io === 'undefined') {
-        console.error('❌ Socket.IO não carregado. Recarregando página...');
-        setTimeout(() => location.reload(), 2000);
-        return false;
+      const dependencias = {
+        'Socket.IO': typeof io !== 'undefined'
+      };
+      
+      console.log('🔍 Caller - Verificando dependências:', dependencias);
+      
+      for (const [lib, loaded] of Object.entries(dependencias)) {
+        if (!loaded) {
+          console.error(`❌ ${lib} não carregado no Caller`);
+          mostrarErroCarregamento(`${lib} falhou ao carregar`);
+          return false;
+        }
       }
-      console.log('✅ Todas as dependências carregadas (Caller)');
+      
+      console.log('✅ Caller - Todas as dependências carregadas');
       return true;
     }
 
-    // ===== FUNÇÕES GLOBAIS ATUALIZADAS =====
+    // ===== FUNÇÕES GLOBAIS SINCRONIZADAS =====
     window.liberarInterface = function () {
       console.log('✅ Interface do caller liberada');
-      document.getElementById('mobileLoading')?.classList.add('hidden');
+      const loading = document.getElementById('mobileLoading');
+      if (loading) loading.classList.add('hidden');
     };
 
     window.mostrarErroCarregamento = function (mensagem) {
       console.error('❌ Erro no caller:', mensagem);
-      alert('Erro no Caller: ' + mensagem);
+      // Opcional: mostrar modal de erro em vez de alert
+      const errorDiv = document.createElement('div');
+      errorDiv.style.cssText = `
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+        background: #ff4444; color: white; padding: 10px 20px; 
+        border-radius: 5px; z-index: 10000; font-weight: bold;
+      `;
+      errorDiv.textContent = `Erro: ${mensagem}`;
+      document.body.appendChild(errorDiv);
+      setTimeout(() => errorDiv.remove(), 5000);
     };
 
-    // ===== INICIALIZAÇÃO SEGURA =====
+    // ===== INICIALIZAÇÃO SEGURA E SINCRONIZADA =====
     document.addEventListener('DOMContentLoaded', function () {
-      console.log('🚀 Caller - DOM Carregado');
+      console.log('🚀 Caller - DOM Carregado - Iniciando verificação...');
       
+      // Verifica dependências críticas
       if (!verificarDependencias()) {
+        console.error('❌ Caller - Dependências falharam, tentando recarregar...');
+        setTimeout(() => location.reload(), 3000);
         return;
       }
       
+      // Oculta overlay inicial
       const overlay = document.querySelector('.info-overlay');
       if (overlay) {
         overlay.classList.add('hidden');
       }
       
-      console.log('✅ Caller pronto para inicialização');
+      // Sinaliza que o DOM está pronto para os módulos
+      window.domReady = true;
+      console.log('✅ Caller - Sistema pronto para inicialização dos módulos');
+      
+      // Dispara evento customizado para os módulos
+      window.dispatchEvent(new CustomEvent('callerDOMReady'));
     });
+
+    // ===== TRATAMENTO DE ERROS GLOBAL =====
+    window.addEventListener('error', function(e) {
+      console.error('❌ Erro global no Caller:', e.error);
+    });
+
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('❌ Promise rejeitada no Caller:', e.reason);
+    });
+
+    // ===== FUNÇÃO DE FALLBACK PARA MÓDULOS =====
+    window.carregarModulosCaller = function() {
+      console.log('🔄 Caller - Carregando módulos manualmente...');
+      
+      // Fallback se os módulos não carregarem automaticamente
+      setTimeout(() => {
+        if (typeof window.callerUI === 'undefined') {
+          console.warn('⚠️ caller-ui.js não carregou, tentando fallback...');
+          const script = document.createElement('script');
+          script.src = './js/caller/caller-ui.js';
+          script.type = 'module';
+          document.head.appendChild(script);
+        }
+      }, 1000);
+    };
+
+    // Inicia fallback após DOM ready
+    document.addEventListener('DOMContentLoaded', window.carregarModulosCaller);
   </script>
-  
+
+  <!-- ✅ 2. MÓDULOS NA ORDEM CORRETA (APENAS type="module") -->
   <script type="module" src="./js/caller/caller-ui.js"></script>
-  <script src="./js/caller/caller-trz.js"></script>
+  <script type="module" src="./js/caller/caller-trz.js"></script>
+
 </body>
 </html>
