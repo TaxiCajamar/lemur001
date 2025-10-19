@@ -176,7 +176,7 @@
   </div>
 
   <!-- ============================================= -->
-  <!-- SCRIPTS NA MESMA ORDEM DO RECEIVER -->
+  <!-- ✅ SCRIPTS CORRETOS E NA ORDEM CORRETA -->
   <!-- ============================================= -->
 
   <!-- ✅ 1. Socket.IO PRIMEIRO -->
@@ -194,7 +194,7 @@
       ]
     };
 
-    // ===== VERIFICAÇÃO DE DEPENDÊNCIAS SIMPLES =====
+    // ===== VERIFICAÇÃO DE DEPENDÊNCIAS =====
     function verificarDependencias() {
       if (typeof io === 'undefined') {
         console.error('❌ Socket.IO não carregado no Caller');
@@ -208,7 +208,15 @@
     // ===== FUNÇÕES GLOBAIS =====
     window.liberarInterface = function () {
       console.log('✅ Interface do caller liberada');
-      document.getElementById('mobileLoading')?.classList.add('hidden');
+      const mobileLoading = document.getElementById('mobileLoading');
+      if (mobileLoading) {
+        mobileLoading.style.display = 'none';
+      }
+      
+      const elementosEscondidos = document.querySelectorAll('.hidden-until-ready');
+      elementosEscondidos.forEach(elemento => {
+        elemento.style.display = '';
+      });
     };
 
     window.mostrarErroCarregamento = function (mensagem) {
@@ -216,26 +224,23 @@
       alert('Erro no Caller: ' + mensagem);
     };
 
-    // ===== DETECTAR PARÂMETROS DA URL =====
-    function obterParametrosURL() {
+    // ===== DEBUG DOS PARÂMETROS =====
+    function debugParametrosURL() {
       const urlParams = new URLSearchParams(window.location.search);
       const targetId = urlParams.get('targetId');
       const token = urlParams.get('token');
       const lang = urlParams.get('lang') || 'pt-BR';
       
-      console.log('📱 Caller - Parâmetros da URL:', { targetId, token, lang });
-      
-      if (targetId && token) {
-        console.log('🎯 Caller - Conectando automaticamente ao receiver:', targetId);
-        // Aqui vai a lógica de conexão automática
-        document.getElementById('callActionBtn').style.display = 'block';
-        document.getElementById('callActionBtn').textContent = `Conectar a ${targetId}`;
-      }
+      console.log('🎯 DEBUG CALLER - Parâmetros da URL:', { 
+        targetId, 
+        token: token ? `PRESENTE (${token.length} chars)` : 'AUSENTE',
+        lang 
+      });
       
       return { targetId, token, lang };
     }
 
-    // ===== INICIALIZAÇÃO SIMPLES =====
+    // ===== INICIALIZAÇÃO =====
     document.addEventListener('DOMContentLoaded', function () {
       console.log('🚀 Caller - DOM Carregado');
       
@@ -243,46 +248,15 @@
         return;
       }
       
-      // Oculta overlay inicial
-      const overlay = document.querySelector('.info-overlay');
-      if (overlay) {
-        overlay.classList.add('hidden');
-      }
+      // Debug dos parâmetros
+      debugParametrosURL();
       
-      // Obtém parâmetros da URL
-      obterParametrosURL();
-      
-      // Mostra botão de ação
-      setTimeout(() => {
-        document.getElementById('callActionBtn').style.display = 'block';
-      }, 1000);
-      
-      console.log('✅ Caller - Sistema pronto');
-    });
-
-    // ===== BOTÃO DE CONEXÃO MANUAL =====
-    document.addEventListener('DOMContentLoaded', function() {
-      const callBtn = document.getElementById('callActionBtn');
-      if (callBtn) {
-        callBtn.addEventListener('click', function() {
-          const urlParams = new URLSearchParams(window.location.search);
-          const targetId = urlParams.get('targetId');
-          
-          if (targetId) {
-            console.log('🔗 Conectando ao receiver:', targetId);
-            alert(`Conectando ao receiver: ${targetId}`);
-            // Aqui vai a lógica WebRTC
-          } else {
-            alert('Nenhum receiver especificado. Escaneie um QR Code primeiro.');
-          }
-        });
-      }
+      console.log('✅ Caller - Sistema pronto para inicialização WebRTC');
     });
   </script>
 
-  <!-- ✅ 2. Módulos da aplicação (APENAS ESTES) -->
+  <!-- ✅ 2. APENAS O caller-ui.js (REMOVER caller-trz.js) -->
   <script type="module" src="./js/caller/caller-ui.js"></script>
-  <script type="module" src="./js/caller/caller-trz.js"></script>
 
 </body>
 </html>
