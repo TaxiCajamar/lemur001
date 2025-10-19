@@ -826,91 +826,155 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
 // ✅✅✅ CORREÇÃO CRÍTICA: INICIALIZAÇÃO DO WEBRTC CALLER
 async function iniciarCameraAposPermissoes() {
     try {
-        console.log('🎥 Iniciando câmera CALLER...');
+        console.log('🎥 Tentando iniciar câmera CALLER (modo resiliente)...');
         
-        // ✅ SIMPLIFICADO: Tentativa direta de câmera
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
             audio: false
         }).catch(error => {
-            console.log('⚠️ Câmera indisponível, continuando sem vídeo');
+            console.log('⚠️ Câmera CALLER indisponível, continuando sem vídeo...', error);
             return null;
         });
 
         if (stream) {
             window.localStream = stream;
+            
             const localVideo = document.getElementById('localVideo');
-            if (localVideo) localVideo.srcObject = stream;
+            if (localVideo) {
+                localVideo.srcObject = stream;
+            }
+
             setupCameraToggle();
+            
+            console.log('✅ Câmera CALLER iniciada com sucesso');
+
+            if (typeof CameraVigilante !== 'undefined') {
+                window.cameraVigilante = new CameraVigilante();
+                window.cameraVigilante.iniciarMonitoramento();
+            }
+        } else {
+            console.log('ℹ️ CALLER operando em modo áudio/texto (sem câmera)');
+            window.localStream = null;
         }
 
-        // ✅ SIMPLIFICADO: Remove loading
         const mobileLoading = document.getElementById('mobileLoading');
-        if (mobileLoading) mobileLoading.style.display = 'none';
+        if (mobileLoading) {
+            mobileLoading.style.display = 'none';
+        }
 
         console.log('🌐 Inicializando WebRTC CALLER...');
         window.rtcCore = new WebRTCCore();
 
-        // ✅ SIMPLIFICADO: Extrai parâmetros básicos
+        // ✅✅✅ CORREÇÃO: EXTRAIR TODOS OS PARÂMETROS DO QR CODE (targetId, token, lang)
         const urlParams = new URLSearchParams(window.location.search);
-        const receiverId = urlParams.get('targetId') || '';
+        const receiverId = urlParams.get('targetId') || ''; // ✅ AGORA É targetId
         const receiverToken = urlParams.get('token') || '';
         const receiverLang = urlParams.get('lang') || 'pt-BR';
 
-        // ✅ VERIFICAÇÃO ESSENCIAL APENAS
-        if (!receiverId) {
-            console.error('❌ ID do receiver não encontrado');
+        console.log('🔍 PARÂMETROS DO QR CODE:', {
+            receiverId,
+            receiverToken: receiverToken ? `PRESENTE (${receiverToken.length} chars)` : 'AUSENTE',
+            receiverLang,
+            tokenPreview: receiverToken ? receiverToken.substring(0, 20) + '...' : 'N/A'
+        });
+
+               // ✅ VERIFICAR SE TEM TODOS OS DADOS NECESSÁRIOS
+        if (!receiverId || !receiverToken) {
+            console.error('❌ DADOS INCOMPLETOS DO QR CODE');
+            alert('QR Code inválido: faltam dados essenciais para conexão');
             return;
         }
 
-        // ✅ CONFIGURAÇÃO SIMPLES DO DATA CHANNEL
-        window.rtcCore.setDataChannelCallback(async (mensagem) => {
-            console.log('📩 Mensagem recebida:', mensagem);
-            
-            const elemento = document.getElementById('texto-recebido');
-            if (elemento) elemento.textContent = mensagem;
-            
-            // TTS básico se necessário
-            await falarComGoogleTTS(mensagem, elemento, null);
-        });
+        // ✅ GUARDAR INFO COMPLETA DO RECEIVER PRIMEIRO
+        window.receiverInfo = {
+            id: receiverId,    // ✅ last8 do receiver
+            token: receiverToken, // ✅ token FCM do receiver
+            lang: receiverLang    // ✅ idioma do receiver
+        };
 
-        // ✅✅✅ REGISTRO DIRETO NO SERVIDOR (SEM COMPLICAÇÕES)
+        console.log('💾 Receiver Info guardada:', window.receiverInfo);
+
+        // ✅ AGORA USA O MESMO ID DO RECEIVER PARA CONEXÃO WEBRTC
         const myId = crypto.randomUUID().substr(0, 8);
         document.getElementById('myId').textContent = myId;
-        
-        console.log('🔌 Registrando no servidor:', myId);
+        console.log('🆔 IDs da Conexão:', {
+            callerId: myId,
+            receiverId: receiverId, // ✅ ESTE É O last8 DO RECEIVER
+            conexaoPossivel: receiverId.length === 8 // Deve ser 8 caracteres
+        });
+
+        // ✅ CONFIGURAR HANDLERS ANTES DE INICIALIZAR
+        window.rtcCore.setDataChannelCallback(async (mensagem) => {
+            iniciarSomDigitacao();
+
+            console.log('📩 Mensagem recebida no CALLER:', mensagem);
+
+            const elemento = document.getElementById('texto-recebido');
+            const imagemImpaciente = document.getElementById('lemurFixed');
+            
+            if (elemento) {
+                elemento.textContent = "";
+                elemento.style.opacity = '1';
+                elemento.style.transition = 'opacity 0.5s ease';
+                
+                elemento.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
+                elemento.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                elemento.style.border = '2px solid #ff0000';
+            }
+
+            if (imagemImpaciente) {
+                imagemImpaciente.style.display = 'block';
+            }
+
+            const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
+            
+            console.log(`🎯 TTS Caller: Idioma guardado = ${idiomaExato}`);
+            
+            await falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
+        });
+
+        console.log('🔌 Inicializando socket handlers CALLER...');
         window.rtcCore.initialize(myId);
         window.rtcCore.setupSocketHandlers();
 
-        // ✅ GUARDA INFORMAÇÕES ESSENCIAIS
-        window.receiverInfo = { 
-            id: receiverId, 
-            token: receiverToken, 
-            lang: receiverLang 
+        // ✅ MARCA QUE O WEBRTC ESTÁ INICIALIZADO
+        window.rtcCore.isInitialized = true;
+        console.log('✅ WebRTC CALLER inicializado com ID:', myId);
+
+        // ✅ GUARDAR INFO COMPLETA DO RECEIVER
+        window.receiverInfo = {
+            id: receiverId,    // ✅ last8 do receiver
+            token: receiverToken, // ✅ token FCM do receiver
+            lang: receiverLang    // ✅ idioma do receiver
         };
 
-        console.log('💾 Info guardada:', window.receiverInfo);
+        console.log('💾 Receiver Info guardada:', window.receiverInfo);
 
-        // ✅✅✅ INICIA CONEXÃO DIRETAMENTE
-        if (receiverId) {
+        // ✅ INICIAR CONEXÃO AUTOMÁTICA
+        if (receiverId && receiverToken) {
             document.getElementById('callActionBtn').style.display = 'none';
             
             const meuIdioma = window.meuIdiomaLocal || 'pt-BR';
             
-            console.log('🚀 Iniciando conexão com:', receiverId);
+            console.log('🚀 Iniciando conexão automática com receiver:', receiverId);
             
-            // ✅ TIMING DIRETO (1000ms = funcionava no código antigo)
             setTimeout(() => {
-                iniciarConexaoVisual(receiverId, receiverToken, myId, window.localStream, meuIdioma);
+                const streamParaEnviar = window.localStream || null;
+                iniciarConexaoVisual(receiverId, receiverToken, myId, streamParaEnviar, meuIdioma);
             }, 1000);
+        } else {
+            console.error('❌ Não foi possível iniciar conexão: dados insuficientes');
         }
 
-        // ✅ CONFIGURAÇÕES BÁSICAS DE IDIOMA
+        // ✅ CONFIGURAÇÕES DE IDIOMA
         const navegadorLang = await obterIdiomaCompleto(navigator.language);
         aplicarBandeiraLocal(navegadorLang);
         aplicarBandeiraRemota(receiverLang);
 
-        console.log('✅✅✅ Caller inicializado!');
+        console.log('✅✅✅ WebRTC Caller completamente inicializado e pronto!');
 
     } catch (error) {
         console.error("❌ Erro não crítico na câmera CALLER:", error);
