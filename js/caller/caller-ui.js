@@ -876,9 +876,9 @@ async function iniciarCameraAposPermissoes() {
         console.log('🌐 Inicializando WebRTC CALLER...');
         window.rtcCore = new WebRTCCore();
 
-        // ✅✅✅ CORREÇÃO: EXTRAIR TODOS OS PARÂMETROS DO QR CODE
+        // ✅✅✅ CORREÇÃO: EXTRAIR TODOS OS PARÂMETROS DO QR CODE (targetId, token, lang)
         const urlParams = new URLSearchParams(window.location.search);
-        const receiverId = urlParams.get('targetId') || '';
+        const receiverId = urlParams.get('targetId') || ''; // ✅ AGORA É targetId
         const receiverToken = urlParams.get('token') || '';
         const receiverLang = urlParams.get('lang') || 'pt-BR';
 
@@ -902,8 +902,8 @@ async function iniciarCameraAposPermissoes() {
 
         console.log('🆔 IDs da Conexão:', {
             callerId: myId,
-            receiverId: receiverId,
-            saoIguais: myId === receiverId // ❌ NÃO precisam ser iguais!
+            receiverId: receiverId, // ✅ ESTE É O last8 DO RECEIVER
+            conexaoPossivel: receiverId.length === 8 // Deve ser 8 caracteres
         });
 
         // ✅ CONFIGURAR HANDLERS ANTES DE INICIALIZAR
@@ -946,9 +946,9 @@ async function iniciarCameraAposPermissoes() {
 
         // ✅ GUARDAR INFO COMPLETA DO RECEIVER
         window.receiverInfo = {
-            id: receiverId,
-            token: receiverToken, // ✅ AGORA TEM O TOKEN!
-            lang: receiverLang
+            id: receiverId,    // ✅ last8 do receiver
+            token: receiverToken, // ✅ token FCM do receiver
+            lang: receiverLang    // ✅ idioma do receiver
         };
 
         console.log('💾 Receiver Info guardada:', window.receiverInfo);
@@ -959,7 +959,7 @@ async function iniciarCameraAposPermissoes() {
             
             const meuIdioma = window.meuIdiomaLocal || 'pt-BR';
             
-            console.log('🚀 Iniciando conexão automática...');
+            console.log('🚀 Iniciando conexão automática com receiver:', receiverId);
             
             setTimeout(() => {
                 const streamParaEnviar = window.localStream || null;
