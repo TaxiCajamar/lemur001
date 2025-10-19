@@ -101,17 +101,14 @@ class WebRTCCore {
     console.log('👤 Registrando usuário:', userId);
     this.myUserId = userId;
     
-    // Se já está conectado, registra imediatamente
-    if (this.socket.connected) {
-      this.socket.emit('register', userId);
-      console.log('✅ Usuário registrado');
-    } else {
-      // Espera conectar para registrar
-      this.socket.once('connect', () => {
-        this.socket.emit('register', userId);
-        console.log('✅ Usuário registrado após conexão');
-      });
-    }
+    // ✅✅✅ CORREÇÃO CRÍTICA: REGISTRA IMEDIATAMENTE (igual ao código antigo)
+    this.socket.emit('register', userId);
+    console.log('✅ Usuário registrado no servidor');
+    
+    // ✅ MANTÉM o comportamento de backup (sem prejudicar)
+    this.socket.once('connect', () => {
+      console.log('✅ Conexão estabelecida - registro confirmado');
+    });
   }
 
   /**
