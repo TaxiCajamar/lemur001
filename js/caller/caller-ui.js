@@ -979,12 +979,47 @@ async function iniciarCameraAposPermissoes() {
     } catch (error) {
         console.error("❌ Erro não crítico na câmera CALLER:", error);
         
+        // ✅ CORREÇÃO: SE A CÂMERA FALHAR, INICIAR SEM ELA
+        console.log('🔄 Iniciando WebRTC sem câmera...');
+        window.localStream = null;
+        
         const mobileLoading = document.getElementById('mobileLoading');
         if (mobileLoading) {
             mobileLoading.style.display = 'none';
         }
         
         console.log('🟡 CALLER continua funcionando (áudio/texto)');
+        
+        // ✅ INICIAR WEBRTC MESMO SEM CÂMERA
+        window.rtcCore = new WebRTCCore();
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const receiverId = urlParams.get('targetId') || '';
+        const receiverToken = urlParams.get('token') || '';
+        const receiverLang = urlParams.get('lang') || 'pt-BR';
+        
+        if (receiverId && receiverToken) {
+            const myId = crypto.randomUUID().substr(0, 8);
+            document.getElementById('myId').textContent = myId;
+            
+            window.rtcCore.initialize(myId);
+            window.rtcCore.setupSocketHandlers();
+            window.rtcCore.isInitialized = true;
+            
+            window.receiverInfo = {
+                id: receiverId,
+                token: receiverToken,
+                lang: receiverLang
+            };
+            
+            document.getElementById('callActionBtn').style.display = 'none';
+            
+            const meuIdioma = window.meuIdiomaLocal || 'pt-BR';
+            
+            setTimeout(() => {
+                iniciarConexaoVisual(receiverId, receiverToken, myId, null, meuIdioma);
+            }, 1000);
+        }
     }
 }
 
