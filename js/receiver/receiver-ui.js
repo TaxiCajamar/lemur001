@@ -712,26 +712,36 @@ async function iniciarCameraAposPermissoes() {
         console.log('🌐 Inicializando WebRTC Core...');
         window.rtcCore = new WebRTCCore();
 
-        // ✅✅✅ CORREÇÃO CRÍTICA: APENAS UMA DECLARAÇÃO DE myId
+        // ✅✅✅ CORREÇÃO CRÍTICA: DADOS COERENTES DO QR CODE
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token') || '';
         const last8 = params.get('last8') || '';
         const lang = params.get('lang') || navigator.language || 'pt-BR';
 
-        // ✅ USA O LAST8 COMO ID FIXO (JÁ VEM PRONTO DO DART)
-        const myId = last8 || (token.length >= 8 ? token.substring(token.length - 8) : '00000000');
+        console.log('🎯 Dados recebidos do Dart:', {
+            last8,
+            token: token ? `PRESENTE (${token.length} chars)` : 'AUSENTE',
+            lang
+        });
+
+        // ✅ USA O LAST8 COMO ID FIXO (COERENTE COM DART)
+        const myId = last8;
 
         console.log('🆔 ID FIXO do Receiver:', myId);
         console.log('🔢 Last8 recebido:', last8);
         console.log('🔑 Token:', token.substring(0, 20) + '...');
         console.log('🌐 Idioma:', lang);
 
+        // ✅ DADOS COERENTES PARA O QR CODE
         window.qrCodeData = {
             myId: myId,
             token: token,
             lang: lang
         };
 
+        console.log('📦 Dados do QR Code:', window.qrCodeData);
+
+        // ✅ CONFIGURAR QR CODE COM TODOS OS DADOS
         document.getElementById('logo-traduz').addEventListener('click', function() {
             const overlay = document.querySelector('.info-overlay');
             const qrcodeContainer = document.getElementById('qrcode');
@@ -756,7 +766,10 @@ async function iniciarCameraAposPermissoes() {
                 qrcodeContainer.innerHTML = '';
             }
             
+            // ✅ URL COMPLETA COM TODOS OS PARÂMETROS
             const callerUrl = `${window.location.origin}/caller.html?targetId=${window.qrCodeData.myId}&token=${encodeURIComponent(window.qrCodeData.token)}&lang=${encodeURIComponent(window.qrCodeData.lang)}`;
+            
+            console.log('🔗 URL do QR Code:', callerUrl);
             
             QRCodeGenerator.generate("qrcode", callerUrl);
             
@@ -811,7 +824,6 @@ async function iniciarCameraAposPermissoes() {
 
         window.rtcCore.setIncomingCallCallback((offer, idiomaDoCaller) => {
             console.log('📞 Chamada recebida - Com/Sem câmera');
-
             console.log('🎯 Caller fala:', idiomaDoCaller);
             
             window.sourceTranslationLang = idiomaDoCaller;
@@ -880,22 +892,7 @@ async function iniciarCameraAposPermissoes() {
             await falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
         });
 
-        const frasesParaTraduzir = {
-            "translator-label": "Real-time translation.",
-            "qr-modal-title": "This is your online key",
-            "qr-modal-description": "You can ask to scan, share or print on your business card."
-        };
-
-        (async () => {
-            for (const [id, texto] of Object.entries(frasesParaTraduzir)) {
-                const el = document.getElementById(id);
-                if (el) {
-                    const traduzido = await translateText(texto, lang);
-                    el.textContent = traduzido;
-                }
-            }
-        })();
-
+        // ✅ APLICAR CONFIGURAÇÕES DE IDIOMA
         aplicarBandeiraLocal(lang);
         esconderClickQuandoConectar();
 
