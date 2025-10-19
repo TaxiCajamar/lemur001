@@ -238,93 +238,6 @@ function enviarParaOutroCelular(texto) {
   }
 }
 
-// 🔔 FUNÇÃO: Notificação SIMPLES para acordar receiver
-async function enviarNotificacaoWakeUp(receiverToken, receiverId, meuId, meuIdioma) {
-  try {
-    console.log('🔔 Enviando notificação para acordar receiver...');
-    
-    const response = await fetch('https://serve-app.onrender.com/send-notification', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: receiverToken,
-        title: '📞 Nova Chamada',
-        body: `Toque para atender a chamada`,
-        data: {
-          type: 'wake_up',
-          callerId: meuId,
-          callerLang: meuIdioma
-        }
-      })
-    });
-
-    const result = await response.json();
-    console.log('✅ Notificação enviada:', result);
-    return result.success;
-  } catch (error) {
-    console.error('❌ Erro ao enviar notificação:', error);
-    return false;
-  }
-}
-
-// 📞 FUNÇÃO: Criar tela de chamada visual COM IMAGEM DO LEMUR
-function criarTelaChamando() {
-  const lemurWaiting = document.getElementById('lemurWaiting');
-  if (lemurWaiting) {
-    lemurWaiting.style.display = 'block';
-  }
-
-  const telaChamada = document.createElement('div');
-  telaChamada.id = 'tela-chamando';
-  telaChamada.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(102, 126, 234, 0.3);
-    z-index: 9997;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  `;
-
-  telaChamada.innerHTML = `
-    <div id="botao-cancelar" style="
-      position: absolute;
-      bottom: 60px;
-      background: #ff4444;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 24px;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      transition: transform 0.2s;
-      z-index: 9999;
-    ">
-      ✕
-    </div>
-  `;
-
-  document.body.appendChild(telaChamada);
-
-  document.getElementById('botao-cancelar').addEventListener('click', function() {
-    if (lemurWaiting) {
-      lemurWaiting.style.display = 'none';
-    }
-    telaChamada.remove();
-    window.conexaoCancelada = true;
-    console.log('❌ Chamada cancelada pelo usuário - Notificador');
-  });
-
-  return telaChamada;
-}
-
 // 🎥 FUNÇÃO PARA ALTERNAR ENTRE CÂMERAS
 function setupCameraToggle() {
     const toggleButton = document.getElementById('toggleCamera');
@@ -475,123 +388,6 @@ function setupCameraToggle() {
     }
 
     console.log('✅ Botão de alternar câmera configurado - Notificador');
-}
-
-// 🔄 FUNÇÃO UNIFICADA: Tentar conexão visual (CÓPIA DO CALLER)
-async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStream, meuIdioma) {
-  console.log('🚀 Iniciando fluxo visual de conexão COM TOKEN... - Notificador');
-  
-  let conexaoEstabelecida = false;
-  let notificacaoEnviada = false;
-  window.conexaoCancelada = false;
-  
-  console.log('🔍 Dados da conexão - Notificador:', {
-      receiverId,
-      receiverToken: receiverToken.substring(0, 20) + '...',
-      meuId,
-      meuIdioma,
-      temLocalStream: !!localStream
-  });
-
-  const aguardarWebRTCPronto = () => {
-      return new Promise((resolve) => {
-          const verificar = () => {
-              if (window.rtcCore && window.rtcCore.isInitialized && typeof window.rtcCore.startCall === 'function') {
-                  console.log('✅ WebRTC completamente inicializado - Notificador');
-                  resolve(true);
-              } else {
-                  console.log('⏳ Aguardando WebRTC... - Notificador');
-                  setTimeout(verificar, 500);
-              }
-          };
-          verificar();
-      });
-  };
-
-  try {
-      await aguardarWebRTCPronto();
-
-      console.log('🔇 Fase 1: Tentativas silenciosas (6s) - Notificador');
-      
-      let tentativasFase1 = 3;
-      const tentarConexaoSilenciosa = async () => {
-          if (conexaoEstabelecida || window.conexaoCancelada) return;
-          
-          if (tentativasFase1 > 0) {
-              console.log(`🔄 Tentativa silenciosa ${4 - tentativasFase1} - Notificador`);
-              
-              if (window.rtcCore && typeof window.rtcCore.startCall === 'function') {
-                  window.rtcCore.startCall(receiverId, localStream, meuIdioma);
-              } else {
-                  console.log('⚠️ WebRTC não está pronto, aguardando... - Notificador');
-              }
-              
-              tentativasFase1--;
-              setTimeout(tentarConexaoSilenciosa, 2000);
-          } else {
-              console.log('📞 Fase 2: Mostrando tela de chamada - Notificador');
-              const telaChamada = criarTelaChamando();
-              
-              if (!notificacaoEnviada) {
-                  console.log('📨 Enviando notificação wake-up... - Notificador');
-                  notificacaoEnviada = await enviarNotificacaoWakeUp(receiverToken, receiverId, meuId, meuIdioma);
-              }
-              
-              const tentarConexaoContinuamente = async () => {
-                  if (conexaoEstabelecida || window.conexaoCancelada) return;
-                  
-                  console.log('🔄 Tentando conexão... - Notificador');
-                  
-                  if (window.rtcCore && typeof window.rtcCore.startCall === 'function') {
-                      window.rtcCore.startCall(receiverId, localStream, meuIdioma);
-                  }
-                  
-                  setTimeout(tentarConexaoContinuamente, 3000);
-              };
-              
-              tentarConexaoContinuamente();
-          }
-      };
-      
-      setTimeout(() => {
-          tentarConexaoSilenciosa();
-      }, 1000);
-      
-  } catch (error) {
-      console.error('❌ Erro no fluxo de conexão:', error);
-  }
-  
-  // ✅ CONFIGURA CALLBACK PARA STREAM REMOTO
-  if (window.rtcCore) {
-      window.rtcCore.setRemoteStreamCallback(stream => {
-          conexaoEstabelecida = true;
-          console.log('✅ Conexão estabelecida com sucesso! - Notificador');
-          
-          const lemurWaiting = document.getElementById('lemurWaiting');
-          if (lemurWaiting) {
-              lemurWaiting.style.display = 'none';
-          }
-          
-          const instructionBox = document.getElementById('instructionBox');
-          if (instructionBox) {
-              instructionBox.classList.remove('expandido');
-              instructionBox.classList.add('recolhido');
-              console.log('📖 Instruções fechadas (WebRTC conectado) - Notificador');
-          }
-          
-          const telaChamada = document.getElementById('tela-chamando');
-          if (telaChamada) telaChamada.remove();
-          
-          if (stream) {
-              stream.getAudioTracks().forEach(track => track.enabled = false);
-          }
-          
-          const remoteVideo = document.getElementById('remoteVideo');
-          if (remoteVideo && stream) {
-              remoteVideo.srcObject = stream;
-          }
-      });
-  }
 }
 
 // ✅ FUNÇÃO PARA LIBERAR INTERFACE (FALLBACK)
@@ -831,10 +627,10 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
     }
 }
 
-// ✅✅✅ CORREÇÃO CRÍTICA: INICIALIZAÇÃO DO WEBRTC NOTIFICADOR (CÓPIA DO CALLER)
+// ✅✅✅ CORREÇÃO CRÍTICA: NOTIFICADOR COMO RECEIVER
 async function iniciarCameraAposPermissoes() {
     try {
-        console.log('🎥 Tentando iniciar câmera NOTIFICADOR (modo resiliente)...');
+        console.log('🎥 Iniciando câmera NOTIFICADOR (modo RECEIVER)...');
         
         const stream = await navigator.mediaDevices.getUserMedia({
             video: {
@@ -873,127 +669,128 @@ async function iniciarCameraAposPermissoes() {
             mobileLoading.style.display = 'none';
         }
 
-        console.log('🌐 Inicializando WebRTC NOTIFICADOR...');
+        console.log('🌐 Inicializando WebRTC NOTIFICADOR como RECEIVER...');
         window.rtcCore = new WebRTCCore();
 
-       // ✅✅✅ CORREÇÃO: NOTIFICADOR = RECEIVER (espera conexão)
-const urlParams = new URLSearchParams(window.location.search);
-const myId = urlParams.get('targetId') || ''; // ✅ targetId DO RECEIVER (U-xyz123ab)
-const lang = urlParams.get('lang') || 'pt-BR';
+        // ✅✅✅ EXTRAIR PARÂMETROS CORRETOS
+        const urlParams = new URLSearchParams(window.location.search);
+        const myId = urlParams.get('last8') || ''; // ✅ MEU ID (U-xyz123ab)
+        const myLang = urlParams.get('lang') || 'pt-BR';
 
-console.log('🎯 NOTIFICADOR - Dados do Receiver:', {
-    myId, // ✅ ID fixo que o Caller está procurando
-    lang
-});
+        console.log('🎯 NOTIFICADOR - Dados do Receiver:', {
+            myId, // ✅ ID fixo que o Caller está procurando
+            myLang
+        });
 
-// ✅ VERIFICAR SE TEM O ID NECESSÁRIO
-if (!myId) {
-    console.error('❌ DADOS INCOMPLETOS DO NOTIFICADOR - faltando targetId');
-    alert('Notificação inválida: faltam dados essenciais para conexão');
-    return;
-}
+        // ✅ VERIFICAR SE TEM O ID NECESSÁRIO
+        if (!myId) {
+            console.error('❌ NOTIFICADOR: ID não recebido - impossível registrar');
+            alert('Erro: ID não recebido. Recarregue o app.');
+            return;
+        }
 
-document.getElementById('myId').textContent = myId;
+        document.getElementById('myId').textContent = myId;
 
-console.log('🆔 IDs da Conexão - Notificador:', {
-    notificadorId: myId, // ✅ MESMO ID do Receiver original
-    conexaoPossivel: myId.length >= 8 // Deve ter pelo menos 8 caracteres
-});
+        console.log('🆔 IDs da Conexão - Notificador:', {
+            notificadorId: myId, // ✅ MESMO ID do Receiver original
+            conexaoPossivel: myId.length >= 8 // Deve ter pelo menos 8 caracteres
+        });
 
-// ✅ GUARDAR INFO (sem token - não é necessário)
-window.receiverInfo = {
-    id: myId,    // ✅ targetId do receiver original
-    lang: lang   // ✅ idioma
-};
+        // ✅ GUARDAR INFO (sem token - não é necessário)
+        window.receiverInfo = {
+            id: myId,    // ✅ targetId do receiver original
+            lang: myLang   // ✅ idioma
+        };
 
-console.log('💾 Notificador Info guardada:', window.receiverInfo);
+        console.log('💾 Notificador Info guardada:', window.receiverInfo);
 
-       // ✅ CONFIGURAR HANDLERS ANTES DE INICIALIZAR
-window.rtcCore.setDataChannelCallback(async (mensagem) => {
-    iniciarSomDigitacao();
+        // ✅ CONFIGURAR HANDLERS ANTES DE INICIALIZAR
+        window.rtcCore.setDataChannelCallback(async (mensagem) => {
+            iniciarSomDigitacao();
 
-    console.log('📩 Mensagem recebida no NOTIFICADOR:', mensagem);
+            console.log('📩 Mensagem recebida no NOTIFICADOR:', mensagem);
 
-    const elemento = document.getElementById('texto-recebido');
-    const imagemImpaciente = document.getElementById('lemurFixed');
-    
-    if (elemento) {
-        elemento.textContent = "";
-        elemento.style.opacity = '1';
-        elemento.style.transition = 'opacity 0.5s ease';
-        
-        elemento.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
-        elemento.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
-        elemento.style.border = '2px solid #ff0000';
-    }
-
-    if (imagemImpaciente) {
-        imagemImpaciente.style.display = 'block';
-    }
-
-    const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
-    
-    console.log(`🎯 TTS Notificador: Idioma guardado = ${idiomaExato}`);
-    
-    await falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
-});
-
-console.log('🔌 Inicializando socket handlers NOTIFICADOR...');
-window.rtcCore.initialize(myId);
-window.rtcCore.setupSocketHandlers();
-
-// ✅✅✅ CORREÇÃO CRÍTICA: NOTIFICADOR DEVE SE CONECTAR AO SERVIDOR
-window.rtcCore.connect();
-console.log('🔗 NOTIFICADOR registrado no servidor sinalizador com ID:', myId);
-
-// ✅ MARCA QUE O WEBRTC ESTÁ INICIALIZADO
-window.rtcCore.isInitialized = true;
-console.log('✅ WebRTC NOTIFICADOR inicializado com ID:', myId);
-
-// ✅ NOTIFICADOR = RECEIVER (ESPERA conexão - não inicia)
-console.log('🎯 NOTIFICADOR: Esperando Caller conectar...');
-
-// ✅ CONFIGURAR HANDLER PARA CHAMADAS RECEBIDAS
-window.rtcCore.setIncomingCallCallback((offer, idiomaDoCaller) => {
-    console.log('📞 Chamada recebida no NOTIFICADOR de:', idiomaDoCaller);
-    
-    if (window.rtcCore && window.localStream) {
-        window.rtcCore.handleIncomingCall(offer, window.localStream, (remoteStream) => {
-            console.log('✅ Conexão estabelecida com Caller! - Notificador');
+            const elemento = document.getElementById('texto-recebido');
+            const imagemImpaciente = document.getElementById('lemurFixed');
             
-            if (remoteStream) {
-                remoteStream.getAudioTracks().forEach(track => track.enabled = false);
+            if (elemento) {
+                elemento.textContent = "";
+                elemento.style.opacity = '1';
+                elemento.style.transition = 'opacity 0.5s ease';
                 
-                const remoteVideo = document.getElementById('remoteVideo');
-                if (remoteVideo) {
-                    remoteVideo.srcObject = remoteStream;
-                }
-                
-                // ✅ FECHA INSTRUÇÕES AO CONECTAR
-                const instructionBox = document.getElementById('instructionBox');
-                if (instructionBox) {
-                    instructionBox.classList.remove('expandido');
-                    instructionBox.classList.add('recolhido');
-                    console.log('📖 Instruções fechadas (WebRTC conectado) - Notificador');
-                }
+                elemento.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
+                elemento.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                elemento.style.border = '2px solid #ff0000';
             }
+
+            if (imagemImpaciente) {
+                imagemImpaciente.style.display = 'block';
+            }
+
+            const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
             
-            // ✅ CONFIGURA IDIOMA PARA TRADUÇÃO
-            if (idiomaDoCaller) {
-                window.sourceTranslationLang = idiomaDoCaller;
-                window.targetTranslationLang = lang;
-                aplicarBandeiraRemota(idiomaDoCaller);
-                console.log(`🎯 Tradução: ${idiomaDoCaller} → ${lang}`);
+            console.log(`🎯 TTS Notificador: Idioma guardado = ${idiomaExato}`);
+            
+            await falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
+        });
+
+        console.log('🔌 Inicializando socket handlers NOTIFICADOR...');
+        window.rtcCore.initialize(myId);
+        window.rtcCore.setupSocketHandlers();
+
+        // ✅✅✅ CORREÇÃO CRÍTICA: NOTIFICADOR DEVE SE REGISTRAR COMO RECEIVER
+        window.rtcCore.connect();
+        console.log('🔗 NOTIFICADOR registrado no servidor sinalizador com ID:', myId);
+
+        // ✅ MARCA QUE O WEBRTC ESTÁ INICIALIZADO
+        window.rtcCore.isInitialized = true;
+        console.log('✅ WebRTC NOTIFICADOR inicializado com ID:', myId);
+
+        // ✅ NOTIFICADOR = RECEIVER (ESPERA conexão - não inicia)
+        console.log('🎯 NOTIFICADOR: Esperando Caller conectar...');
+
+        // ✅ CONFIGURAR HANDLER PARA CHAMADAS RECEBIDAS
+        window.rtcCore.setIncomingCallCallback((offer, idiomaDoCaller) => {
+            console.log('📞 Chamada recebida no NOTIFICADOR de:', idiomaDoCaller);
+            
+            if (window.rtcCore && window.localStream) {
+                window.rtcCore.handleIncomingCall(offer, window.localStream, (remoteStream) => {
+                    console.log('✅ Conexão estabelecida com Caller! - Notificador');
+                    
+                    if (remoteStream) {
+                        remoteStream.getAudioTracks().forEach(track => track.enabled = false);
+                        
+                        const remoteVideo = document.getElementById('remoteVideo');
+                        if (remoteVideo) {
+                            remoteVideo.srcObject = remoteStream;
+                        }
+                        
+                        // ✅ FECHA INSTRUÇÕES AO CONECTAR
+                        const instructionBox = document.getElementById('instructionBox');
+                        if (instructionBox) {
+                            instructionBox.classList.remove('expandido');
+                            instructionBox.classList.add('recolhido');
+                            console.log('📖 Instruções fechadas (WebRTC conectado) - Notificador');
+                        }
+                    }
+                    
+                    // ✅ CONFIGURA IDIOMA PARA TRADUÇÃO
+                    if (idiomaDoCaller) {
+                        window.sourceTranslationLang = idiomaDoCaller;
+                        window.targetTranslationLang = myLang;
+                        aplicarBandeiraRemota(idiomaDoCaller);
+                        console.log(`🎯 Tradução: ${idiomaDoCaller} → ${myLang}`);
+                    }
+                });
             }
         });
-    }
-});
 
-// ✅ CONFIGURAÇÕES DE IDIOMA
-const navegadorLang = await obterIdiomaCompleto(navigator.language);
-aplicarBandeiraLocal(navegadorLang);
+        // ✅ CONFIGURAÇÕES DE IDIOMA
+        const navegadorLang = await obterIdiomaCompleto(navigator.language);
+        aplicarBandeiraLocal(navegadorLang);
 
-console.log('✅✅✅ WebRTC Notificador completamente inicializado e PRONTO para receber conexões!');
+        console.log('✅✅✅ WebRTC Notificador completamente inicializado e PRONTO para receber conexões!');
+
     } catch (error) {
         console.error("❌ Erro não crítico na câmera NOTIFICADOR:", error);
         
@@ -1012,31 +809,16 @@ console.log('✅✅✅ WebRTC Notificador completamente inicializado e PRONTO pa
         window.rtcCore = new WebRTCCore();
         
         const urlParams = new URLSearchParams(window.location.search);
-        const receiverId = urlParams.get('targetId') || '';
-        const receiverToken = urlParams.get('token') || '';
-        const receiverLang = urlParams.get('lang') || 'pt-BR';
+        const myId = urlParams.get('last8') || '';
+        const myLang = urlParams.get('lang') || 'pt-BR';
         
-        if (receiverId && receiverToken) {
-            const myId = crypto.randomUUID().substr(0, 8);
-            document.getElementById('myId').textContent = myId;
-            
+        if (myId) {
             window.rtcCore.initialize(myId);
             window.rtcCore.setupSocketHandlers();
             window.rtcCore.isInitialized = true;
+            window.rtcCore.connect();
             
-            window.receiverInfo = {
-                id: receiverId,
-                token: receiverToken,
-                lang: receiverLang
-            };
-            
-            document.getElementById('callActionBtn').style.display = 'none';
-            
-            const meuIdioma = window.meuIdiomaLocal || 'pt-BR';
-            
-            setTimeout(() => {
-                iniciarConexaoVisual(receiverId, receiverToken, myId, null, meuIdioma);
-            }, 1000);
+            console.log('✅ NOTIFICADOR WebRTC inicializado sem câmera, aguardando conexões...');
         }
     }
 }
