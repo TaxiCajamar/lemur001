@@ -896,8 +896,8 @@ async function iniciarCameraAposPermissoes() {
             return;
         }
 
-        // ✅ ID DINÂMICO PARA CALLER (NÃO PRECISA SER IGUAL AO RECEIVER)
-        const myId = crypto.randomUUID().substr(0, 8);
+        // ✅ USA O MESMO ID DO RECEIVER PARA CONEXÃO WEBRTC
+const myId = window.receiverInfo.id;
         document.getElementById('myId').textContent = myId;
 
         console.log('🆔 IDs da Conexão:', {
