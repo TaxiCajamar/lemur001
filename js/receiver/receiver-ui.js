@@ -711,7 +711,7 @@ async function iniciarCameraAposPermissoes() {
             lang: lang       
         };
 
-        // ✅ CONFIGURAR QR CODE COM URL ABSOLUTA
+                          // ✅ CONFIGURAR QR CODE COM URL ABSOLUTA
         document.getElementById('logo-traduz').addEventListener('click', function() {
             const modal = document.getElementById('qrModal');
             if (modal) {
