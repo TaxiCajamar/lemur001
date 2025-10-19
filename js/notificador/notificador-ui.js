@@ -672,20 +672,25 @@ async function iniciarCameraAposPermissoes() {
         console.log('🌐 Inicializando WebRTC NOTIFICADOR como RECEIVER...');
         window.rtcCore = new WebRTCCore();
 
-        // ✅✅✅ EXTRAIR PARÂMETROS CORRETOS
+        // ✅✅✅ CORREÇÃO: BUSCAR TODOS OS PARÂMETROS POSSÍVEIS
         const urlParams = new URLSearchParams(window.location.search);
-        const myId = urlParams.get('last8') || ''; // ✅ MEU ID (U-xyz123ab)
+        const myId = urlParams.get('last8') || urlParams.get('targetId') || ''; // ✅✅✅ CORREÇÃO AQUI!
         const myLang = urlParams.get('lang') || 'pt-BR';
 
-        console.log('🎯 NOTIFICADOR - Dados do Receiver:', {
-            myId, // ✅ ID fixo que o Caller está procurando
-            myLang
+        console.log('🎯 NOTIFICADOR - DEBUG COMPLETO:', {
+            last8: urlParams.get('last8'),
+            targetId: urlParams.get('targetId'), 
+            lang: urlParams.get('lang'),
+            myIdFinal: myId,
+            todosParametros: Object.fromEntries(urlParams)
         });
+
+        console.log('🔍 URL COMPLETA:', window.location.href);
 
         // ✅ VERIFICAR SE TEM O ID NECESSÁRIO
         if (!myId) {
-            console.error('❌ NOTIFICADOR: ID não recebido - impossível registrar');
-            alert('Erro: ID não recebido. Recarregue o app.');
+            console.error('❌ NOTIFICADOR: NENHUM ID RECEBIDO - Parâmetros disponíveis:', Object.fromEntries(urlParams));
+            alert('Erro: ID não recebido. Recarregue o app.\nDebug: ' + JSON.stringify(Object.fromEntries(urlParams)));
             return;
         }
 
