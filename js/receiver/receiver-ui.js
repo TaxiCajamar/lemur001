@@ -703,9 +703,10 @@ async function iniciarCameraAposPermissoes() {
             QRCodeGenerator.generate("qrcode", callerUrl);
             
             // ... resto do código ...
-        });
+               });
 
-        // ... resto da inicialização WebRTC ...
+    } catch (error) {
+        console.error('❌ Erro em iniciarCameraAposPermissoes:', error);
     }
 }
 
