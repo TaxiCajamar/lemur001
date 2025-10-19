@@ -96,12 +96,12 @@
 
         <div class="container-botoes">
             <!-- iPhone à esquerda -->
-            <a href="https://lemur-interface-traducao.pages.dev/receiver.html?last8=TESTE123&token=TOKEN456&lang=pt-BR" class="botao-dispositivo">
+            <a id="iphoneBtn" href="#" class="botao-dispositivo">
                 <img src="assets/images/iphone.png" alt="iPhone" class="imagem-dispositivo" />
             </a>
 
             <!-- Android à direita -->
-            <a href="https://lemur-interface-traducao.pages.dev/receiver.html?last8=TESTE123&token=TOKEN456&lang=pt-BR" class="botao-dispositivo">
+            <a id="androidBtn" href="#" class="botao-dispositivo">
                 <img src="assets/images/andrid.png" alt="Android" class="imagem-dispositivo" />
             </a>
         </div>
@@ -110,6 +110,34 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             console.log('📱 Interface mobile carregada');
+
+            // ✅ OBTER PARÂMETROS DA URL DINAMICAMENTE
+            const urlParams = new URLSearchParams(window.location.search);
+            const last8 = urlParams.get('last8');
+            const token = urlParams.get('token');
+            const lang = urlParams.get('lang');
+
+            console.log('🎯 Parâmetros recebidos:', { last8, token: token ? 'PRESENTE' : 'AUSENTE', lang });
+
+            if (!last8 || !token || !lang) {
+                console.error('❌ Parâmetros ausentes na URL');
+                alert('Erro: Parâmetros incompletos - recarregue a página');
+                return;
+            }
+
+            // ✅ CONSTRUIR URLs DINÂMICAS
+            const baseUrl = 'https://lemur-interface-traducao.pages.dev';
+            const params = `last8=${last8}&token=${encodeURIComponent(token)}&lang=${encodeURIComponent(lang)}`;
+            
+            // iPhone vai para receiver Safari
+            document.getElementById('iphoneBtn').href = `${baseUrl}/receiver-safari.html?${params}`;
+            
+            // Android vai para receiver normal com QR Code
+            document.getElementById('androidBtn').href = `${baseUrl}/receiver.html?${params}`;
+
+            console.log('🔗 URLs configuradas com sucesso');
+            console.log('📱 iPhone:', document.getElementById('iphoneBtn').href);
+            console.log('🤖 Android:', document.getElementById('androidBtn').href);
         });
     </script>
 </body>
