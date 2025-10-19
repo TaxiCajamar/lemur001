@@ -661,28 +661,7 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
 // ✅✅✅ CORREÇÃO NO RECEIVER-UI.JS - MANTER PREFIXO U-
 async function iniciarCameraAposPermissoes() {
     try {
-        // ✅ INICIAR CÂMERA
-        console.log('🎥 Iniciando câmera...');
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { 
-                facingMode: 'user',
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: false
-        });
-
-        const localVideo = document.getElementById('localVideo');
-        if (localVideo) {
-            localVideo.srcObject = stream;
-            console.log('✅ Câmera iniciada com sucesso');
-        }
-
-        window.localStream = stream;
-
-        // ✅ CONFIGURAR BOTÃO DE ALTERNAR CÂMERA
-        setupCameraToggle();
-        esconderClickQuandoConectar();
+        // ... código da câmera ...
 
         // ✅ EXTRAIR PARÂMETROS
         const params = new URLSearchParams(window.location.search);
@@ -711,13 +690,9 @@ async function iniciarCameraAposPermissoes() {
             lang: lang       
         };
 
-                          // ✅ CONFIGURAR QR CODE COM URL ABSOLUTA
+        // ✅ CONFIGURAR QR CODE COM URL ABSOLUTA
         document.getElementById('logo-traduz').addEventListener('click', function() {
-            const modal = document.getElementById('qrModal');
-            if (modal) {
-                modal.style.display = 'block';
-                console.log('🔲 Modal do QR Code aberto');
-            }
+            // ... código do overlay ...
             
             // ✅ URL ABSOLUTA COM BASE URL FIXA
             const baseUrl = 'https://lemur-interface-traducao.pages.dev';
@@ -726,10 +701,11 @@ async function iniciarCameraAposPermissoes() {
             console.log('🔗 URL do QR Code:', callerUrl);
             
             QRCodeGenerator.generate("qrcode", callerUrl);
+            
+            // ... resto do código ...
         });
 
-    } catch (error) {
-        console.error('❌ Erro em iniciarCameraAposPermissoes:', error);
+        // ... resto da inicialização WebRTC ...
     }
 }
 
@@ -744,9 +720,8 @@ window.onload = async () => {
         await aplicarBandeiraLocal(lang);
         await traduzirFrasesFixas();
         
-      // iniciarAudio();
-        // await carregarSomDigitacao();
-        
+        iniciarAudio();
+        await carregarSomDigitacao();
         await solicitarTodasPermissoes();
         
         if (typeof window.liberarInterface === 'function') {
@@ -771,12 +746,4 @@ window.onload = async () => {
             alert('Erro ao inicializar: ' + error.message);
         }
     }
-}; // ⚠️ ADICIONE ESTA LINHA!
-
-// 🎵 INICIAR ÁUDIO APÓS CLIQUE DO USUÁRIO
-document.addEventListener('click', function iniciarAudioAposInteracao() {
-    iniciarAudio();
-    carregarSomDigitacao();
-    document.removeEventListener('click', iniciarAudioAposInteracao);
-    console.log('🎵 Áudio iniciado após interação do usuário');
-}, { once: true });
+};
