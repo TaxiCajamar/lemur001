@@ -132,7 +132,7 @@
 
             // ✅ LÓGICA DO SEGUNDO ESTÁGIO: Apenas targetId e lang (sem token)
             const baseUrl = 'https://lemur-interface-traducao.pages.dev';
-            const params = `targetId=${targetId}&lang=${encodeURIComponent(lang)}`;
+            const params = `last8=${last8}&lang=${encodeURIComponent(lang)}`;
             
             // ✅ iPhone e Android vão para NOTIFICADOR (igual)
             const notificadorUrl = `${baseUrl}/notificador.html?${params}`;
