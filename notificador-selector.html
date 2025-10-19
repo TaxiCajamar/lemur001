@@ -111,27 +111,28 @@
         document.addEventListener('DOMContentLoaded', function () {
             console.log('📱 Notificador Selector - Interface carregada');
 
-            // ✅ OBTER PARÂMETROS DA URL (DIFERENTE DO RECEIVER)
+            // ✅ OBTER PARÂMETROS DA URL (SEGUNDO ESTÁGIO - SEM TOKEN)
             const urlParams = new URLSearchParams(window.location.search);
-            const targetId = urlParams.get('targetId'); // ✅ VEM COM U- DO DART
-            const token = urlParams.get('token');
+            const last8 = urlParams.get('last8'); // ✅ PARÂMETRO REAL QUE RECEBE
             const lang = urlParams.get('lang');
 
-            console.log('🎯 Parâmetros recebidos no NOTIFICADOR:', { 
-                targetId, 
-                token: token ? `PRESENTE (${token.length} chars)` : 'AUSENTE', 
+            console.log('🎯 Parâmetros recebidos no NOTIFICADOR (2º estágio):', { 
+                last8, 
                 lang 
             });
 
-            if (!targetId || !token || !lang) {
+            if (!last8 || !lang) {
                 console.error('❌ Parâmetros ausentes na URL do notificador');
                 alert('Erro: Parâmetros incompletos - recarregue a página');
                 return;
             }
 
-            // ✅ LÓGICA DIFERENTE: Ambos vão para NOTIFICADOR (não receiver)
+            // ✅ USAR last8 COMO targetId (POIS É O MESMO VALOR)
+            const targetId = last8;
+
+            // ✅ LÓGICA DO SEGUNDO ESTÁGIO: Apenas targetId e lang (sem token)
             const baseUrl = 'https://lemur-interface-traducao.pages.dev';
-            const params = `targetId=${targetId}&token=${encodeURIComponent(token)}&lang=${encodeURIComponent(lang)}`;
+            const params = `targetId=${targetId}&lang=${encodeURIComponent(lang)}`;
             
             // ✅ iPhone e Android vão para NOTIFICADOR (igual)
             const notificadorUrl = `${baseUrl}/notificador.html?${params}`;
