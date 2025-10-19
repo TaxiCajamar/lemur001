@@ -179,6 +179,12 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
+  <!-- ✅ DEBUG TEMPORÁRIO -->
+  <div style="position: fixed; top: 10px; left: 10px; background: red; color: white; padding: 10px; z-index: 9999; font-size: 12px;">
+    <strong>DEBUG NOTIFICADOR</strong><br>
+    <span id="debugInfo">Carregando...</span>
+  </div>
+
   <!-- ✅ CORRIGIDO: Socket.IO DO CDN OFICIAL (IGUAL AO RECEIVER) -->
   <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
 
@@ -215,9 +221,34 @@
       alert('Erro no Notificador: ' + mensagem);
     };
 
+    // ===== DEBUG DOS PARÂMETROS =====
+    function debugParametros() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const debugInfo = document.getElementById('debugInfo');
+      
+      if (debugInfo) {
+        debugInfo.innerHTML = `
+          URL: ${window.location.href}<br>
+          last8: "${urlParams.get('last8') || 'NÃO ENCONTRADO'}"<br>
+          targetId: "${urlParams.get('targetId') || 'NÃO ENCONTRADO'}"<br>
+          lang: "${urlParams.get('lang') || 'NÃO ENCONTRADO'}"<br>
+          Todos: ${JSON.stringify(Object.fromEntries(urlParams))}
+        `;
+      }
+      
+      console.log('🔍 DEBUG NOTIFICADOR - PARÂMETROS RECEBIDOS:');
+      console.log('📍 last8:', urlParams.get('last8'));
+      console.log('📍 targetId:', urlParams.get('targetId'));
+      console.log('📍 lang:', urlParams.get('lang'));
+      console.log('📍 URL Completa:', window.location.href);
+    }
+
     // ===== INICIALIZAÇÃO SEGURA =====
     document.addEventListener('DOMContentLoaded', function () {
       console.log('🚀 Notificador - DOM Carregado');
+      
+      // ✅ DEBUG DOS PARÂMETROS
+      debugParametros();
       
       if (!verificarDependencias()) {
         return;
