@@ -480,12 +480,20 @@ function setupCameraToggle() {
 
 // 🔄 FUNÇÃO UNIFICADA: Tentar conexão visual
 async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStream, meuIdioma) {
-  console.log('🚀 Iniciando fluxo visual de conexão...');
+  console.log('🚀 Iniciando fluxo visual de conexão COM TOKEN...');
   
   let conexaoEstabelecida = false;
   let notificacaoEnviada = false;
   window.conexaoCancelada = false;
   
+  console.log('🔍 Dados da conexão:', {
+      receiverId,
+      receiverToken: receiverToken.substring(0, 20) + '...',
+      meuId,
+      meuIdioma,
+      temLocalStream: !!localStream
+  });
+
   const aguardarWebRTCPronto = () => {
     return new Promise((resolve) => {
       const verificar = () => {
@@ -554,7 +562,7 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
     console.error('❌ Erro no fluxo de conexão:', error);
   }
   
-  // ✅✅✅ CORREÇÃO: CONFIGURA REMOTE STREAM CALLBACK CORRETAMENTE
+  // ✅ CONFIGURA CALLBACK PARA STREAM REMOTO
   if (window.rtcCore) {
     window.rtcCore.setRemoteStreamCallback(stream => {
       conexaoEstabelecida = true;
@@ -869,7 +877,37 @@ async function iniciarCameraAposPermissoes() {
         console.log('🌐 Inicializando WebRTC CALLER...');
         window.rtcCore = new WebRTCCore();
 
-        // ✅✅✅ CORREÇÃO: CONFIGURA CALLBACKS ANTES DE INICIALIZAR
+        // ✅✅✅ CORREÇÃO: EXTRAIR TODOS OS PARÂMETROS DO QR CODE
+        const urlParams = new URLSearchParams(window.location.search);
+        const receiverId = urlParams.get('targetId') || '';
+        const receiverToken = urlParams.get('token') || '';
+        const receiverLang = urlParams.get('lang') || 'pt-BR';
+
+        console.log('🔍 PARÂMETROS DO QR CODE:', {
+            receiverId,
+            receiverToken: receiverToken ? `PRESENTE (${receiverToken.length} chars)` : 'AUSENTE',
+            receiverLang,
+            tokenPreview: receiverToken ? receiverToken.substring(0, 20) + '...' : 'N/A'
+        });
+
+        // ✅ VERIFICAR SE TEM TODOS OS DADOS NECESSÁRIOS
+        if (!receiverId || !receiverToken) {
+            console.error('❌ DADOS INCOMPLETOS DO QR CODE');
+            alert('QR Code inválido: faltam dados essenciais para conexão');
+            return;
+        }
+
+        // ✅ ID DINÂMICO PARA CALLER (NÃO PRECISA SER IGUAL AO RECEIVER)
+        const myId = crypto.randomUUID().substr(0, 8);
+        document.getElementById('myId').textContent = myId;
+
+        console.log('🆔 IDs da Conexão:', {
+            callerId: myId,
+            receiverId: receiverId,
+            saoIguais: myId === receiverId // ❌ NÃO precisam ser iguais!
+        });
+
+        // ✅ CONFIGURAR HANDLERS ANTES DE INICIALIZAR
         window.rtcCore.setDataChannelCallback(async (mensagem) => {
             iniciarSomDigitacao();
 
@@ -899,15 +937,6 @@ async function iniciarCameraAposPermissoes() {
             await falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
         });
 
-        // ✅✅✅ CORREÇÃO: APENAS UMA DECLARAÇÃO DE myId
-        const urlParams = new URLSearchParams(window.location.search);
-        const receiverId = urlParams.get('targetId') || '';
-        const receiverToken = urlParams.get('token') || '';
-        const receiverLang = urlParams.get('lang') || 'pt-BR';
-
-        const myId = crypto.randomUUID().substr(0, 8); // ✅ ID DINÂMICO
-        document.getElementById('myId').textContent = myId;
-
         console.log('🔌 Inicializando socket handlers CALLER...');
         window.rtcCore.initialize(myId);
         window.rtcCore.setupSocketHandlers();
@@ -916,40 +945,33 @@ async function iniciarCameraAposPermissoes() {
         window.rtcCore.isInitialized = true;
         console.log('✅ WebRTC CALLER inicializado com ID:', myId);
 
+        // ✅ GUARDAR INFO COMPLETA DO RECEIVER
         window.receiverInfo = {
-          id: receiverId,
-          token: receiverToken,
-          lang: receiverLang
+            id: receiverId,
+            token: receiverToken, // ✅ AGORA TEM O TOKEN!
+            lang: receiverLang
         };
 
-        // ✅✅✅ CORREÇÃO: INICIA CONEXÃO MESMO SEM CÂMERA
-        if (receiverId) {
-          document.getElementById('callActionBtn').style.display = 'none';
-          
-          const meuIdioma = window.meuIdiomaLocal || 'pt-BR';
-          
-          setTimeout(() => {
-            const streamParaEnviar = window.localStream || null;
-            iniciarConexaoVisual(receiverId, receiverToken, myId, streamParaEnviar, meuIdioma);
-          }, 1000);
+        console.log('💾 Receiver Info guardada:', window.receiverInfo);
+
+        // ✅ INICIAR CONEXÃO AUTOMÁTICA
+        if (receiverId && receiverToken) {
+            document.getElementById('callActionBtn').style.display = 'none';
+            
+            const meuIdioma = window.meuIdiomaLocal || 'pt-BR';
+            
+            console.log('🚀 Iniciando conexão automática...');
+            
+            setTimeout(() => {
+                const streamParaEnviar = window.localStream || null;
+                iniciarConexaoVisual(receiverId, receiverToken, myId, streamParaEnviar, meuIdioma);
+            }, 1000);
+        } else {
+            console.error('❌ Não foi possível iniciar conexão: dados insuficientes');
         }
 
+        // ✅ CONFIGURAÇÕES DE IDIOMA
         const navegadorLang = await obterIdiomaCompleto(navigator.language);
-
-        const frasesParaTraduzir = {
-          "translator-label": "Real-time translation."
-        };
-
-        (async () => {
-          for (const [id, texto] of Object.entries(frasesParaTraduzir)) {
-            const el = document.getElementById(id);
-            if (el) {
-              const traduzido = await translateText(texto, navegadorLang);
-              el.textContent = traduzido;
-            }
-          }
-        })();
-
         aplicarBandeiraLocal(navegadorLang);
         aplicarBandeiraRemota(receiverLang);
 
