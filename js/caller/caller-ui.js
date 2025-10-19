@@ -49,6 +49,22 @@ function setupInstructionToggle() {
 }
 
 // 🌐 TRADUÇÃO DAS FRASES FIXAS
+async function translateText(text, targetLang) {
+  try {
+    const response = await fetch('https://chat-tradutor.onrender.com/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, targetLang })
+    });
+
+    const result = await response.json();
+    return result.translatedText || text;
+  } catch (error) {
+    console.error('Erro na tradução:', error);
+    return text;
+  }
+}
+
 async function traduzirFrasesFixas() {
   try {
     const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
@@ -219,23 +235,6 @@ function enviarParaOutroCelular(texto) {
   } else {
     console.log('⏳ Canal não disponível ainda. Tentando novamente...');
     setTimeout(() => enviarParaOutroCelular(texto), 1000);
-  }
-}
-
-// 🌐 Tradução apenas para texto
-async function translateText(text, targetLang) {
-  try {
-    const response = await fetch('https://chat-tradutor.onrender.com/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, targetLang })
-    });
-
-    const result = await response.json();
-    return result.translatedText || text;
-  } catch (error) {
-    console.error('Erro na tradução:', error);
-    return text;
   }
 }
 
@@ -495,103 +494,103 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
   });
 
   const aguardarWebRTCPronto = () => {
-    return new Promise((resolve) => {
-      const verificar = () => {
-        if (window.rtcCore && window.rtcCore.isInitialized && typeof window.rtcCore.startCall === 'function') {
-          console.log('✅ WebRTC completamente inicializado');
-          resolve(true);
-        } else {
-          console.log('⏳ Aguardando WebRTC...');
-          setTimeout(verificar, 500);
-        }
-      };
-      verificar();
-    });
+      return new Promise((resolve) => {
+          const verificar = () => {
+              if (window.rtcCore && window.rtcCore.isInitialized && typeof window.rtcCore.startCall === 'function') {
+                  console.log('✅ WebRTC completamente inicializado');
+                  resolve(true);
+              } else {
+                  console.log('⏳ Aguardando WebRTC...');
+                  setTimeout(verificar, 500);
+              }
+          };
+          verificar();
+      });
   };
 
   try {
-    await aguardarWebRTCPronto();
+      await aguardarWebRTCPronto();
 
-    console.log('🔇 Fase 1: Tentativas silenciosas (6s)');
-    
-    let tentativasFase1 = 3;
-    const tentarConexaoSilenciosa = async () => {
-      if (conexaoEstabelecida || window.conexaoCancelada) return;
+      console.log('🔇 Fase 1: Tentativas silenciosas (6s)');
       
-      if (tentativasFase1 > 0) {
-        console.log(`🔄 Tentativa silenciosa ${4 - tentativasFase1}`);
-        
-        if (window.rtcCore && typeof window.rtcCore.startCall === 'function') {
-          window.rtcCore.startCall(receiverId, localStream, meuIdioma);
-        } else {
-          console.log('⚠️ WebRTC não está pronto, aguardando...');
-        }
-        
-        tentativasFase1--;
-        setTimeout(tentarConexaoSilenciosa, 2000);
-      } else {
-        console.log('📞 Fase 2: Mostrando tela de chamada');
-        const telaChamada = criarTelaChamando();
-        
-        if (!notificacaoEnviada) {
-          console.log('📨 Enviando notificação wake-up...');
-          notificacaoEnviada = await enviarNotificacaoWakeUp(receiverToken, receiverId, meuId, meuIdioma);
-        }
-        
-        const tentarConexaoContinuamente = async () => {
+      let tentativasFase1 = 3;
+      const tentarConexaoSilenciosa = async () => {
           if (conexaoEstabelecida || window.conexaoCancelada) return;
           
-          console.log('🔄 Tentando conexão...');
-          
-          if (window.rtcCore && typeof window.rtcCore.startCall === 'function') {
-            window.rtcCore.startCall(receiverId, localStream, meuIdioma);
+          if (tentativasFase1 > 0) {
+              console.log(`🔄 Tentativa silenciosa ${4 - tentativasFase1}`);
+              
+              if (window.rtcCore && typeof window.rtcCore.startCall === 'function') {
+                  window.rtcCore.startCall(receiverId, localStream, meuIdioma);
+              } else {
+                  console.log('⚠️ WebRTC não está pronto, aguardando...');
+              }
+              
+              tentativasFase1--;
+              setTimeout(tentarConexaoSilenciosa, 2000);
+          } else {
+              console.log('📞 Fase 2: Mostrando tela de chamada');
+              const telaChamada = criarTelaChamando();
+              
+              if (!notificacaoEnviada) {
+                  console.log('📨 Enviando notificação wake-up...');
+                  notificacaoEnviada = await enviarNotificacaoWakeUp(receiverToken, receiverId, meuId, meuIdioma);
+              }
+              
+              const tentarConexaoContinuamente = async () => {
+                  if (conexaoEstabelecida || window.conexaoCancelada) return;
+                  
+                  console.log('🔄 Tentando conexão...');
+                  
+                  if (window.rtcCore && typeof window.rtcCore.startCall === 'function') {
+                      window.rtcCore.startCall(receiverId, localStream, meuIdioma);
+                  }
+                  
+                  setTimeout(tentarConexaoContinuamente, 3000);
+              };
+              
+              tentarConexaoContinuamente();
           }
-          
-          setTimeout(tentarConexaoContinuamente, 3000);
-        };
-        
-        tentarConexaoContinuamente();
-      }
-    };
-    
-    setTimeout(() => {
-      tentarConexaoSilenciosa();
-    }, 1000);
-    
+      };
+      
+      setTimeout(() => {
+          tentarConexaoSilenciosa();
+      }, 1000);
+      
   } catch (error) {
-    console.error('❌ Erro no fluxo de conexão:', error);
+      console.error('❌ Erro no fluxo de conexão:', error);
   }
   
   // ✅ CONFIGURA CALLBACK PARA STREAM REMOTO
   if (window.rtcCore) {
-    window.rtcCore.setRemoteStreamCallback(stream => {
-      conexaoEstabelecida = true;
-      console.log('✅ Conexão estabelecida com sucesso!');
-      
-      const lemurWaiting = document.getElementById('lemurWaiting');
-      if (lemurWaiting) {
-          lemurWaiting.style.display = 'none';
-      }
-      
-      const instructionBox = document.getElementById('instructionBox');
-      if (instructionBox) {
-          instructionBox.classList.remove('expandido');
-          instructionBox.classList.add('recolhido');
-          console.log('📖 Instruções fechadas (WebRTC conectado)');
-      }
-      
-      const telaChamada = document.getElementById('tela-chamando');
-      if (telaChamada) telaChamada.remove();
-      
-      if (stream) {
-        stream.getAudioTracks().forEach(track => track.enabled = false);
-      }
-      
-      const remoteVideo = document.getElementById('remoteVideo');
-      if (remoteVideo && stream) {
-        remoteVideo.srcObject = stream;
-      }
-    });
+      window.rtcCore.setRemoteStreamCallback(stream => {
+          conexaoEstabelecida = true;
+          console.log('✅ Conexão estabelecida com sucesso!');
+          
+          const lemurWaiting = document.getElementById('lemurWaiting');
+          if (lemurWaiting) {
+              lemurWaiting.style.display = 'none';
+          }
+          
+          const instructionBox = document.getElementById('instructionBox');
+          if (instructionBox) {
+              instructionBox.classList.remove('expandido');
+              instructionBox.classList.add('recolhido');
+              console.log('📖 Instruções fechadas (WebRTC conectado)');
+          }
+          
+          const telaChamada = document.getElementById('tela-chamando');
+          if (telaChamada) telaChamada.remove();
+          
+          if (stream) {
+              stream.getAudioTracks().forEach(track => track.enabled = false);
+          }
+          
+          const remoteVideo = document.getElementById('remoteVideo');
+          if (remoteVideo && stream) {
+              remoteVideo.srcObject = stream;
+          }
+      });
   }
 }
 
@@ -832,7 +831,7 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
     }
 }
 
-// ✅✅✅ CORREÇÃO CRÍTICA: INICIALIZAÇÃO DO WEBRTC CALLER (SEM DUPLICAÇÃO DE myId)
+// ✅✅✅ CORREÇÃO CRÍTICA: INICIALIZAÇÃO DO WEBRTC CALLER
 async function iniciarCameraAposPermissoes() {
     try {
         console.log('🎥 Tentando iniciar câmera CALLER (modo resiliente)...');
