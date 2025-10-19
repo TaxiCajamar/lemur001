@@ -527,7 +527,7 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
               }
               
               tentativasFase1--;
-              setTimeout(tentarConexaoSilenciosa, 2000);
+              setTimeout(tentarConexaoSilenciosa, 10000);
           } else {
               console.log('📞 Fase 2: Mostrando tela de chamada');
               const telaChamada = criarTelaChamando();
@@ -546,7 +546,7 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
                       window.rtcCore.startCall(receiverId, localStream, meuIdioma);
                   }
                   
-                  setTimeout(tentarConexaoContinuamente, 3000);
+                  setTimeout(tentarConexaoContinuamente, 15000);
               };
               
               tentarConexaoContinuamente();
