@@ -12,7 +12,7 @@
       pointer-events: none;
     }
     
-    /* 🆕 ESTILOS PARA BOTÕES DE REDES SOCIAIS FIXAS (IGUAL AOS OUTROS) */
+    /* 🆕 ESTILOS PARA BOTÕES DE REDES SOCIAIS FIXAS (IGUAL AO RECEIVER) */
     .social-links-fixed {
       position: absolute;
       top: 22%;
@@ -94,10 +94,10 @@
       Real-time translation.
     </div>
 
-    <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS (IGUAL AOS OUTROS) -->
+    <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS (IGUAL AO RECEIVER) -->
     <div class="social-links-fixed">
       <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed linkedin">in</a>
-      <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed instagram">ig</a>
+      <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed instagram">ig</a>
       <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed facebook">f</a>
       <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed website">🌐</a>
       <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed whatsapp">w</a>
@@ -118,7 +118,7 @@
       <span id="myId"></span>
     </div>
 
-    <button id="callActionBtn" style="display: none;">SEND 🚀</button>
+    <button id="callActionBtn" style="display: none;">Conectar 🚀</button>
 
     <div id="texto-recebido"></div>
 
@@ -176,10 +176,10 @@
   </div>
 
   <!-- ============================================= -->
-  <!-- SCRIPTS NA ORDEM CORRETA E SINCRONIZADA -->
+  <!-- SCRIPTS NA MESMA ORDEM DO RECEIVER -->
   <!-- ============================================= -->
 
-  <!-- ✅ 1. Socket.IO PRIMEIRO (MESMO CDN) -->
+  <!-- ✅ 1. Socket.IO PRIMEIRO -->
   <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
 
   <script>
@@ -194,55 +194,52 @@
       ]
     };
 
-    // ===== VERIFICAÇÃO DE DEPENDÊNCIAS ROBUSTA =====
+    // ===== VERIFICAÇÃO DE DEPENDÊNCIAS SIMPLES =====
     function verificarDependencias() {
-      const dependencias = {
-        'Socket.IO': typeof io !== 'undefined'
-      };
-      
-      console.log('🔍 Caller - Verificando dependências:', dependencias);
-      
-      for (const [lib, loaded] of Object.entries(dependencias)) {
-        if (!loaded) {
-          console.error(`❌ ${lib} não carregado no Caller`);
-          mostrarErroCarregamento(`${lib} falhou ao carregar`);
-          return false;
-        }
+      if (typeof io === 'undefined') {
+        console.error('❌ Socket.IO não carregado no Caller');
+        setTimeout(() => location.reload(), 2000);
+        return false;
       }
-      
       console.log('✅ Caller - Todas as dependências carregadas');
       return true;
     }
 
-    // ===== FUNÇÕES GLOBAIS SINCRONIZADAS =====
+    // ===== FUNÇÕES GLOBAIS =====
     window.liberarInterface = function () {
       console.log('✅ Interface do caller liberada');
-      const loading = document.getElementById('mobileLoading');
-      if (loading) loading.classList.add('hidden');
+      document.getElementById('mobileLoading')?.classList.add('hidden');
     };
 
     window.mostrarErroCarregamento = function (mensagem) {
       console.error('❌ Erro no caller:', mensagem);
-      // Opcional: mostrar modal de erro em vez de alert
-      const errorDiv = document.createElement('div');
-      errorDiv.style.cssText = `
-        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-        background: #ff4444; color: white; padding: 10px 20px; 
-        border-radius: 5px; z-index: 10000; font-weight: bold;
-      `;
-      errorDiv.textContent = `Erro: ${mensagem}`;
-      document.body.appendChild(errorDiv);
-      setTimeout(() => errorDiv.remove(), 5000);
+      alert('Erro no Caller: ' + mensagem);
     };
 
-    // ===== INICIALIZAÇÃO SEGURA E SINCRONIZADA =====
-    document.addEventListener('DOMContentLoaded', function () {
-      console.log('🚀 Caller - DOM Carregado - Iniciando verificação...');
+    // ===== DETECTAR PARÂMETROS DA URL =====
+    function obterParametrosURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetId = urlParams.get('targetId');
+      const token = urlParams.get('token');
+      const lang = urlParams.get('lang') || 'pt-BR';
       
-      // Verifica dependências críticas
+      console.log('📱 Caller - Parâmetros da URL:', { targetId, token, lang });
+      
+      if (targetId && token) {
+        console.log('🎯 Caller - Conectando automaticamente ao receiver:', targetId);
+        // Aqui vai a lógica de conexão automática
+        document.getElementById('callActionBtn').style.display = 'block';
+        document.getElementById('callActionBtn').textContent = `Conectar a ${targetId}`;
+      }
+      
+      return { targetId, token, lang };
+    }
+
+    // ===== INICIALIZAÇÃO SIMPLES =====
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('🚀 Caller - DOM Carregado');
+      
       if (!verificarDependencias()) {
-        console.error('❌ Caller - Dependências falharam, tentando recarregar...');
-        setTimeout(() => location.reload(), 3000);
         return;
       }
       
@@ -252,44 +249,38 @@
         overlay.classList.add('hidden');
       }
       
-      // Sinaliza que o DOM está pronto para os módulos
-      window.domReady = true;
-      console.log('✅ Caller - Sistema pronto para inicialização dos módulos');
+      // Obtém parâmetros da URL
+      obterParametrosURL();
       
-      // Dispara evento customizado para os módulos
-      window.dispatchEvent(new CustomEvent('callerDOMReady'));
-    });
-
-    // ===== TRATAMENTO DE ERROS GLOBAL =====
-    window.addEventListener('error', function(e) {
-      console.error('❌ Erro global no Caller:', e.error);
-    });
-
-    window.addEventListener('unhandledrejection', function(e) {
-      console.error('❌ Promise rejeitada no Caller:', e.reason);
-    });
-
-    // ===== FUNÇÃO DE FALLBACK PARA MÓDULOS =====
-    window.carregarModulosCaller = function() {
-      console.log('🔄 Caller - Carregando módulos manualmente...');
-      
-      // Fallback se os módulos não carregarem automaticamente
+      // Mostra botão de ação
       setTimeout(() => {
-        if (typeof window.callerUI === 'undefined') {
-          console.warn('⚠️ caller-ui.js não carregou, tentando fallback...');
-          const script = document.createElement('script');
-          script.src = './js/caller/caller-ui.js';
-          script.type = 'module';
-          document.head.appendChild(script);
-        }
+        document.getElementById('callActionBtn').style.display = 'block';
       }, 1000);
-    };
+      
+      console.log('✅ Caller - Sistema pronto');
+    });
 
-    // Inicia fallback após DOM ready
-    document.addEventListener('DOMContentLoaded', window.carregarModulosCaller);
+    // ===== BOTÃO DE CONEXÃO MANUAL =====
+    document.addEventListener('DOMContentLoaded', function() {
+      const callBtn = document.getElementById('callActionBtn');
+      if (callBtn) {
+        callBtn.addEventListener('click', function() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const targetId = urlParams.get('targetId');
+          
+          if (targetId) {
+            console.log('🔗 Conectando ao receiver:', targetId);
+            alert(`Conectando ao receiver: ${targetId}`);
+            // Aqui vai a lógica WebRTC
+          } else {
+            alert('Nenhum receiver especificado. Escaneie um QR Code primeiro.');
+          }
+        });
+      }
+    });
   </script>
 
-  <!-- ✅ 2. MÓDULOS NA ORDEM CORRETA (APENAS type="module") -->
+  <!-- ✅ 2. Módulos da aplicação (APENAS ESTES) -->
   <script type="module" src="./js/caller/caller-ui.js"></script>
   <script type="module" src="./js/caller/caller-trz.js"></script>
 
