@@ -587,8 +587,8 @@ async function falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma) {
                 elemento.textContent = mensagem;
             }
             if (imagemImpaciente) {
-                imagemImpaciente.style.display = 'none';
-            }
+                    imagemImpaciente.style.display = 'none';
+                }
             
             console.log(`🔊 Áudio Google TTS iniciado em ${idioma}`);
         };
@@ -658,7 +658,7 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
     }
 }
 
-// ✅✅✅ CORREÇÃO CRÍTICA: INICIALIZAÇÃO DO WEBRTC CORRIGIDA (SEM DUPLICAÇÃO DE myId)
+// ✅✅✅ CORREÇÃO NO RECEIVER-UI.JS - MANTER PREFIXO U-
 async function iniciarCameraAposPermissoes() {
     try {
         console.log('🎥 Tentando iniciar câmera (modo resiliente)...');
@@ -712,36 +712,34 @@ async function iniciarCameraAposPermissoes() {
         console.log('🌐 Inicializando WebRTC Core...');
         window.rtcCore = new WebRTCCore();
 
-        // ✅✅✅ CORREÇÃO CRÍTICA: DADOS COERENTES DO QR CODE
+        // ✅ EXTRAIR PARÂMETROS
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token') || '';
-        const last8 = params.get('last8') || '';
+        const last8 = params.get('last8') || ''; // ✅ JÁ VEM COM U- DO DART
         const lang = params.get('lang') || navigator.language || 'pt-BR';
 
         console.log('🎯 Dados recebidos do Dart:', {
-            last8,
+            last8, // ✅ EX: "U-xyz123ab"
             token: token ? `PRESENTE (${token.length} chars)` : 'AUSENTE',
             lang
         });
 
-        // ✅ USA O LAST8 COMO ID FIXO (COERENTE COM DART)
-        const myId = last8;
+        // ✅ USA O LAST8 COM PREFIXO COMO ID FIXO
+        const myId = last8; // ✅ "U-xyz123ab"
 
         console.log('🆔 ID FIXO do Receiver:', myId);
         console.log('🔢 Last8 recebido:', last8);
         console.log('🔑 Token:', token.substring(0, 20) + '...');
         console.log('🌐 Idioma:', lang);
 
-        // ✅ DADOS COERENTES PARA O QR CODE
+        // ✅ DADOS PARA O QR CODE
         window.qrCodeData = {
-            myId: myId,
-            token: token,
-            lang: lang
+            myId: myId,      // ✅ "U-xyz123ab"
+            token: token,    
+            lang: lang       
         };
 
-        console.log('📦 Dados do QR Code:', window.qrCodeData);
-
-        // ✅ CONFIGURAR QR CODE COM TODOS OS DADOS
+        // ✅ CONFIGURAR QR CODE COM URL ABSOLUTA
         document.getElementById('logo-traduz').addEventListener('click', function() {
             const overlay = document.querySelector('.info-overlay');
             const qrcodeContainer = document.getElementById('qrcode');
@@ -766,8 +764,9 @@ async function iniciarCameraAposPermissoes() {
                 qrcodeContainer.innerHTML = '';
             }
             
-            // ✅ URL COMPLETA COM TODOS OS PARÂMETROS
-            const callerUrl = `${window.location.origin}/caller.html?targetId=${window.qrCodeData.myId}&token=${encodeURIComponent(window.qrCodeData.token)}&lang=${encodeURIComponent(window.qrCodeData.lang)}`;
+            // ✅ URL ABSOLUTA COM BASE URL FIXA
+            const baseUrl = 'https://lemur-interface-traducao.pages.dev';
+            const callerUrl = `${baseUrl}/caller.html?targetId=${window.qrCodeData.myId}&token=${encodeURIComponent(window.qrCodeData.token)}&lang=${encodeURIComponent(window.qrCodeData.lang)}`;
             
             console.log('🔗 URL do QR Code:', callerUrl);
             
