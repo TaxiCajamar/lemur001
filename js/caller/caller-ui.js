@@ -988,6 +988,33 @@ async function iniciarCameraAposPermissoes() {
     }
 }
 
+// 🎯 INICIALIZAÇÃO AUTOMÁTICA PARA PREFIXO U-
+document.addEventListener('DOMContentLoaded', async function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const prefixo = urlParams.get('prefixo');
+    
+    if (prefixo && prefixo.startsWith('U-')) {
+        console.log('🚀 Iniciando modo CALLER via prefixo U-');
+        
+        try {
+            // Aguardar um pouco para garantir que tudo está carregado
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Disparar o evento de load manualmente
+            if (typeof window.onload === 'function') {
+                window.onload();
+            } else {
+                console.log('⚠️ window.onload não é uma função, iniciando diretamente');
+                await iniciarCameraAposPermissoes();
+            }
+            
+            console.log('✅ Modo CALLER ativado via prefixo U-');
+        } catch (error) {
+            console.error('❌ Erro ao iniciar via prefixo U-:', error);
+        }
+    }
+});
+
 // 🚀 INICIALIZAÇÃO AUTOMÁTICA
 window.onload = async () => {
     try {
