@@ -741,7 +741,7 @@ async function iniciarCameraAposPermissoes() {
 
         console.log('📦 Dados do QR Code:', window.qrCodeData);
 
-        // ✅ CONFIGURAR QR CODE COM TODOS OS DADOS
+        // ✅✅✅ CORREÇÃO: Gerar URL com targetId (não last8)
         document.getElementById('logo-traduz').addEventListener('click', function() {
             const overlay = document.querySelector('.info-overlay');
             const qrcodeContainer = document.getElementById('qrcode');
@@ -766,7 +766,7 @@ async function iniciarCameraAposPermissoes() {
                 qrcodeContainer.innerHTML = '';
             }
             
-            // ✅ URL COMPLETA COM TODOS OS PARÂMETROS
+            // ✅ CORREÇÃO: Usar targetId (não last8) para o caller
             const callerUrl = `${window.location.origin}/caller.html?targetId=${window.qrCodeData.myId}&token=${encodeURIComponent(window.qrCodeData.token)}&lang=${encodeURIComponent(window.qrCodeData.lang)}`;
             
             console.log('🔗 URL do QR Code:', callerUrl);
