@@ -125,9 +125,9 @@
                 return;
             }
 
-            // ✅ CONSTRUIR URLs DINÂMICAS
+            // ✅ CORREÇÃO: Usar targetId (não last8) para o caller
             const baseUrl = 'https://lemur-interface-traducao.pages.dev';
-            const params = `last8=${last8}&token=${encodeURIComponent(token)}&lang=${encodeURIComponent(lang)}`;
+            const params = `targetId=${last8}&token=${encodeURIComponent(token)}&lang=${encodeURIComponent(lang)}`;
             
             // iPhone vai para receiver Safari
             document.getElementById('iphoneBtn').href = `${baseUrl}/receiver-safari.html?${params}`;
