@@ -96,12 +96,12 @@
 
         <div class="container-botoes">
             <!-- iPhone à esquerda -->
-            <a href="https://lemur-interface-traducao.pages.dev/notificador.html${window.location.search}" class="botao-dispositivo">
+            <a id="iphoneBtn" href="#" class="botao-dispositivo">
                 <img src="assets/images/iphone.png" alt="iPhone" class="imagem-dispositivo" />
             </a>
 
             <!-- Android à direita -->
-           const receiverUrl = `https://lemur-interface-traducao.pages.dev/receiver.html?last8=${last8}&token=${token}&lang=${lang}`;
+            <a id="androidBtn" href="#" class="botao-dispositivo">
                 <img src="assets/images/andrid.png" alt="Android" class="imagem-dispositivo" />
             </a>
         </div>
@@ -109,8 +109,40 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            console.log('📱 Notificador Selector - Informações:', window.location.search);
-            console.log('✅ Ambos os botões funcionam!');
+            console.log('📱 Notificador Selector - Interface carregada');
+
+            // ✅ OBTER PARÂMETROS DA URL (DIFERENTE DO RECEIVER)
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetId = urlParams.get('targetId'); // ✅ VEM COM U- DO DART
+            const token = urlParams.get('token');
+            const lang = urlParams.get('lang');
+
+            console.log('🎯 Parâmetros recebidos no NOTIFICADOR:', { 
+                targetId, 
+                token: token ? `PRESENTE (${token.length} chars)` : 'AUSENTE', 
+                lang 
+            });
+
+            if (!targetId || !token || !lang) {
+                console.error('❌ Parâmetros ausentes na URL do notificador');
+                alert('Erro: Parâmetros incompletos - recarregue a página');
+                return;
+            }
+
+            // ✅ LÓGICA DIFERENTE: Ambos vão para NOTIFICADOR (não receiver)
+            const baseUrl = 'https://lemur-interface-traducao.pages.dev';
+            const params = `targetId=${targetId}&token=${encodeURIComponent(token)}&lang=${encodeURIComponent(lang)}`;
+            
+            // ✅ iPhone e Android vão para NOTIFICADOR (igual)
+            const notificadorUrl = `${baseUrl}/notificador.html?${params}`;
+            
+            document.getElementById('iphoneBtn').href = notificadorUrl;
+            document.getElementById('androidBtn').href = notificadorUrl;
+
+            console.log('🔗 URLs do NOTIFICADOR:');
+            console.log('📱 iPhone:', document.getElementById('iphoneBtn').href);
+            console.log('🤖 Android:', document.getElementById('androidBtn').href);
+            console.log('✅ Notificador Selector configurado!');
         });
     </script>
 </body>
