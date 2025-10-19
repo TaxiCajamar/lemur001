@@ -320,7 +320,7 @@ function setupCameraToggle() {
         toggleButton.style.opacity = '0.5';
         toggleButton.style.cursor = 'wait';
 
-        try {
+                try {
             console.log('🔄 Iniciando troca de câmera...');
             
             if (window.localStream) {
