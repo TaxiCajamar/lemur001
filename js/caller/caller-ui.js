@@ -479,13 +479,15 @@ function setupCameraToggle() {
 
 // 🔄 FUNÇÃO UNIFICADA: Tentar conexão visual
 async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStream, meuIdioma) {
-  console.log('🚀 Iniciando fluxo visual de conexão COM TOKEN...');
+  console.log('🚀 Iniciando fluxo visual de conexão COM TOKEN... - CALLER');
   
   let conexaoEstabelecida = false;
   let notificacaoEnviada = false;
+  let tentativas = 0;
+  const MAX_TENTATIVAS = 20; // ✅ 20 tentativas (60 segundos)
   window.conexaoCancelada = false;
   
-  console.log('🔍 Dados da conexão:', {
+  console.log('🔍 Dados da conexão - CALLER:', {
       receiverId,
       receiverToken: receiverToken.substring(0, 20) + '...',
       meuId,
@@ -497,10 +499,10 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
       return new Promise((resolve) => {
           const verificar = () => {
               if (window.rtcCore && window.rtcCore.isInitialized && typeof window.rtcCore.startCall === 'function') {
-                  console.log('✅ WebRTC completamente inicializado');
+                  console.log('✅ WebRTC completamente inicializado - CALLER');
                   resolve(true);
               } else {
-                  console.log('⏳ Aguardando WebRTC...');
+                  console.log('⏳ Aguardando WebRTC... - CALLER');
                   setTimeout(verificar, 500);
               }
           };
@@ -508,79 +510,69 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
       });
   };
 
+  // ✅✅✅ NOVO: SISTEMA DE RETENTATIVA CONTÍNUA
+  const tentarConexaoContinuamente = async () => {
+    if (conexaoEstabelecida || window.conexaoCancelada || tentativas >= MAX_TENTATIVAS) {
+      if (tentativas >= MAX_TENTATIVAS) {
+        console.log('⏰ Tempo esgotado: 20 tentativas realizadas sem sucesso');
+      }
+      return;
+    }
+    
+    tentativas++;
+    console.log(`🔄 Tentativa ${tentativas}/${MAX_TENTATIVAS} conectando com: ${receiverId}`);
+    
+    if (window.rtcCore && typeof window.rtcCore.startCall === 'function') {
+      window.rtcCore.startCall(receiverId, localStream, meuIdioma);
+    } else {
+      console.log('⚠️ WebRTC não está pronto, aguardando... - CALLER');
+    }
+    
+    // ✅ Se é a 3ª tentativa e ainda não enviou notificação, ENVIA
+    if (tentativas === 3 && !notificacaoEnviada && receiverToken) {
+      console.log('📨 Enviando notificação wake-up (tentativa 3)...');
+      notificacaoEnviada = await enviarNotificacaoWakeUp(receiverToken, receiverId, meuId, meuIdioma);
+    }
+    
+    // ✅ Tenta novamente a cada 3 segundos
+    setTimeout(tentarConexaoContinuamente, 3000);
+  };
+
   try {
       await aguardarWebRTCPronto();
 
-      console.log('🔇 Fase 1: Tentativas silenciosas (6s)');
+      console.log('🔇 Fase 1: Tentativas automáticas (60 segundos) - CALLER');
       
-      let tentativasFase1 = 3;
-      const tentarConexaoSilenciosa = async () => {
-          if (conexaoEstabelecida || window.conexaoCancelada) return;
-          
-          if (tentativasFase1 > 0) {
-              console.log(`🔄 Tentativa silenciosa ${4 - tentativasFase1}`);
-              
-              if (window.rtcCore && typeof window.rtcCore.startCall === 'function') {
-                  window.rtcCore.startCall(receiverId, localStream, meuIdioma);
-              } else {
-                  console.log('⚠️ WebRTC não está pronto, aguardando...');
-              }
-              
-              tentativasFase1--;
-              setTimeout(tentarConexaoSilenciosa, 10000);
-          } else {
-              console.log('📞 Fase 2: Mostrando tela de chamada');
-              const telaChamada = criarTelaChamando();
-              
-              if (!notificacaoEnviada) {
-                  console.log('📨 Enviando notificação wake-up...');
-                  notificacaoEnviada = await enviarNotificacaoWakeUp(receiverToken, receiverId, meuId, meuIdioma);
-              }
-              
-              const tentarConexaoContinuamente = async () => {
-                  if (conexaoEstabelecida || window.conexaoCancelada) return;
-                  
-                  console.log('🔄 Tentando conexão...');
-                  
-                  if (window.rtcCore && typeof window.rtcCore.startCall === 'function') {
-                      window.rtcCore.startCall(receiverId, localStream, meuIdioma);
-                  }
-                  
-                  setTimeout(tentarConexaoContinuamente, 15000);
-              };
-              
-              tentarConexaoContinuamente();
-          }
-      };
-      
-      setTimeout(() => {
-          tentarConexaoSilenciosa();
-      }, 1000);
+      // ✅ INICIA O SISTEMA DE RETENTATIVA
+      tentarConexaoContinuamente();
       
   } catch (error) {
       console.error('❌ Erro no fluxo de conexão:', error);
   }
   
-  // ✅ CONFIGURA CALLBACK PARA STREAM REMOTO
+  // ✅ CONFIGURA CALLBACK PARA QUANDO CONECTAR
   if (window.rtcCore) {
       window.rtcCore.setRemoteStreamCallback(stream => {
           conexaoEstabelecida = true;
-          console.log('✅ Conexão estabelecida com sucesso!');
+          console.log('✅✅✅ CONEXÃO ESTABELECIDA COM SUCESSO! - CALLER');
           
+          // ✅ Remove tela de chamada se existir
+          const telaChamada = document.getElementById('tela-chamando');
+          if (telaChamada) telaChamada.remove();
+          
+          // ✅ Remove lemur waiting se existir
           const lemurWaiting = document.getElementById('lemurWaiting');
           if (lemurWaiting) {
               lemurWaiting.style.display = 'none';
           }
           
+          // ✅ Fecha instruções ao conectar
           const instructionBox = document.getElementById('instructionBox');
           if (instructionBox) {
               instructionBox.classList.remove('expandido');
               instructionBox.classList.add('recolhido');
-              console.log('📖 Instruções fechadas (WebRTC conectado)');
+              console.log('📖 Instruções fechadas (WebRTC conectado) - CALLER');
           }
-          
-          const telaChamada = document.getElementById('tela-chamando');
-          if (telaChamada) telaChamada.remove();
           
           if (stream) {
               stream.getAudioTracks().forEach(track => track.enabled = false);
