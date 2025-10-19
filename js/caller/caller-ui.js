@@ -889,17 +889,25 @@ async function iniciarCameraAposPermissoes() {
             tokenPreview: receiverToken ? receiverToken.substring(0, 20) + '...' : 'N/A'
         });
 
-        // ✅ VERIFICAR SE TEM TODOS OS DADOS NECESSÁRIOS
+               // ✅ VERIFICAR SE TEM TODOS OS DADOS NECESSÁRIOS
         if (!receiverId || !receiverToken) {
             console.error('❌ DADOS INCOMPLETOS DO QR CODE');
             alert('QR Code inválido: faltam dados essenciais para conexão');
             return;
         }
 
-        // ✅ USA O MESMO ID DO RECEIVER PARA CONEXÃO WEBRTC
-const myId = window.receiverInfo.id;
-        document.getElementById('myId').textContent = myId;
+        // ✅ GUARDAR INFO COMPLETA DO RECEIVER PRIMEIRO
+        window.receiverInfo = {
+            id: receiverId,    // ✅ last8 do receiver
+            token: receiverToken, // ✅ token FCM do receiver
+            lang: receiverLang    // ✅ idioma do receiver
+        };
 
+        console.log('💾 Receiver Info guardada:', window.receiverInfo);
+
+        // ✅ AGORA USA O MESMO ID DO RECEIVER PARA CONEXÃO WEBRTC
+        const myId = window.receiverInfo.id;
+        document.getElementById('myId').textContent = myId;
         console.log('🆔 IDs da Conexão:', {
             callerId: myId,
             receiverId: receiverId, // ✅ ESTE É O last8 DO RECEIVER
