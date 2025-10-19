@@ -721,8 +721,9 @@ window.onload = async () => {
         await aplicarBandeiraLocal(lang);
         await traduzirFrasesFixas();
         
-        iniciarAudio();
-        await carregarSomDigitacao();
+      // iniciarAudio();
+        // await carregarSomDigitacao();
+        
         await solicitarTodasPermissoes();
         
         if (typeof window.liberarInterface === 'function') {
@@ -747,4 +748,11 @@ window.onload = async () => {
             alert('Erro ao inicializar: ' + error.message);
         }
     }
-};
+    
+    // 🎵 INICIAR ÁUDIO APÓS CLIQUE DO USUÁRIO
+document.addEventListener('click', function iniciarAudioAposInteracao() {
+    iniciarAudio();
+    carregarSomDigitacao();
+    document.removeEventListener('click', iniciarAudioAposInteracao);
+    console.log('🎵 Áudio iniciado após interação do usuário');
+}, { once: true });
