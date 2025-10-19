@@ -942,6 +942,10 @@ console.log('🔌 Inicializando socket handlers NOTIFICADOR...');
 window.rtcCore.initialize(myId);
 window.rtcCore.setupSocketHandlers();
 
+// ✅✅✅ CORREÇÃO CRÍTICA: NOTIFICADOR DEVE SE CONECTAR AO SERVIDOR
+window.rtcCore.connect();
+console.log('🔗 NOTIFICADOR registrado no servidor sinalizador com ID:', myId);
+
 // ✅ MARCA QUE O WEBRTC ESTÁ INICIALIZADO
 window.rtcCore.isInitialized = true;
 console.log('✅ WebRTC NOTIFICADOR inicializado com ID:', myId);
