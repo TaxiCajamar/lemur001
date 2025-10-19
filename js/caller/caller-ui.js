@@ -906,7 +906,7 @@ async function iniciarCameraAposPermissoes() {
         console.log('💾 Receiver Info guardada:', window.receiverInfo);
 
         // ✅ AGORA USA O MESMO ID DO RECEIVER PARA CONEXÃO WEBRTC
-        const myId = window.receiverInfo.id;
+        const myId = crypto.randomUUID().substr(0, 8);
         document.getElementById('myId').textContent = myId;
         console.log('🆔 IDs da Conexão:', {
             callerId: myId,
