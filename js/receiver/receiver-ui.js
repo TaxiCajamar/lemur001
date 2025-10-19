@@ -661,7 +661,28 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
 // ✅✅✅ CORREÇÃO NO RECEIVER-UI.JS - MANTER PREFIXO U-
 async function iniciarCameraAposPermissoes() {
     try {
-        // ... código da câmera ...
+        // ✅ INICIAR CÂMERA
+        console.log('🎥 Iniciando câmera...');
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+                facingMode: 'user',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
+        });
+
+        const localVideo = document.getElementById('localVideo');
+        if (localVideo) {
+            localVideo.srcObject = stream;
+            console.log('✅ Câmera iniciada com sucesso');
+        }
+
+        window.localStream = stream;
+
+        // ✅ CONFIGURAR BOTÃO DE ALTERNAR CÂMERA
+        setupCameraToggle();
+        esconderClickQuandoConectar();
 
         // ✅ EXTRAIR PARÂMETROS
         const params = new URLSearchParams(window.location.search);
@@ -692,7 +713,11 @@ async function iniciarCameraAposPermissoes() {
 
         // ✅ CONFIGURAR QR CODE COM URL ABSOLUTA
         document.getElementById('logo-traduz').addEventListener('click', function() {
-            // ... código do overlay ...
+            const modal = document.getElementById('qrModal');
+            if (modal) {
+                modal.style.display = 'block';
+                console.log('🔲 Modal do QR Code aberto');
+            }
             
             // ✅ URL ABSOLUTA COM BASE URL FIXA
             const baseUrl = 'https://lemur-interface-traducao.pages.dev';
@@ -701,9 +726,7 @@ async function iniciarCameraAposPermissoes() {
             console.log('🔗 URL do QR Code:', callerUrl);
             
             QRCodeGenerator.generate("qrcode", callerUrl);
-            
-            // ... resto do código ...
-               });
+        });
 
     } catch (error) {
         console.error('❌ Erro em iniciarCameraAposPermissoes:', error);
