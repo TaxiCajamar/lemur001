@@ -1,3 +1,4 @@
+js/receiver/receiver-ui.js
 // 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES
 function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
@@ -320,7 +321,7 @@ function setupCameraToggle() {
         toggleButton.style.opacity = '0.5';
         toggleButton.style.cursor = 'wait';
 
-                try {
+        try {
             console.log('🔄 Iniciando troca de câmera...');
             
             if (window.localStream) {
