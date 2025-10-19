@@ -779,3 +779,4 @@ document.addEventListener('click', function iniciarAudioAposInteracao() {
     document.removeEventListener('click', iniciarAudioAposInteracao);
     console.log('🎵 Áudio iniciado após interação do usuário');
 }, { once: true });
+    }
