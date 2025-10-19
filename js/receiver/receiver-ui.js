@@ -1,4 +1,3 @@
-js/receiver/receiver-ui.js
 // 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES
 function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
