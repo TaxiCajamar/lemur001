@@ -53,6 +53,34 @@
     .facebook { background: #3b5998; }
     .website { background: #4CAF50; }
     .whatsapp { background: #25d366; }
+
+    /* ✅ BOTÃO DE AÇÃO DO CALLER (QUE ESTAVA FALTANDO) */
+    .call-action-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .call-action-btn:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+    }
   </style>
 </head>
 
@@ -66,6 +94,11 @@
     <div id="mobileLoading" class="mobile-loader">
       <div class="loader-circle"></div>
     </div>
+
+    <!-- ✅ BOTÃO DE AÇÃO DO CALLER (QUE ESTAVA FALTANDO) -->
+    <button id="callActionBtn" class="call-action-btn" style="display: none;">
+      Connect
+    </button>
 
     <div class="instruction-box expandido" id="instructionBox">
       <button class="instruction-toggle" id="instructionToggle"></button>
@@ -171,7 +204,10 @@
     // ===== FUNÇÕES GLOBAIS ATUALIZADAS =====
     window.liberarInterface = function () {
       console.log('✅ Interface do notificador liberada');
-      document.getElementById('mobileLoading')?.classList.add('hidden');
+      const mobileLoading = document.getElementById('mobileLoading');
+      if (mobileLoading) {
+        mobileLoading.style.display = 'none';
+      }
     };
 
     window.mostrarErroCarregamento = function (mensagem) {
