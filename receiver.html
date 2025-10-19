@@ -4,36 +4,275 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur EchoMe P2P Receiver</title>
-  
+
   <link rel="stylesheet" href="mobile-style.css" />
-  
-  <!-- DEPENDÊNCIAS EXTERNAS -->
-  <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 
   <style>
-    /* SEUS ESTILOS ATUAIS (mantidos) */
-    .info-overlay.hidden { opacity: 0; pointer-events: none; }
-    .social-buttons { display: flex; gap: 8px; justify-content: center; margin: 15px 0; flex-wrap: wrap; }
-    .social-btn { width: 35px; height: 35px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
-    .social-btn:hover { transform: scale(1.1); }
-    .facebook { background: #3b5998; } .twitter { background: #1da1f2; } .linkedin { background: #0077b5; } .whatsapp { background: #25d366; } .telegram { background: #0088cc; }
-    .social-links-fixed { position: absolute; top: 22%; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; justify-content: center; margin: 10px 0; flex-wrap: wrap; width: 80%; z-index: 10; }
-    .social-btn-fixed { width: 35px; height: 35px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; text-decoration: none; }
-    .social-btn-fixed:hover { transform: scale(1.1); }
-    .instagram { background: #E4405F; } .website { background: #4CAF50; }
+    .info-overlay.hidden {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+    
+    /* 🆕 ESTILOS PARA BOTÕES DE COMPARTILHAMENTO NO QR CODE */
+    .social-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 15px 0;
+      flex-wrap: wrap;
+    }
+
+    .social-btn {
+      width: 35px;
+      height: 35px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+
+    .social-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .facebook { background: #3b5998; }
+    .twitter { background: #1da1f2; }
+    .linkedin { background: #0077b5; }
+    .whatsapp { background: #25d366; }
+    .telegram { background: #0088cc; }
+
+    /* 🆕 ESTILOS PARA LINKS FIXOS DE REDES SOCIAIS */
+    .social-links-fixed {
+      position: absolute;
+      top: 22%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 10px 0;
+      flex-wrap: wrap;
+      width: 80%;
+      z-index: 10;
+    }
+
+    .social-btn-fixed {
+      width: 35px;
+      height: 35px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+      text-decoration: none;
+    }
+
+    .social-btn-fixed:hover {
+      transform: scale(1.1);
+    }
+
+    .instagram { background: #E4405F; }
+    .website { background: #4CAF50; }
   </style>
 </head>
 
 <body>
-  <!-- SEU CONTEÚDO HTML ATUAL (mantido igual) -->
+
   <div class="box-principal">
-    <!-- ... todo o conteúdo atual ... -->
+
+    <!-- ============================================= -->
+    <!-- ELEMENTOS DE MARCA E IDENTIDADE VISUAL -->
+    <!-- ============================================= -->
+
+    <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
+    <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
+    <img id="click" src="assets/images/click.png" alt="Click" />
+    
+    <!-- ============================================= -->
+    <!-- SISTEMA DE LOADING E INDICADORES -->
+    <!-- ============================================= -->
+
+    <div id="mobileLoading" class="mobile-loader">
+      <div class="loader-circle"></div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- COMPONENTE DE INSTRUÇÕES INTERATIVAS -->
+    <!-- ============================================= -->
+
+    <div class="instruction-box expandido" id="instructionBox">
+      <button class="instruction-toggle" id="instructionToggle"></button>
+      <div class="instruction-content">
+        <div class="instruction-item">
+          <img src="assets/images/hello.png" alt="Hello icon" />
+          <span id="welcome-text">Welcome! Let's begin.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/realtime.png" alt="Realtime icon" />
+          <span id="translator-label-2">Real-time translation.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/QRcode.png" alt="QR icon" />
+          <span id="tap-qr">Tap the QR code to start.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/mobil.png" alt="Mobile icon" />
+          <span id="quick-scan">Ask to scan the QR.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/Ancioso.png" alt="Loading icon" />
+          <span id="wait-connection">Waiting for connection.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/juntos.png" alt="Connected icon" />
+          <span id="both-connected">Both online.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/trduz.png" alt="Message icon" />
+          <span id="check-replies">Read the message.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/mic.png" alt="Mic icon" />
+          <span id="drop-voice">Speak clearly.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/cam.png" alt="Camera icon" />
+          <span id="flip-cam">Flip the camera. Share!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- BOTÕES DE CONTROLE PRINCIPAIS -->
+    <!-- ============================================= -->
+
+    <button id="logo-traduz" class="botao-key">
+      <img src="assets/images/key.png" alt="Gerar QR Code" />
+    </button>
+
+    <button id="toggleCamera" class="camera-toggle-btn">
+      <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
+    </button>
+
+    <!-- ============================================= -->
+    <!-- ELEMENTOS DE TEXTO, LABELS E REDES SOCIAIS FIXAS -->
+    <!-- ============================================= -->
+
+    <!-- 🏷️ Subtítulo de tradução -->
+    <div class="translator-label" id="translator-label">
+      Real-time translation.
+    </div>
+
+    <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS - SEMPRE VISÍVEIS -->
+    <div class="social-links-fixed">
+      <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed linkedin">in</a>
+      <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed instagram">ig</a>
+      <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed facebook">f</a>
+      <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed website">🌐</a>
+      <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed whatsapp">w</a>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- INDICADORES DE IDIOMA E BANDEIRAS -->
+    <!-- ============================================= -->
+
+    <div class="remoter-Lang">🏳️</div>
+    <div class="local-Lang">🏳️</div>
+    <div class="local-mic-Lang">🏳️</div>
+
+    <!-- ============================================= -->
+    <!-- SISTEMA DE VÍDEO E STREAMING -->
+    <!-- ============================================= -->
+
+    <div class="video-wrapper">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <div class="pip-local-wrapper">
+        <video id="localVideo" autoplay muted playsinline></video>
+      </div>
+    </div>
+   
+    <!-- ============================================= -->
+    <!-- OVERLAY DE QR CODE (INICIALMENTE OCULTO) -->
+    <!-- ============================================= -->
+
+    <div class="info-overlay hidden">
+      <h2 id="qr-modal-title">This is your online key</h2>
+
+      <div class="qrcode-container">
+        <div id="qrcode"></div>
+      </div>
+
+      <p class="qr-modal-description" id="qr-modal-description">
+        You can ask to scan, share or print on your business card.
+      </p>
+
+      <!-- 🆕 BOTÕES DE COMPARTILHAMENTO NO QR CODE -->
+      <div class="social-buttons">
+        <button class="social-btn facebook" onclick="compartilharSocial('facebook')">f</button>
+        <button class="social-btn twitter" onclick="compartilharSocial('twitter')">t</button>
+        <button class="social-btn linkedin" onclick="compartilharSocial('linkedin')">in</button>
+        <button class="social-btn whatsapp" onclick="compartilharSocial('whatsapp')">w</button>
+        <button class="social-btn telegram" onclick="compartilharSocial('telegram')">tg</button>
+      </div>
+
+      <!-- 🆕 BOTÃO COPIAR SIMPLES E UNIVERSAL -->
+      <button id="copiarLink" class="btn-copiar-simples">🔗</button>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- ÁREA DE EXIBIÇÃO DE TEXTO TRADUZIDO -->
+    <!-- ============================================= -->
+
+    <div id="texto-recebido"></div>
+
+    <!-- ============================================= -->
+    <!-- INDICADORES DE IDIOMA ATUAL -->
+    <!-- ============================================= -->
+
+    <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
+
+    <!-- ============================================= -->
+    <!-- BOTÕES DE CONTROLE DE ÁUDIO -->
+    <!-- ============================================= -->
+
+    <button class="record-btn" id="recordButton" disabled>🎤</button>
+
+  </div> <!-- Fim do .box-principal -->
+
+  <!-- ============================================= -->
+  <!-- MODAL DE GRAVAÇÃO (FORA DO CONTAINER PRINCIPAL) -->
+  <!-- ============================================= -->
+
+  <div class="recording-modal hidden-until-ready" id="recordingModal">
+    <div class="recording-indicator">
+      <div class="recording-dot"></div>
+      <div class="recording-text">●</div>
+      <div class="recording-timer" id="recordingTimer">0:00</div>
+    </div>
+    <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- SCRIPTS NA ORDEM CORRETA -->
+  <!-- ============================================= -->
+  <!-- SCRIPTS CORRIGIDOS - ORDEM SIMPLES -->
+  <!-- ============================================= -->
+
+  <!-- ✅ 1. Socket.IO PRIMEIRO -->
+  <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+
   <script>
-    // CONFIGURAÇÃO GLOBAL
+    // ===== CONFIGURAÇÃO GLOBAL =====
     window.SIGNALING_SERVER_URL = 'https://lemur-signal.onrender.com';
     window.APP_CONFIG = {
       debug: true,
@@ -44,18 +283,37 @@
       ]
     };
 
-    // FUNÇÕES GLOBAIS
-    window.liberarInterface = function() {
+    // ===== VERIFICAÇÃO DE DEPENDÊNCIAS =====
+    function verificarDependencias() {
+      const dependencias = {
+        'Socket.IO': typeof io !== 'undefined',
+        'QRCode.js': typeof QRCode !== 'undefined'
+      };
+      
+      console.log('🔍 Verificando dependências:', dependencias);
+      
+      if (!dependencias['Socket.IO']) {
+        console.error('❌ Socket.IO não carregado. Recarregando página...');
+        setTimeout(() => location.reload(), 2000);
+        return false;
+      }
+      
+      console.log('✅ Todas as dependências carregadas');
+      return true;
+    }
+
+    // ===== FUNÇÕES GLOBAIS =====
+    window.liberarInterface = function () {
       console.log('✅ Interface liberada');
       document.getElementById('mobileLoading')?.classList.add('hidden');
     };
 
-    window.mostrarErroCarregamento = function(mensagem) {
+    window.mostrarErroCarregamento = function (mensagem) {
       console.error('❌ Erro de carregamento:', mensagem);
       alert('Erro: ' + mensagem);
     };
 
-    // FUNÇÃO COMPARTILHAR SOCIAL (JÁ EXISTENTE)
+    // 🆕 FUNÇÃO PARA COMPARTILHAR NAS REDES SOCIAIS
     function compartilharSocial(rede) {
       if (!window.qrCodeData) {
         console.error('❌ QR Code não gerado ainda');
@@ -86,7 +344,7 @@
       }
     }
 
-    // 🆕 FUNÇÃO COPIAR LINK (FALTANTE)
+    // 🆕 FUNÇÃO COPIAR LINK (SIMPLES)
     document.addEventListener('DOMContentLoaded', function() {
       const copiarLinkBtn = document.getElementById('copiarLink');
       if (copiarLinkBtn) {
@@ -103,10 +361,9 @@
           const callerUrl = `${window.location.origin}/caller.html?targetId=${myId}&token=${encodeURIComponent(token)}&lang=${encodeURIComponent(lang)}`;
           
           navigator.clipboard.writeText(callerUrl).then(() => {
-            alert('Link copiado para a área de transferência!');
-          }).catch(err => {
-            console.error('Erro ao copiar:', err);
-            // Fallback para métodos antigos
+            alert('Link copiado!');
+          }).catch(() => {
+            // Fallback simples
             const textArea = document.createElement('textarea');
             textArea.value = callerUrl;
             document.body.appendChild(textArea);
@@ -119,35 +376,15 @@
       }
     });
 
-    // VERIFICAÇÃO DE DEPENDÊNCIAS
-    function verificarDependencias() {
-      const dependencias = {
-        'Socket.IO': typeof io !== 'undefined',
-        'QRCode.js': typeof QRCode !== 'undefined'
-      };
-      
-      console.log('🔍 Verificando dependências:', dependencias);
-      
-      for (const [lib, loaded] of Object.entries(dependencias)) {
-        if (!loaded) {
-          console.error(`❌ ${lib} não carregado`);
-          mostrarErroCarregamento(`${lib} falhou ao carregar`);
-          return false;
-        }
-      }
-      
-      console.log('✅ Todas as dependências carregadas');
-      return true;
-    }
-
-    // INICIALIZAÇÃO
-    document.addEventListener('DOMContentLoaded', function() {
+    // ===== INICIALIZAÇÃO SEGURA =====
+    document.addEventListener('DOMContentLoaded', function () {
       console.log('🚀 DOM Carregado - Iniciando verificação...');
       
       if (!verificarDependencias()) {
         return;
       }
       
+      // Oculta overlay inicial
       const overlay = document.querySelector('.info-overlay');
       if (overlay) {
         overlay.classList.add('hidden');
@@ -155,18 +392,9 @@
       
       console.log('✅ Sistema pronto para inicialização dos módulos');
     });
-
-    // TRATAMENTO DE ERROS GLOBAL
-    window.addEventListener('error', function(e) {
-      console.error('❌ Erro global capturado:', e.error);
-    });
-
-    window.addEventListener('unhandledrejection', function(e) {
-      console.error('❌ Promise rejeitada:', e.reason);
-    });
   </script>
 
-  <!-- MÓDULOS DA APLICAÇÃO -->
+  <!-- ✅ 2. Módulos da aplicação (APENAS ESTES DOIS) -->
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
   <script type="module" src="./js/receiver/receiver-trz.js"></script>
 
