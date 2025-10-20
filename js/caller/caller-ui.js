@@ -13,6 +13,45 @@ let primeiraFraseTTS = true;
 let navegadorTTSPreparado = false;
 let ultimoIdiomaTTS = 'pt-BR';
 
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('📞 Caller Interface carregada');
+
+  // ✅ Leitura explícita dos parâmetros da URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const last8 = urlParams.get('last8'); // ✅ JÁ VEM COM U- DO DART
+  const token = urlParams.get('token');
+  const lang = urlParams.get('lang');
+
+  console.log('🎯 Parâmetros recebidos:', {
+    last8,
+    token: token ? `PRESENTE (${token.length} chars)` : 'AUSENTE',
+    lang
+  });
+
+  if (!last8 || !token || !lang) {
+    console.error('❌ Parâmetros ausentes na URL do caller');
+    alert('Erro: Parâmetros incompletos - recarregue a página');
+    return;
+  }
+
+  // ✅ Padronização obrigatória — manter como last8
+  window.qrCodeData = {
+    myId: last8, // manter como last8
+    token: token,
+    lang: lang
+  };
+
+  // ✅ Inicialização da sessão com os parâmetros corretos
+  window.rtcCore.initialize(last8);
+  window.currentSessionId = last8;
+
+  // ✅ Geração de URL para QR Code ou compartilhamento
+  const callerUrl = `${window.location.origin}/caller.html?last8=${last8}&token=${encodeURIComponent(token)}&lang=${encodeURIComponent(lang)}`;
+  QRCodeGenerator.generate("qrcode", callerUrl);
+
+  console.log('🔗 URL do caller gerada:', callerUrl);
+});
+
 // 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES
 function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
