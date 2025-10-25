@@ -1,4 +1,3 @@
-
 // ✅ SOLUÇÃO OTIMIZADA E SINCRONIZADA - USANDO IDIOMAS GUARDADOS
 function initializeTranslator() {
     // ===== VERIFICAÇÃO DE DEPENDÊNCIAS CRÍTICAS =====
@@ -186,7 +185,7 @@ function initializeTranslator() {
             
             console.log(`🌐 Enviando para tradução: "${trimmedText.substring(0, 50)}..."`);
             
-            const response = await fetch('https://chat-tradutor.onrender.com', {
+            const response = await fetch('https://chat-tradutor-bvvx.onrender.com/translate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
