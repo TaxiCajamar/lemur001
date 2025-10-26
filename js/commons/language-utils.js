@@ -1,9 +1,7 @@
-
 // 📁 js/commons/language-utils.js - ARQUIVO HÍBRIDO COMPLETO
 
-// ✅ VARIÁVEIS SEPARADAS PARA RECEIVER E CALLER
-window.idiomaReceiver = 'pt-BR';  // Idioma DO RECEIVER
-window.idiomaCaller = 'en-US';    // Idioma DO CALLER
+// ✅ VARIÁVEL GLOBAL SIMPLIFICADA
+window.idiomaUsuario = 'pt-BR'; // Idioma padrão
 
 // ✅ API DE TRADUÇÃO CENTRALIZADA
 export async function translateText(text, targetLang) {
@@ -17,18 +15,33 @@ export async function translateText(text, targetLang) {
         const result = await response.json();
         return result.translatedText || text;
     } catch (error) {
+        console.error('Erro na tradução:', error);
         return text;
     }
+}
+
+// ✅ FUNÇÕES ESSENCIAIS DE IDIOMA (ADICIONADAS)
+export function obterIdiomaLocal() {
+    return window.idiomaUsuario || 'pt-BR';
+}
+
+export function definirIdiomaLocal(langCode) {
+    window.idiomaUsuario = langCode;
+    aplicarBandeiraLocal(langCode);
 }
 
 export async function obterIdiomaCompleto(lang) {
     if (!lang) return 'pt-BR';
     if (lang.includes('-')) return lang;
 
-    const response = await fetch('assets/bandeiras/language-flags.json');
-    const flags = await response.json();
-    const codigoCompleto = Object.keys(flags).find(key => key.startsWith(lang + '-'));
-    return codigoCompleto || `${lang}-${lang.toUpperCase()}`;
+    try {
+        const response = await fetch('assets/bandeiras/language-flags.json');
+        const flags = await response.json();
+        const codigoCompleto = Object.keys(flags).find(key => key.startsWith(lang + '-'));
+        return codigoCompleto || `${lang}-${lang.toUpperCase()}`;
+    } catch (error) {
+        return `${lang}-${lang.toUpperCase()}`;
+    }
 }
 
 export async function aplicarBandeiraLocal(langCode) {
@@ -67,48 +80,7 @@ export async function aplicarBandeiraRemota(langCode) {
     }
 }
 
-// ✅ FUNÇÕES PARA GERENCIAR IDIOMAS
-export function definirIdiomaLocal(langCode) {
-    if (window.location.pathname.includes('receiver')) {
-        window.idiomaReceiver = langCode;
-    } else {
-        window.idiomaCaller = langCode;
-    }
-    aplicarBandeiraLocal(langCode);
-}
-
-export function obterIdiomaLocal() {
-    if (window.location.pathname.includes('receiver')) {
-        return window.idiomaReceiver;
-    } else {
-        return window.idiomaCaller;
-    }
-}
-
-export function obterIdiomaReceiver() {
-    return window.idiomaReceiver || 'pt-BR';
-}
-
-export function obterIdiomaCaller() {
-    return window.idiomaCaller || 'en-US';
-}
-
-// 🗑️ REMOVIDA - FUNÇÃO EQUIVOCADA DE TRADUÇÃO DINÂMICA
-// export function obterParIdiomasTraducao() {
-//     if (window.location.pathname.includes('receiver')) {
-//         return {
-//             origem: window.idiomaCaller,
-//             destino: window.idiomaReceiver
-//         };
-//     } else {
-//         return {
-//             origem: window.idiomaReceiver,
-//             destino: window.idiomaCaller
-//         };
-//     }
-// }
-
-// ✅ FUNÇÕES DE UI (MANTIDAS)
+// ✅ FUNÇÕES DE UI (MANTIDAS E CORRIGIDAS)
 export function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
     const toggleButton = document.getElementById('instructionToggle');
@@ -141,7 +113,7 @@ export function setupInstructionToggle() {
 
 export async function traduzirFrasesFixas(tipo = 'caller') {
     try {
-        const lang = obterIdiomaLocal();
+        const lang = obterIdiomaLocal(); // ✅ AGORA FUNCIONA
         
         console.log(`🌐 Traduzindo interface ${tipo} para: ${lang}`);
 
