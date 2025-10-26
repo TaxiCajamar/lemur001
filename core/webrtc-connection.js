@@ -1,5 +1,8 @@
 import { WebRTCCore } from '../../core/webrtc-core.js';
 
+// ✅ URL DO SERVIDOR SINALIZADOR (centralizado)
+const SERVIDOR_SINALIZADOR = 'https://lemur-signal.onrender.com';
+
 export function setupWebRTC(role = 'receiver', callbacks = {}) {
     window.rtcCore = new WebRTCCore();
 
@@ -60,4 +63,98 @@ export function setupWebRTC(role = 'receiver', callbacks = {}) {
     return { myId, rtcCore: window.rtcCore };
 }
 
-// ❌ REMOVER função aplicarBandeiraRemota duplicada daqui
+// ✅ FUNÇÕES CENTRALIZADAS PARA SERVIDOR SINALIZADOR
+
+// Para RECEIVER: Cadastrar e verificar conexões
+export async function cadastrarNoServidorSinalizador(myId, token) {
+    try {
+        const response = await fetch(`${SERVIDOR_SINALIZADOR}/registrar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: myId,
+                token: token,
+                status: 'online',
+                timestamp: Date.now()
+            })
+        });
+        
+        const result = await response.json();
+        return result.success;
+    } catch (error) {
+        console.error('Erro ao cadastrar no servidor:', error);
+        return false;
+    }
+}
+
+export async function verificarSeEstaSendoProcurado(myId, token) {
+    try {
+        const response = await fetch(`${SERVIDOR_SINALIZADOR}/verificar/${myId}?token=${token}`);
+        const result = await response.json();
+        
+        if (result.procurado && result.callerId) {
+            return result.callerId;
+        }
+        return null;
+    } catch (error) {
+        console.error('Erro ao verificar servidor:', error);
+        return null;
+    }
+}
+
+export async function atualizarStatusOnline(myId, token) {
+    try {
+        await fetch(`${SERVIDOR_SINALIZADOR}/atualizar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: myId,
+                token: token,
+                status: 'online',
+                timestamp: Date.now()
+            })
+        });
+    } catch (error) {
+        console.error('Erro ao atualizar status:', error);
+    }
+}
+
+// Para CALLER: Procurar e conectar com receiver
+export async function procurarReceiver(targetId, token, callerId, callerLang, receiverLang) {
+    try {
+        const response = await fetch(`${SERVIDOR_SINALIZADOR}/procurar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                callerId: callerId,
+                targetId: targetId,
+                token: token,
+                callerLang: callerLang,
+                receiverLang: receiverLang,
+                timestamp: Date.now()
+            })
+        });
+        
+        const result = await response.json();
+        return result.success;
+    } catch (error) {
+        console.error('Erro ao procurar receiver:', error);
+        return false;
+    }
+}
+
+// ✅ FUNÇÃO PARA DESREGISTRAR (ambos)
+export async function desregistrarDoServidor(myId, token) {
+    try {
+        await fetch(`${SERVIDOR_SINALIZADOR}/desregistrar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: myId,
+                token: token
+            })
+        });
+    } catch (error) {
+        console.error('Erro ao desregistrar:', error);
+    }
+}
