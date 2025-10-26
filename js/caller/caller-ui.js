@@ -78,21 +78,17 @@ function setupCameraToggle() {
     });
 }
 
-// ✅ FUNÇÃO: Conectar com receiver (CORRIGIDA)
 async function conectarComReceiver(targetId, localStream, meuIdioma) {
     if (!window.rtcCore) return;
     
     try {
         console.log(`🔄 Conectando com receiver: ${targetId}`);
-        
         window.rtcCore.startCall(targetId, localStream, meuIdioma);
-        
     } catch (error) {
         console.error('Erro ao conectar com receiver:', error);
     }
 }
 
-// ✅ FUNÇÃO PRINCIPAL DE CONEXÃO SIMPLIFICADA
 async function iniciarConexaoAutomatica(targetId, token, receiverLang, localStream, meuIdioma) {
     const aguardarWebRTCPronto = () => {
         return new Promise((resolve) => {
@@ -197,8 +193,6 @@ async function iniciarCameraAposPermissoes() {
 
 window.onload = async () => {
     try {
-        const params = new URLSearchParams(window.location.search);
-        
         // ✅ APENAS SOLICITA PERMISSÕES - A TRADUÇÃO SERÁ FEITA DEPOIS
         permissaoConcedida = await solicitarPermissoes();
         setupInstructionToggle();
@@ -207,7 +201,6 @@ window.onload = async () => {
         if (mobileLoading) mobileLoading.style.display = 'none';
         
         // ✅ A TRADUÇÃO SERÁ FEITA DENTRO DE iniciarCameraAposPermissoes()
-        // DEPOIS QUE O IDIOMA FOR DEFINIDO DINAMICAMENTE
         await iniciarCameraAposPermissoes();
         
     } catch (error) {
