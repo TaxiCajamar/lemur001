@@ -7,14 +7,18 @@ import {
     desregistrarDoServidor 
 } from '../../core/webrtc-connection.js';
 import { QRCodeGenerator } from '../qrcode/qr-code-utils.js';
-import { aplicarBandeiraRemota, definirIdiomaLocal, obterIdiomaLocal } from '../commons/language-utils.js'; // ✅ IMPORT ADICIONADO
-import { setupInstructionToggle, traduzirFrasesFixas, solicitarPermissoes, esconderElementoQuandoConectar } from '../commons/ui-commons.js';
+import { 
+    aplicarBandeiraRemota, 
+    definirIdiomaLocal, 
+    obterIdiomaLocal,
+    setupInstructionToggle, 
+    traduzirFrasesFixas, 
+    solicitarPermissoes, 
+    esconderElementoQuandoConectar 
+} from '../commons/language-utils.js'; // ✅ TODOS IMPORTS DE UM SÓ ARQUIVO
 
 let permissaoConcedida = false;
 let verificarConexaoInterval;
-
-// ❌ REMOVER: URL duplicada (já está no webrtc-connection.js)
-// ❌ REMOVER: Funções duplicadas do servidor (já importadas)
 
 // ✅ FUNÇÃO: Conectar com caller específico
 async function conectarComCaller(callerId, localStream) {
@@ -202,12 +206,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setupInstructionToggle();
 });
 
-// ... (código anterior permanece igual)
-
 window.onload = async () => {
     try {
         const params = new URLSearchParams(window.location.search);
-        // ✅ CORREÇÃO: Removida variável 'lang' não utilizada
         
         await traduzirFrasesFixas('receiver'); // ✅ CORRETO
         permissaoConcedida = await solicitarPermissoes();
