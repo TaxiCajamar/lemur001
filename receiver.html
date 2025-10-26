@@ -1,261 +1,170 @@
+// 📁 js/commons/language-utils.js - VERSÃO CORRIGIDA
 
+// ✅ APENAS IDIOMA LOCAL
+window.idiomaLocal = 'pt-BR';  // Idioma padrão inicial
 
-<!-- ============================================= -->
-<!-- CONFIGURAÇÃO INICIAL DO DOCUMENTO HTML -->
-<!-- ============================================= -->
+// ✅ CONFIGURAÇÃO AUTOMÁTICA DO IDIOMA
+export async function configurarIdiomaAutomatico() {
+    // Define idioma automaticamente (detecta navegador)
+    const idiomaNavegador = navigator.language || 'pt-BR';
+    window.idiomaLocal = idiomaNavegador;
+    
+    // Aplica bandeira e traduz AUTOMATICAMENTE
+    await aplicarBandeira(window.idiomaLocal);
+    await traduzirFrasesFixas();
+}
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <!-- ===== METADADOS E CONFIGURAÇÕES BÁSICAS ===== -->
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lemur EchoMe P2P Receiver</title>
+// ✅ API DE TRADUÇÃO
+export async function translateText(text, targetLang) {
+    try {
+        const response = await fetch('https://chat-tradutor.onrender.com/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, targetLang })
+        });
 
-  <!-- ===== IMPORTAÇÃO DE ESTILOS ===== -->
-  
-  <!-- 🎨 Estilos principais -->
-  <link rel="stylesheet" href="mobile-style.css" />
-
-  <!-- ===== IMPORTAÇÃO DE BIBLIOTECAS EXTERNAS ===== -->
-  
-  <!-- 📦 Biblioteca para QR Code -->
-  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-
-  <!-- ===== ESTILOS INLINE ADICIONAIS ===== -->
-  
-  <!-- 🔒 Estilo para overlay oculto -->
-  <style>
-    .info-overlay.hidden {
-      opacity: 0 !important;
-      pointer-events: none !important;
+        const result = await response.json();
+        return result.translatedText || text;
+    } catch (error) {
+        return text;
     }
-  </style>
-</head>
+}
 
-<body>
+// ✅ APENAS UMA FUNÇÃO PARA BANDEIRA
+export async function aplicarBandeira(langCode) {
+    try {      
+        const response = await fetch('assets/bandeiras/language-flags.json');
+        const flags = await response.json();
+        const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🏴';
 
-  <!-- ============================================= -->
-  <!-- CONTAINER PRINCIPAL DA APLICAÇÃO -->
-  <!-- ============================================= -->
+        // Aplica em todos os elementos de bandeira
+        document.querySelectorAll('.language-flag, .local-Lang').forEach(el => {
+            el.textContent = bandeira;
+        });
+        
+        // Atualiza o idioma local
+        window.idiomaLocal = langCode;
 
-  <!-- 🧩 Container principal -->
-  <div class="box-principal">
+    } catch (error) {
+        document.querySelectorAll('.language-flag, .local-Lang').forEach(el => {
+            el.textContent = '🏴';
+        });
+    }
+}
 
-    <!-- ============================================= -->
-    <!-- ELEMENTOS DE MARCA E IDENTIDADE VISUAL -->
-    <!-- ============================================= -->
+// ✅ FUNÇÕES SIMPLIFICADAS
+export function definirIdioma(langCode) {
+    window.idiomaLocal = langCode;
+    aplicarBandeira(langCode);
+    traduzirFrasesFixas(); // ← AGORA TRADUZ TAMBÉM AO MUDAR IDIOMA
+}
 
-    <!-- 🐵 Logo Lemur -->
-    <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
+export function obterIdioma() {
+    return window.idiomaLocal || 'pt-BR';
+}
 
-    <!-- 🌉 Imagem ponte -->
-    <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
+// ✅ TRADUÇÃO DE FRASES FIXAS - CORRIGIDAS COM AS FRASES REAIS DO HTML
+export async function traduzirFrasesFixas() {
+    try {
+        const lang = obterIdioma();
+        console.log(`🌐 Traduzindo interface para: ${lang}`);
 
-    <!-- 👆 Imagem de clique -->
-    <img id="click" src="assets/images/click.png" alt="Click" />
+        // 🎯 FRASES EXATAS DO SEU HTML
+        const frases = {
+            "translator-label": "Real-time translation.",
+            "translator-label-2": "Real-time translation.", 
+            "welcome-text": "Welcome! Let's begin.",
+            "tap-qr": "Tap the QR code to start.",
+            "quick-scan": "Ask to scan the QR.",
+            "drop-voice": "Speak clearly.",
+            "check-replies": "Read the message.",
+            "flip-cam": "Flip the camera. Share!",
+            "wait-connection": "Waiting for connection.",
+            "both-connected": "Both online.",
+            "qr-modal-title": "This is your online key",
+            "qr-modal-description": "You can ask to scan, share or print on your business card."
+        };
+
+        for (const [id, texto] of Object.entries(frases)) {
+            const el = document.getElementById(id);
+            if (el) {
+                const traduzido = await translateText(texto, lang);
+                el.textContent = traduzido;
+            }
+        }
+
+        console.log(`✅ Interface traduzida para: ${lang}`);
+    } catch (error) {
+        console.error("Erro ao traduzir frases fixas:", error);
+    }
+}
+
+// ✅ OUTRAS FUNÇÕES UTILITÁRIAS (MANTIDAS)
+export function setupInstructionToggle() {
+    const instructionBox = document.getElementById('instructionBox');
+    const toggleButton = document.getElementById('instructionToggle');
     
-    <!-- ============================================= -->
-    <!-- SISTEMA DE LOADING E INDICADORES -->
-    <!-- ============================================= -->
-
-    <!-- ⏳ Loader de carregamento -->
-    <div id="mobileLoading" class="mobile-loader">
-      <div class="loader-circle"></div>
-    </div>
-
-    <!-- ============================================= -->
-    <!-- COMPONENTE DE INSTRUÇÕES INTERATIVAS -->
-    <!-- ============================================= -->
-
-    <!-- 📋 Instruction box with toggle -->
-<div class="instruction-box expandido" id="instructionBox">
-  <button class="instruction-toggle" id="instructionToggle"></button>
-  <div class="instruction-content">
-    <div class="instruction-item">
-      <img src="assets/images/hello.png" alt="Hello icon" />
-      <span id="welcome-text">Welcome! Let's begin.</span>
-    </div>
-     <div class="instruction-item">
-  <img src="assets/images/realtime.png" alt="Realtime icon" />
-  <span id="translator-label-2">Real-time translation.</span>  <!-- ⬅️ MUDE PARA ID ÚNICO -->
-</div>
-    <div class="instruction-item">
-      <img src="assets/images/QRcode.png" alt="QR icon" />
-      <span id="tap-qr">Tap the QR code to start.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/mobil.png" alt="Mobile icon" />
-      <span id="quick-scan">Ask to scan the QR.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/Ancioso.png" alt="Loading icon" />
-      <span id="wait-connection">Waiting for connection.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/juntos.png" alt="Connected icon" />
-      <span id="both-connected">Both online.</span>
-    </div>
-     <div class="instruction-item">
-      <img src="assets/images/trduz.png" alt="Message icon" />
-      <span id="check-replies">Read the message.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/mic.png" alt="Mic icon" />
-      <span id="drop-voice">Speak clearly.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/cam.png" alt="Camera icon" />
-      <span id="flip-cam">Flip the camera. Share!</span>
-    </div>
-  </div>
-</div>
-
-
-    <!-- ============================================= -->
-    <!-- BOTÕES DE CONTROLE PRINCIPAIS -->
-    <!-- ============================================= -->
-
-    <!-- 🔑 Botão para gerar QR Code -->
-    <button id="logo-traduz" class="botao-key">
-      <img src="assets/images/key.png" alt="Gerar QR Code" />
-    </button>
-
-    <!-- 🔄 Botão para alternar câmera -->
-    <button id="toggleCamera" class="camera-toggle-btn">
-      <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
-    </button>
-
-    <!-- ============================================= -->
-    <!-- ELEMENTOS DE TEXTO E LABELS -->
-    <!-- ============================================= -->
-
-    <!-- 🏷️ Subtítulo de tradução -->
-    <div class="translator-label" id="translator-label">
-      Real-time translation.
-    </div>
-
-    <!-- ============================================= -->
-    <!-- INDICADORES DE IDIOMA E BANDEIRAS -->
-    <!-- ============================================= -->
-
-    <!-- 🏳️ Idiomas -->
-    <div class="remoter-Lang">🏳️</div>
-    <div class="local-Lang">🏳️</div>
-    <div class="local-mic-Lang">🏳️</div>
-
-    <!-- ============================================= -->
-    <!-- SISTEMA DE VÍDEO E STREAMING -->
-    <!-- ============================================= -->
-
-    <!-- 🎥 Container de vídeo remoto -->
-    <div class="video-wrapper">
-      <!-- Vídeo do usuário remoto -->
-      <video id="remoteVideo" autoplay playsinline></video>
-
-      <!-- 📺 Vídeo local em Picture-in-Picture -->
-      <div class="pip-local-wrapper">
-        <video id="localVideo" autoplay muted playsinline></video>
-      </div>
-    </div>
-   
-    <!-- ============================================= -->
-    <!-- OVERLAY DE QR CODE (INICIALMENTE OCULTO) -->
-    <!-- ============================================= -->
-
-<!-- 🧾 Overlay com QR Code E BOTÃO COPIAR -->
-<div class="info-overlay hidden">
-  <h2 id="qr-modal-title">This is your online key</h2>
-
-  <div class="qrcode-container">
-    <div id="qrcode"></div>
-  </div>
-
-  <p class="qr-modal-description" id="qr-modal-description">
-    You can ask to scan, share or print on your business card.
-  </p>
-
-  <!-- 🆕 BOTÃO COPIAR SIMPLES E UNIVERSAL -->
- <button id="copiarLink" class="btn-copiar-simples">🔗</button>
-</div>
-
-    <!-- ============================================= -->
-    <!-- ÁREA DE EXIBIÇÃO DE TEXTO TRADUZIDO -->
-    <!-- ============================================= -->
-
-    <!-- 🎙️ Texto traduzido por voz -->
-    <div id="texto-recebido"></div>
-
-    <!-- ============================================= -->
-    <!-- INDICADORES DE IDIOMA ATUAL -->
-    <!-- ============================================= -->
-
-    <!-- 🏳️ Bandeira do idioma atual -->
-    <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
-
-    <!-- ============================================= -->
-    <!-- BOTÕES DE CONTROLE DE ÁUDIO -->
-    <!-- ============================================= -->
-
-    <!-- 🎤 Botão de gravação -->
-    <button class="record-btn" id="recordButton" disabled>🎤</button>
-
-  </div> <!-- Fim do .box-principal -->
-
-  <!-- ============================================= -->
-  <!-- MODAL DE GRAVAÇÃO (FORA DO CONTAINER PRINCIPAL) -->
-  <!-- ============================================= -->
-
-  <!-- 🎛️ Modal de gravação -->
- <div class="recording-modal hidden-until-ready" id="recordingModal">
-    <div class="recording-indicator">
-      <div class="recording-dot"></div>
-      <div class="recording-text">●</div>
-      <div class="recording-timer" id="recordingTimer">0:00</div>
-    </div>
-    <button class="send-button" id="sendButton">📤</button>
-  </div>
-
-  <!-- ============================================= -->
-  <!-- IMPORTAÇÃO DE BIBLIOTECAS EXTERNAS -->
-  <!-- ============================================= -->
-
-  <!-- 🔌 Socket.IO para comunicação em tempo real -->
-  <script src="https://lemur-signal.onrender.com/socket.io/socket.io.js"></script>
-
-  <!-- ============================================= -->
-  <!-- SCRIPTS DE INICIALIZAÇÃO E CONFIGURAÇÃO -->
-  <!-- ============================================= -->
-
-  <script>
-    // ===== FUNÇÕES GLOBAIS DE CONTROLE DE INTERFACE =====
+    if (!instructionBox || !toggleButton) return;
     
-    // ✅ Libera interface após carregamento
-    window.liberarInterface = function () {
-      console.log('✅ Interface já está visível');
-    };
-
-    // ✅ Exibe erro de carregamento
-    window.mostrarErroCarregamento = function (mensagem) {
-      alert('Erro: ' + mensagem);
-    };
-
-    // ✅ Oculta overlay ao carregar
-    document.addEventListener('DOMContentLoaded', function () {
-      const overlay = document.querySelector('.info-overlay');
-      if (overlay) {
-        overlay.classList.add('hidden');
-      }
+    let isExpanded = true;
+    
+    toggleButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        isExpanded = !isExpanded;
+        
+        if (isExpanded) {
+            instructionBox.classList.remove('recolhido');
+            instructionBox.classList.add('expandido');
+        } else {
+            instructionBox.classList.remove('expandido');
+            instructionBox.classList.add('recolhido');
+        }
     });
-  </script>
+    
+    document.addEventListener('click', function(e) {
+        if (!instructionBox.contains(e.target) && isExpanded) {
+            instructionBox.classList.remove('expandido');
+            instructionBox.classList.add('recolhido');
+            isExpanded = false;
+        }
+    });
+}
 
-  <!-- ============================================= -->
-  <!-- IMPORTAÇÃO DOS SCRIPTS DA APLICAÇÃO -->
-  <!-- ============================================= -->
+export async function solicitarPermissoes() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        });
+        
+        stream.getTracks().forEach(track => track.stop());
+        return true;
+        
+    } catch (error) {
+        throw error;
+    }
+}
 
-  <!-- 📦 Scripts do receptor -->
-  <script type="module" src="./js/receiver/receiver-ui.js"></script>
-  <script src="./js/receiver/receiver-trz.js"></script>
-
-</body>
-</html>
+export function esconderElementoQuandoConectar(elementoId, videoId) {
+    const elemento = document.getElementById(elementoId);
+    const video = document.getElementById(videoId);
+    
+    if (!elemento || !video) return;
+    
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'srcObject') {
+                if (video.srcObject) {
+                    elemento.style.display = 'none';
+                    elemento.classList.remove('piscar-suave');
+                    observer.disconnect();
+                }
+            }
+        });
+    });
+    
+    observer.observe(video, {
+        attributes: true,
+        attributeFilter: ['srcObject']
+    });
+}
