@@ -951,18 +951,36 @@ window.rtcCore.setDataChannelCallback(async (mensagem) => {
         };
 
         // ✅ SÓ INICIA CONEXÃO SE TIVER receiverId E APÓS TUDO ESTAR PRONTO
-        if (receiverId) {
-          document.getElementById('callActionBtn').style.display = 'none';
-          
-          if (localStream) {
-            const meuIdioma = await obterIdiomaCompleto(navigator.language);
-            
-            // ✅ PEQUENO ATRASO PARA GARANTIR QUE TUDO ESTÁ ESTÁVEL
-            setTimeout(() => {
-              iniciarConexaoVisual(receiverId, receiverToken, myId, localStream, meuIdioma);
-            }, 2000);
-          }
+if (receiverId) {
+  document.getElementById('callActionBtn').style.display = 'none';
+  
+  if (localStream) {
+    const meuIdioma = await obterIdiomaCompleto(navigator.language);
+    
+    // ✅ CORREÇÃO: ESPERAR O WEBRTC ESTAR COMPLETAMENTE INICIALIZADO
+    console.log('⏳ Aguardando inicialização completa do WebRTC...');
+    
+    // Aguarda o WebRTC estar pronto (máximo 5 segundos)
+    await new Promise(resolve => {
+      const checkReady = () => {
+        if (window.rtcCore && 
+            window.rtcCore.peer && 
+            window.rtcCore.peer.signalingState === 'stable' &&
+            window.rtcCore.socket?.connected) {
+          console.log('✅ WebRTC completamente pronto!');
+          resolve(true);
+        } else {
+          setTimeout(checkReady, 100);
         }
+      };
+      checkReady();
+    });
+    
+    // AGORA inicia a conexão
+    console.log('🚀 Iniciando conexão automática...');
+    iniciarConexaoVisual(receiverId, receiverToken, myId, localStream, meuIdioma);
+  }
+}
 
         const navegadorLang = await obterIdiomaCompleto(navigator.language);
 
