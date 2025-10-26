@@ -4,6 +4,22 @@
 window.idiomaReceiver = 'pt-BR';  // Idioma DO RECEIVER
 window.idiomaCaller = 'en-US';    // Idioma DO CALLER
 
+// ✅ API DE TRADUÇÃO CENTRALIZADA AQUI
+export async function translateText(text, targetLang) {
+    try {
+        const response = await fetch('https://chat-tradutor.onrender.com/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, targetLang })
+        });
+
+        const result = await response.json();
+        return result.translatedText || text;
+    } catch (error) {
+        return text;
+    }
+}
+
 export async function obterIdiomaCompleto(lang) {
     if (!lang) return 'pt-BR';
     if (lang.includes('-')) return lang;
@@ -16,6 +32,9 @@ export async function obterIdiomaCompleto(lang) {
 
 export async function aplicarBandeiraLocal(langCode) {
     try {
+        // ✅ ATUALIZA o idioma local sempre que aplicar bandeira
+        window.idiomaLocal = langCode;
+        
         const response = await fetch('assets/bandeiras/language-flags.json');
         const flags = await response.json();
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🏴';
@@ -50,24 +69,8 @@ export async function aplicarBandeiraRemota(langCode) {
     }
 }
 
-export async function translateText(text, targetLang) {
-    try {
-        const response = await fetch('https://chat-tradutor.onrender.com/translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, targetLang })
-        });
-
-        const result = await response.json();
-        return result.translatedText || text;
-    } catch (error) {
-        return text;
-    }
-}
-
-// ✅ FUNÇÕES PARA GERENCIAR IDIOMAS SEPARADAMENTE
+// ✅ FUNÇÕES PARA GERENCIAR IDIOMAS
 export function definirIdiomaLocal(langCode) {
-    // Detecta automaticamente se é receiver ou caller
     if (window.location.pathname.includes('receiver')) {
         window.idiomaReceiver = langCode;
     } else {
@@ -77,7 +80,6 @@ export function definirIdiomaLocal(langCode) {
 }
 
 export function obterIdiomaLocal() {
-    // Retorna o idioma correto baseado na página
     if (window.location.pathname.includes('receiver')) {
         return window.idiomaReceiver;
     } else {
@@ -85,7 +87,6 @@ export function obterIdiomaLocal() {
     }
 }
 
-// ✅ FUNÇÕES ESPECÍFICAS PARA TRADUÇÃO FUTURA
 export function obterIdiomaReceiver() {
     return window.idiomaReceiver || 'pt-BR';
 }
@@ -94,10 +95,9 @@ export function obterIdiomaCaller() {
     return window.idiomaCaller || 'en-US';
 }
 
-// ✅ FUNÇÃO PARA TRADUÇÃO BIDIRECIONAL (futuro)
 export function obterParIdiomasTraducao() {
     return {
-        origem: obterIdiomaReceiver(),  // De: Receiver
-        destino: obterIdiomaCaller()    // Para: Caller
+        origem: obterIdiomaReceiver(),
+        destino: obterIdiomaCaller()
     };
 }
