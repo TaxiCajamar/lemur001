@@ -1,7 +1,7 @@
 // 📁 js/commons/language-utils.js - ARQUIVO HÍBRIDO COMPLETO
 
-// ✅ VARIÁVEL GLOBAL SIMPLIFICADA
-window.idiomaUsuario = 'pt-BR'; // Idioma padrão
+// ✅ VARIÁVEL GLOBAL DINÂMICA (SEM VALOR FIXO)
+window.idiomaUsuario = ''; // Será definido dinamicamente pela bandeira
 
 // ✅ API DE TRADUÇÃO CENTRALIZADA
 export async function translateText(text, targetLang) {
@@ -20,14 +20,14 @@ export async function translateText(text, targetLang) {
     }
 }
 
-// ✅ FUNÇÕES ESSENCIAIS DE IDIOMA (ADICIONADAS)
+// ✅ FUNÇÕES ESSENCIAIS DE IDIOMA
 export function obterIdiomaLocal() {
-    return window.idiomaUsuario || 'pt-BR';
+    return window.idiomaUsuario || 'pt-BR'; // Fallback apenas se estiver vazio
 }
 
 export function definirIdiomaLocal(langCode) {
-    window.idiomaUsuario = langCode;
-    aplicarBandeiraLocal(langCode);
+    window.idiomaUsuario = langCode; // Define dinamicamente
+    aplicarBandeiraLocal(langCode);  // Atualiza a bandeira
 }
 
 export async function obterIdiomaCompleto(lang) {
@@ -49,6 +49,9 @@ export async function aplicarBandeiraLocal(langCode) {
         const response = await fetch('assets/bandeiras/language-flags.json');
         const flags = await response.json();
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🏴';
+
+        // ✅ ATUALIZA O IDIOMA DINAMICAMENTE (SINCRONIZADO COM BANDEIRA)
+        window.idiomaUsuario = langCode;
 
         const languageFlagElement = document.querySelector('.language-flag');
         if (languageFlagElement) languageFlagElement.textContent = bandeira;
@@ -80,7 +83,7 @@ export async function aplicarBandeiraRemota(langCode) {
     }
 }
 
-// ✅ FUNÇÕES DE UI (MANTIDAS E CORRIGIDAS)
+// ✅ FUNÇÕES DE UI
 export function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
     const toggleButton = document.getElementById('instructionToggle');
@@ -111,58 +114,40 @@ export function setupInstructionToggle() {
     });
 }
 
-export async function traduzirFrasesFixas(tipo = 'caller') {
+export async function traduzirFrasesFixas() {
     try {
-        const lang = obterIdiomaLocal(); // ✅ AGORA FUNCIONA
-        
-        console.log(`🌐 Traduzindo interface ${tipo} para: ${lang}`);
+        const lang = obterIdiomaLocal();
+        console.log(`🌐 Traduzindo interface para: ${lang}`);
 
-        if (tipo === 'receiver') {
-            // FRASES EXATAS DO RECEIVER
-            const frasesReceiver = {
-                "translator-label": "Real-time translation.",
-                "translator-label-2": "Real-time translation.",
-                "welcome-text": "Hi, welcome!",
-                "tap-qr": "Tap that QR Code", 
-                "quick-scan": "Quick scan",
-                "drop-voice": "Drop your voice",
-                "check-replies": "Check the replies",
-                "flip-cam": "Flip the cam and show the vibes",
-                "wait-connection": "Waiting for connection.",
-                "both-connected": "Both online.",
-                "qr-modal-title": "This is your online key",
-                "qr-modal-description": "You can ask to scan, share or print on your business card."
-            };
+        // ✅ LISTA ÚNICA COM TODAS AS FRASES POSSÍVEIS
+        const todasFrases = {
+            // ========================
+            // FRASES COMUNS A AMBOS
+            // ========================
+            "translator-label": "Real-time translation.",
+            "translator-label-2": "Real-time translation.",
+            "welcome-text": "Welcome! Let's begin.",
+            "wait-connection": "Waiting for connection.",
+            "both-connected": "Both online.",
+            "check-replies": "Read the message.",
+            "drop-voice": "Speak clearly.",
+            "flip-cam": "Flip the camera. Share!",
+            
+            // ========================
+            // FRASES EXCLUSIVAS DO RECEIVER
+            // ========================
+            "tap-qr": "Tap the QR code to start.",
+            "quick-scan": "Ask to scan the QR.",
+            "qr-modal-title": "This is your online key",
+            "qr-modal-description": "You can ask to scan, share or print on your business card."
+        };
 
-            for (const [id, texto] of Object.entries(frasesReceiver)) {
-                const el = document.getElementById(id);
-                if (el) {
-                    const traduzido = await translateText(texto, lang);
-                    el.textContent = traduzido;
-                }
-            }
-
-        } else {
-            // FRASES EXATAS DO CALLER
-            const frasesCaller = {
-                "translator-label": "Real-time translation.",
-                "translator-label-2": "Real-time translation.",
-                "welcome-text": "Hi, welcome!",
-                "tap-qr": "Tap that QR Code", 
-                "quick-scan": "Quick scan",
-                "drop-voice": "Drop your voice",
-                "check-replies": "Check the replies",
-                "flip-cam": "Flip the cam and show the vibes",
-                "wait-connection": "Waiting for connection.",
-                "both-connected": "Both online."
-            };
-
-            for (const [id, texto] of Object.entries(frasesCaller)) {
-                const el = document.getElementById(id);
-                if (el) {
-                    const traduzido = await translateText(texto, lang);
-                    el.textContent = traduzido;
-                }
+        // ✅ TRADUZ APENAS AS FRASES QUE EXISTEM NA PÁGINA ATUAL
+        for (const [id, texto] of Object.entries(todasFrases)) {
+            const el = document.getElementById(id);
+            if (el) {
+                const traduzido = await translateText(texto, lang);
+                el.textContent = traduzido;
             }
         }
 
