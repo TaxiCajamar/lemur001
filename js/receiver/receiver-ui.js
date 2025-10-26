@@ -55,8 +55,6 @@ let primeiraFraseTTS = true;
 let navegadorTTSPreparado = false;
 let ultimoIdiomaTTS = 'pt-BR';
 
-// [Sistema de espera do lêmure removido]
-
 // 🎵 CARREGAR SOM DE DIGITAÇÃO
 function carregarSomDigitacao() {
     return new Promise((resolve) => {
@@ -768,27 +766,18 @@ async function iniciarCameraAposPermissoes() {
             }
         }, 500);
         
-        // ... continua o código ORIGINAL daqui para baixo ...
-        // (MANTÉM todo o resto do código que estava aqui)
-        
+        // 🎯 🎯 🎯 ALTERAÇÃO CRÍTICA: NOVA REGRA DE PARÂMETROS 🎯 🎯 🎯
         window.rtcCore = new WebRTCCore();
 
-        const url = window.location.href;
-        const fixedId = url.split('?')[1] || crypto.randomUUID().substr(0, 8);
-
-        function fakeRandomUUID(fixedValue) {
-            return {
-                substr: function(start, length) {
-                    return fixedValue.substr(start, length);
-                }
-            };
-        }
-
-        const myId = fakeRandomUUID(fixedId).substr(0, 8);
-
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token') || '';
-        const lang = params.get('lang') || navigator.language || 'pt-BR';
+        // ✅ NOVA REGRA: Obtém parâmetros de forma simplificada
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || '';
+        
+        // ✅ REGRA 1: myId = últimos 8 dígitos do token
+        const myId = token.slice(-8);
+        
+        // ✅ REGRA 2: lang = idioma do navegador
+        const lang = navigator.language || 'pt-BR';
 
         window.targetTranslationLang = lang;
 
@@ -871,7 +860,6 @@ document.getElementById('logo-traduz').addEventListener('click', function() {
     
     console.log('✅ QR Code e Link gerados/reativados!');
 });
-        // [Event listener do lêmure removido]
 
         // Fechar QR Code ao clicar fora
         document.querySelector('.info-overlay').addEventListener('click', function(e) {
@@ -1010,9 +998,19 @@ window.onload = async () => {
     try {
         console.log('🚀 Iniciando aplicação receiver automaticamente...');
         
+        // ✅ NOVA REGRA: Obtém parâmetros de forma simplificada
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || '';
+        
+        // ✅ REGRA 1: myId = últimos 8 dígitos do token
+        const myId = token.slice(-8);
+        
+        // ✅ REGRA 2: lang = idioma do navegador
+        const lang = navigator.language || 'pt-BR';
+        
         // 1. Obtém o idioma para tradução
-        const params = new URLSearchParams(window.location.search);
-        const lang = params.get('lang') || navigator.language || 'pt-BR';
+        // const params = new URLSearchParams(window.location.search);
+        // const lang = params.get('lang') || navigator.language || 'pt-BR';
         
         // ✅✅✅ PRIMEIRO: Aplica bandeira e GUARDA o idioma
         await aplicarBandeiraLocal(lang);
