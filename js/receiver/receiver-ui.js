@@ -1,7 +1,7 @@
 // ✅ IMPORTS CORRETOS E COMPLETOS
 import { setupWebRTC } from '../../core/webrtc-connection.js';
-import { QRCodeGenerator } from '../qrcode/qr-code-utils.js'; // ✅ ADICIONADO
-import { aplicarBandeiraRemota } from '../commons/language-utils.js';
+import { QRCodeGenerator } from '../qrcode/qr-code-utils.js';
+import { aplicarBandeiraRemota } from '../commons/language-utils.js'; // ✅ IMPORT ADICIONADO
 import { setupInstructionToggle, traduzirFrasesFixas, solicitarPermissoes, esconderElementoQuandoConectar } from '../commons/ui-commons.js';
 
 let permissaoConcedida = false;
@@ -37,7 +37,10 @@ async function iniciarCameraAposPermissoes() {
             }, 500);
         }
 
-        const { myId } = setupWebRTC('receiver');
+        // ✅ PASSAR CALLBACK PARA setupWebRTC
+        const { myId } = setupWebRTC('receiver', {
+            onBandeiraRemota: aplicarBandeiraRemota
+        });
 
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token') || '';
@@ -69,7 +72,7 @@ async function iniciarCameraAposPermissoes() {
             
             const callerUrl = `${window.location.origin}/caller.html?targetId=${window.qrCodeData.myId}&token=${encodeURIComponent(window.qrCodeData.token)}&lang=${encodeURIComponent(window.qrCodeData.lang)}`;
             
-            QRCodeGenerator.generate("qrcode", callerUrl); // ✅ AGORA FUNCIONA
+            QRCodeGenerator.generate("qrcode", callerUrl);
             
             if (overlay) overlay.classList.remove('hidden');
         });
@@ -90,6 +93,7 @@ async function iniciarCameraAposPermissoes() {
     }
 }
 
+// Resto do código permanece igual...
 document.addEventListener('DOMContentLoaded', function() {
     setupInstructionToggle();
 });
