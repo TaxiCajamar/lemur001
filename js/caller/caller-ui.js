@@ -7,10 +7,11 @@ import {
     aplicarBandeiraLocal, 
     aplicarBandeiraRemota, 
     definirIdiomaLocal,
+    obterIdiomaLocal,
     setupInstructionToggle, 
     traduzirFrasesFixas, 
     solicitarPermissoes 
-} from '../commons/language-utils.js'; // ✅ TODOS IMPORTS DE UM SÓ ARQUIVO
+} from '../commons/language-utils.js';
 
 let permissaoConcedida = false;
 
@@ -85,8 +86,6 @@ async function conectarComReceiver(targetId, localStream, meuIdioma) {
         console.log(`🔄 Conectando com receiver: ${targetId}`);
         
         window.rtcCore.startCall(targetId, localStream, meuIdioma);
-        
-        // ✅ CORREÇÃO: Removida referência ao callActionBtn (não existe mais)
         
     } catch (error) {
         console.error('Erro ao conectar com receiver:', error);
@@ -170,14 +169,15 @@ async function iniciarCameraAposPermissoes() {
         const token = urlParams.get('token') || '';
         const receiverLang = urlParams.get('lang') || 'pt-BR';
 
-        // ✅ DEFINIR IDIOMA LOCAL DO CALLER
+        // ✅ DEFINIR IDIOMA LOCAL DO CALLER DINAMICAMENTE
         const meuIdioma = navigator.language || 'en-US';
         definirIdiomaLocal(meuIdioma);
+        console.log('🌐 Idioma caller definido:', meuIdioma);
+
+        // ✅ TRADUZIR FRASES APÓS DEFINIR IDIOMA
+        await traduzirFrasesFixas();
 
         if (receiverId) {
-            // ✅ CORREÇÃO: Remover referência ao callActionBtn que não existe
-            // document.getElementById('callActionBtn').style.display = 'none'; // ❌ REMOVER
-            
             if (stream) {
                 setTimeout(() => {
                     iniciarConexaoAutomatica(receiverId, token, receiverLang, stream, meuIdioma);
@@ -198,15 +198,16 @@ async function iniciarCameraAposPermissoes() {
 window.onload = async () => {
     try {
         const params = new URLSearchParams(window.location.search);
-        const lang = params.get('lang') || navigator.language || 'pt-BR';
         
-        await traduzirFrasesFixas('caller'); // ✅ CORRETO (sem parâmetro lang)
+        // ✅ APENAS SOLICITA PERMISSÕES - A TRADUÇÃO SERÁ FEITA DEPOIS
         permissaoConcedida = await solicitarPermissoes();
         setupInstructionToggle();
         
         const mobileLoading = document.getElementById('mobileLoading');
         if (mobileLoading) mobileLoading.style.display = 'none';
         
+        // ✅ A TRADUÇÃO SERÁ FEITA DENTRO DE iniciarCameraAposPermissoes()
+        // DEPOIS QUE O IDIOMA FOR DEFINIDO DINAMICAMENTE
         await iniciarCameraAposPermissoes();
         
     } catch (error) {
