@@ -960,7 +960,7 @@ window.rtcCore.setDataChannelCallback(async (mensagem) => {
             // ✅ PEQUENO ATRASO PARA GARANTIR QUE TUDO ESTÁ ESTÁVEL
             setTimeout(() => {
               iniciarConexaoVisual(receiverId, receiverToken, myId, localStream, meuIdioma);
-            }, 1000);
+            }, 2000);
           }
         }
 
