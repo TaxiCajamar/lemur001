@@ -866,10 +866,80 @@ async function iniciarCameraAposPermissoes() {
             }
         }, 500);
 
-        // ✅ CONFIGURA BOTÃO QR CODE (MANTIDO ORIGINAL)
-        document.getElementById('logo-traduz').addEventListener('click', function() {
-            // ... código original mantido
-        });
+       // ✅ CONFIGURA BOTÃO QR CODE (CÓDIGO CORRIGIDO)
+document.getElementById('logo-traduz').addEventListener('click', function() {
+    // 🔄 VERIFICA SE JÁ EXISTE UM QR CODE ATIVO
+    const overlay = document.querySelector('.info-overlay');
+    const qrcodeContainer = document.getElementById('qrcode');
+    
+    // Se o overlay já está visível, apenas oculta (toggle)
+    if (overlay && !overlay.classList.contains('hidden')) {
+        overlay.classList.add('hidden');
+        console.log('📱 QR Code fechado pelo usuário');
+        return;
+    }
+    
+    // ✅✅✅ VERIFICAÇÃO CORRIGIDA: WebRTC realmente conectado?
+    const isReallyConnected = window.rtcCore && 
+                            window.rtcCore.peer && 
+                            window.rtcCore.peer.connectionState === 'connected';
+    
+    if (isReallyConnected) {
+        console.log('✅ WebRTC realmente conectado - QR Code não é mais necessário');
+        alert('Conexão já estabelecida! QR Code não é mais necessário.');
+        return;
+    }
+    
+    console.log('🗝️ Gerando/Reabrindo QR Code e Link...');
+    
+    // 🔄 LIMPA QR CODE ANTERIOR SE EXISTIR
+    if (qrcodeContainer) {
+        qrcodeContainer.innerHTML = '';
+    }
+    
+    const callerUrl = `${window.location.origin}/caller.html?targetId=${window.qrCodeData.myId}&token=${encodeURIComponent(window.qrCodeData.token)}&lang=${encodeURIComponent(window.qrCodeData.lang)}`;
+    
+    // Gera o QR Code
+    QRCodeGenerator.generate("qrcode", callerUrl);
+    
+    // 🆕 CONFIGURA BOTÃO COPIAR SIMPLES
+    const btnCopiar = document.getElementById('copiarLink');
+    if (btnCopiar) {
+        btnCopiar.onclick = function() {
+            navigator.clipboard.writeText(callerUrl).then(() => {
+                btnCopiar.textContent = '✅';
+                btnCopiar.classList.add('copiado');
+                console.log('🔗 Link copiado para área de transferência');
+                
+                setTimeout(() => {
+                    btnCopiar.textContent = '🔗';
+                    btnCopiar.classList.remove('copiado');
+                }, 2000);
+            }).catch(err => {
+                console.log('❌ Erro ao copiar link:', err);
+                // Fallback para dispositivos sem clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = callerUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                btnCopiar.textContent = '✅';
+                setTimeout(() => {
+                    btnCopiar.textContent = '🔗';
+                }, 2000);
+            });
+        };
+    }
+    
+    // Mostra o overlay do QR Code
+    if (overlay) {
+        overlay.classList.remove('hidden');
+    }
+    
+    console.log('✅ QR Code e Link gerados/reativados!');
+});
 
         // Fechar QR Code ao clicar fora (mantido original)
         document.querySelector('.info-overlay').addEventListener('click', function(e) {
