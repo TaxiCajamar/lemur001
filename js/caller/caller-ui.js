@@ -1,5 +1,6 @@
 // 📦 Importa o núcleo WebRTC
 import { WebRTCCore } from '../../core/webrtc-core.js';
+import { CameraVigilante } from '../../core/camera-vigilante.js';
 
 // 🎵 VARIÁVEIS DE ÁUDIO
 let audioContext = null;
@@ -7,12 +8,7 @@ let somDigitacao = null;
 let audioCarregado = false;
 let permissaoConcedida = false;
 
-// 🎤 SISTEMA HÍBRIDO TTS AVANÇADO
-let primeiraFraseTTS = true;
-let navegadorTTSPreparado = false;
-let ultimoIdiomaTTS = 'pt-BR';
-
-// 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES (IGUAL AO RECEIVER)
+// 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES
 function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
     const toggleButton = document.getElementById('instructionToggle');
@@ -49,29 +45,36 @@ function setupInstructionToggle() {
     });
 }
 
-// 🌐 TRADUÇÃO DAS FRASES FIXAS (IGUAL AO RECEIVER)
-async function traduzirFrasesFixas(lang) {
+// 🌐 TRADUÇÃO DAS FRASES FIXAS
+async function traduzirFrasesFixas() {
   try {
+    // ✅✅✅ AGORA USA O IDIOMA GUARDADO!
+    const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
+    
+    console.log(`🌐 Traduzindo frases fixas para: ${idiomaExato}`);
+
     const frasesParaTraduzir = {
-      "translator-label": "Real-time translation.",
-      "welcome-text": "Hi, welcome!",
-      "tap-qr": "Tap that QR Code",
-      "quick-scan": "Quick scan",
-      "drop-voice": "Drop your voice",
-      "check-replies": "Check the replies",
-      "flip-cam": "Flip the cam and show the vibes"
+       "translator-label": "Real-time translation.",      // ⬅️ PRIMEIRO ELEMENTO
+  "translator-label-2": "Real-time translation.",   // ⬅️ SEGUNDO ELEMENTO (NOVO)
+  "welcome-text": "Welcome! Let's begin.",
+  "wait-connection": "Waiting for connection.",
+  "both-connected": "Both online.",
+  "drop-voice": "Speak clearly.",
+  "check-replies": "Read the message.",
+  "flip-cam": "Flip the camera. Share!"
     };
 
     for (const [id, texto] of Object.entries(frasesParaTraduzir)) {
       const el = document.getElementById(id);
       if (el) {
-        const traduzido = await translateText(texto, lang);
+        const traduzido = await translateText(texto, idiomaExato);
         el.textContent = traduzido;
         console.log(`✅ Traduzido: ${texto} → ${traduzido}`);
       }
     }
 
-    aplicarBandeiraLocal(lang);
+    console.log('✅ Frases fixas traduzidas com sucesso');
+
   } catch (error) {
     console.error("❌ Erro ao traduzir frases fixas:", error);
   }
@@ -157,17 +160,18 @@ function iniciarAudio() {
     console.log('🎵 Áudio desbloqueado!');
 }
 
-// 🎤 SOLICITAR TODAS AS PERMISSÕES DE UMA VEZ (IGUAL AO RECEIVER)
+// 🎤 SOLICITAR TODAS AS PERMISSÕES DE UMA VEZ
 async function solicitarTodasPermissoes() {
     try {
         console.log('🎯 Solicitando todas as permissões...');
         
+        // ✅✅✅ MODIFICADO: Solicita apenas VÍDEO (sem áudio)
         const stream = await navigator.mediaDevices.getUserMedia({
             video: true,
-            audio: true
+            audio: false  // ⬅️ ÁUDIO DESATIVADO
         });
         
-        console.log('✅ Todas as permissões concedidas!');
+        console.log('✅ Permissões de VÍDEO concedidas!');
         
         stream.getTracks().forEach(track => track.stop());
         
@@ -206,17 +210,6 @@ async function obterIdiomaCompleto(lang) {
   }
 }
 
-// ===== FUNÇÃO SIMPLES PARA ENVIAR TEXTO =====
-function enviarParaOutroCelular(texto) {
-  if (window.rtcDataChannel && window.rtcDataChannel.isOpen()) {
-    window.rtcDataChannel.send(texto);
-    console.log('✅ Texto enviado:', texto);
-  } else {
-    console.log('⏳ Canal não disponível ainda. Tentando novamente...');
-    setTimeout(() => enviarParaOutroCelular(texto), 1000);
-  }
-}
-
 // 🌐 Tradução apenas para texto
 async function translateText(text, targetLang) {
   try {
@@ -244,8 +237,8 @@ async function enviarNotificacaoWakeUp(receiverToken, receiverId, meuId, meuIdio
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token: receiverToken,
-        title: '📞 Nova Chamada',
-        body: `Toque para atender a chamada`,
+        title: '📞 Nova Chamada de Vídeo',
+        body: `Toque para atender a chamada de vídeo`,
         data: {
           type: 'wake_up',
           callerId: meuId,
@@ -373,7 +366,7 @@ function setupCameraToggle() {
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
                     },
-                    audio: false
+                    audio: false  // ⬅️ SEM ÁUDIO
                 });
 
                 await handleNewStream(newStream, currentCamera);
@@ -476,7 +469,7 @@ function setupCameraToggle() {
                         width: { ideal: 1280 },
                         height: { ideal: 720 }
                     },
-                    audio: false
+                    audio: false  // ⬅️ SEM ÁUDIO
                 });
 
                 await handleNewStream(newStream, 'fallback');
@@ -600,7 +593,12 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
     const telaChamada = document.getElementById('tela-chamando');
     if (telaChamada) telaChamada.remove();
     
-    stream.getAudioTracks().forEach(track => track.enabled = false);
+    // ✅✅✅ DESABILITA ÁUDIO DO STREAM REMOTO (participantes só se veem)
+    stream.getAudioTracks().forEach(track => {
+        track.enabled = false;
+        track.stop(); // Para completamente o áudio
+    });
+    
     const remoteVideo = document.getElementById('remoteVideo');
     if (remoteVideo) remoteVideo.srcObject = stream;
 });
@@ -610,7 +608,7 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
 function liberarInterfaceFallback() {
     console.log('🔓 Usando fallback para liberar interface...');
     
-    // ✅ CORREÇÃO: Remove o loader correto (mobileLoading) - IGUAL AO RECEIVER
+    // ✅ CORREÇÃO: Remove o loader correto (mobileLoading)
     const mobileLoading = document.getElementById('mobileLoading');
     if (mobileLoading) {
         mobileLoading.style.display = 'none';
@@ -646,13 +644,17 @@ async function aplicarBandeiraLocal(langCode) {
     }
 }
 
-// 🏳️ Aplica bandeira do idioma remoto
+// 🏳️ Aplica bandeira do idioma remota
 async function aplicarBandeiraRemota(langCode) {
     try {
         const response = await fetch('assets/bandeiras/language-flags.json');
         const flags = await response.json();
 
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🔴';
+
+        // ✅✅✅ SOLUÇÃO INTELIGENTE: Guardar o idioma REMOTO também!
+        window.meuIdiomaRemoto = langCode;
+        console.log('💾 Idioma REMOTO guardado:', window.meuIdiomaRemoto);
 
         const remoteLangElement = document.querySelector('.remoter-Lang');
         if (remoteLangElement) remoteLangElement.textContent = bandeira;
@@ -664,280 +666,72 @@ async function aplicarBandeiraRemota(langCode) {
     }
 }
 
-// 🎤 SISTEMA HÍBRIDO TTS AVANÇADO - SUBSTITUIÇÃO COMPLETA
-
-// 🎤 FUNÇÃO TTS DO NAVEGADOR (GRÁTIS) - OTIMIZADA
-function falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma) {
-    return new Promise((resolve) => {
-        try {
-            // Para qualquer fala anterior
-            window.speechSynthesis.cancel();
-            
-            const utterance = new SpeechSynthesisUtterance(mensagem);
-            utterance.lang = idioma;
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
-            utterance.volume = 0.9;
-            
-            // EVENTO: FALA COMEÇOU
-            utterance.onstart = () => {
-                pararSomDigitacao();
-                
-                if (elemento) {
-                    elemento.style.animation = 'none';
-                    elemento.style.backgroundColor = '';
-                    elemento.style.border = '';
-                    elemento.textContent = mensagem;
-                }
-                if (imagemImpaciente) {
-                    imagemImpaciente.style.display = 'none';
-                }
-                
-                console.log(`🔊 Áudio Navegador TTS iniciado em ${idioma}`);
-            };
-            
-            // EVENTO: FALA TERMINOU
-            utterance.onend = () => {
-                console.log('🔚 Áudio Navegador TTS terminado');
-                if (imagemImpaciente) {
-                    imagemImpaciente.style.display = 'none';
-                }
-                resolve(true);
-            };
-            
-            // EVENTO: ERRO NA FALA
-            utterance.onerror = (error) => {
-                pararSomDigitacao();
-                console.log('❌ Erro no áudio Navegador TTS:', error);
-                if (elemento) {
-                    elemento.style.animation = 'none';
-                    elemento.style.backgroundColor = '';
-                    elemento.style.border = '';
-                }
-                if (imagemImpaciente) {
-                    imagemImpaciente.style.display = 'none';
-                }
-                resolve(false);
-            };
-            
-            window.speechSynthesis.speak(utterance);
-            
-        } catch (error) {
-            console.error('❌ Erro no Navegador TTS:', error);
-            resolve(false);
-        }
-    });
-}
-
-// 🔄 PREPARAR NAVEGADOR TTS EM SEGUNDO PLANO
-function prepararNavegadorTTS(idioma) {
-    if (navegadorTTSPreparado) return;
-    
-    try {
-        // Fala silenciosa para carregar o motor de voz
-        const utterance = new SpeechSynthesisUtterance('');
-        utterance.lang = idioma;
-        utterance.volume = 0; // Silencioso
-        utterance.onend = () => {
-            navegadorTTSPreparado = true;
-            console.log(`✅ Navegador TTS preparado para ${idioma}`);
-        };
-        window.speechSynthesis.speak(utterance);
-    } catch (error) {
-        console.log('⚠️ Não foi possível preparar navegador TTS:', error);
-    }
-}
-
-// 🎤 FUNÇÃO GOOGLE TTS (PAGO) - ATUALIZADA
-async function falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma) {
-    try {
-        console.log(`🎤 Iniciando Google TTS para ${idioma}:`, mensagem.substring(0, 50) + '...');
-        
-        const resposta = await fetch('https://chat-tradutor.onrender.com/speak', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                text: mensagem,
-                languageCode: idioma,
-                gender: 'FEMALE'
-            })
-        });
-
-        if (!resposta.ok) {
-            throw new Error('Erro na API de voz');
-        }
-
-        const blob = await resposta.blob();
-        const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
-        
-        // EVENTO: ÁUDIO COMEÇOU
-        audio.onplay = () => {
-            pararSomDigitacao();
-            
-            if (elemento) {
-                elemento.style.animation = 'none';
-                elemento.style.backgroundColor = '';
-                elemento.style.border = '';
-                elemento.textContent = mensagem;
-            }
-            if (imagemImpaciente) {
-                imagemImpaciente.style.display = 'none';
-            }
-            
-            console.log(`🔊 Áudio Google TTS iniciado em ${idioma}`);
-        };
-        
-        // EVENTO: ÁUDIO TERMINOU
-        audio.onended = () => {
-            console.log('🔚 Áudio Google TTS terminado');
-            if (imagemImpaciente) {
-                imagemImpaciente.style.display = 'none';
-            }
-        };
-        
-        // EVENTO: ERRO NO ÁUDIO
-        audio.onerror = () => {
-            pararSomDigitacao();
-            console.log('❌ Erro no áudio Google TTS');
-            if (elemento) {
-                elemento.style.animation = 'none';
-                elemento.style.backgroundColor = '';
-                elemento.style.border = '';
-            }
-            if (imagemImpaciente) {
-                imagemImpaciente.style.display = 'none';
-            }
-        };
-
-        await audio.play();
-        
-    } catch (error) {
-        console.error('❌ Erro no Google TTS:', error);
-        throw error; // Repassa o erro para o fallback
-    }
-}
-
-// 🎯 FUNÇÃO HÍBRIDA PRINCIPAL - SISTEMA AVANÇADO
-async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idioma) {
-    try {
-        console.log(`🎯 TTS Híbrido: "${mensagem.substring(0, 50)}..." em ${idioma}`);
-        
-        // Atualiza último idioma usado
-        ultimoIdiomaTTS = idioma;
-        
-        if (primeiraFraseTTS) {
-            console.log('🚀 PRIMEIRA FRASE: Usando Google TTS (rápido)');
-            
-            // ✅ 1. PRIMEIRA FRASE: Google TTS (rápido)
-            await falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma);
-            
-            // ✅ 2. PREPARA NAVEGADOR EM SEGUNDO PLANO
-            console.log(`🔄 Preparando navegador TTS para ${idioma}...`);
-            prepararNavegadorTTS(idioma);
-            
-            primeiraFraseTTS = false;
-            
-        } else {
-            console.log('💰 PRÓXIMAS FRASES: Usando Navegador TTS (grátis)');
-            
-            // ✅ 3. PRÓXIMAS FRASES: Navegador TTS (grátis)
-            const sucesso = await falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma);
-            
-            // ✅ 4. FALLBACK: Se navegador falhar, volta para Google
-            if (!sucesso) {
-                console.log('🔄 Fallback: Navegador falhou, usando Google TTS');
-                await falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma);
-            }
-        }
-        
-        console.log('✅ TTS concluído com sucesso');
-        
-    } catch (error) {
-        console.error('❌ Erro no sistema híbrido TTS:', error);
-        
-        // ✅ FALLBACK FINAL: Tenta navegador como última opção
-        console.log('🔄 Tentando fallback final com navegador TTS...');
-        await falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma);
-    }
-}
-
-// ✅ FUNÇÃO PARA INICIAR CÂMERA APÓS PERMISSÕES (COM ESPERA MELHORADA)
+// ✅ FUNÇÃO PARA INICIAR CÂMERA APÓS PERMISSÕES (MODO RESILIENTE)
 async function iniciarCameraAposPermissoes() {
     try {
-        if (!permissaoConcedida) {
-            throw new Error('Permissões não concedidas');
+        console.log('🎥 Tentando iniciar câmera CALLER (modo resiliente)...');
+        
+        // ✅ TENTA a câmera, mas NÃO TRAVA se falhar
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false  // ⬅️ SEM ÁUDIO
+        }).catch(error => {
+            console.log('⚠️ Câmera CALLER indisponível, continuando sem vídeo...', error);
+            return null; // ⬅️ RETORNA NULL EM VEZ DE THROW ERROR
+        });
+
+        // ✅ SE CÂMERA FUNCIONOU: Configura normalmente
+        if (stream) {
+            window.localStream = stream;
+            
+            const localVideo = document.getElementById('localVideo');
+            if (localVideo) {
+                localVideo.srcObject = stream;
+            }
+
+            // 🎥 CONFIGURA BOTÃO DE ALTERNAR CÂMERA (só se câmera funcionou)
+            setupCameraToggle();
+            
+            console.log('✅ Câmera CALLER iniciada com sucesso');
+
+            // ✅ CameraVigilante
+            window.cameraVigilante = new CameraVigilante();
+            window.cameraVigilante.iniciarMonitoramento();
+        
+        } else {
+            // ✅ SE CÂMERA FALHOU: Apenas avisa, mas continua
+            console.log('ℹ️ CALLER operando em modo sem câmera');
+            window.localStream = null;
         }
 
-        console.log('📹 Iniciando câmera...');
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: true, 
-            audio: false 
-        });
-        
-        let localStream = stream;
-        window.localStream = localStream; // Armazena globalmente
-        document.getElementById('localVideo').srcObject = localStream;
-        console.log('✅ Câmera iniciada com sucesso');
-
-        // 🎥 CONFIGURA BOTÃO DE ALTERNAR CÂMERA NO CALLER
-        setupCameraToggle();
-
-        // ✅ CORREÇÃO: REMOVE LOADING QUANDO CÂMERA ESTIVER PRONTA (IGUAL AO RECEIVER)
+        // ✅✅✅ REMOVE LOADING INDEPENDENTE DA CÂMERA
         const mobileLoading = document.getElementById('mobileLoading');
         if (mobileLoading) {
             mobileLoading.style.display = 'none';
-            console.log('✅ Loader removido - câmera pronta');
         }
 
-        // ✅ PEQUENA PAUSA PARA ESTABILIZAR
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        console.log('🌐 Inicializando WebRTC...');
+        console.log('🌐 Inicializando WebRTC CALLER...');
         window.rtcCore = new WebRTCCore();
 
-      // Configura callbacks ANTES de inicializar
-window.rtcCore.setDataChannelCallback(async (mensagem) => {
-    iniciarSomDigitacao();
-
-    console.log('📩 Mensagem recebida:', mensagem);
-
-    const elemento = document.getElementById('texto-recebido');
-    const imagemImpaciente = document.getElementById('lemurFixed');
-    
-    if (elemento) {
-        elemento.textContent = "";
-        elemento.style.opacity = '1';
-        elemento.style.transition = 'opacity 0.5s ease';
-        
-        elemento.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
-        elemento.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
-        elemento.style.border = '2px solid #ff0000';
-    }
-
-    if (imagemImpaciente) {
-        imagemImpaciente.style.display = 'block';
-    }
-
-    // ✅✅✅ SOLUÇÃO DEFINITIVA: Usar o idioma GUARDADO
-    const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
-    
-    console.log(`🎯 TTS Caller: Idioma guardado = ${idiomaExato}`);
-    
-    // 🎤 CHAMADA PARA SISTEMA HÍBRIDO TTS AVANÇADO
-    await falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
-});
+        // ✅✅✅ SIMPLIFICADO: Data channel apenas para controle WebRTC (SEM TRADUÇÃO)
+        window.rtcCore.setDataChannelCallback(async (mensagem) => {
+            console.log('📩 Mensagem recebida no CALLER (WebRTC controle):', mensagem);
+            // ❌ REMOVIDO: Todo o sistema de TTS e tradução dinâmica
+        });
 
         const myId = crypto.randomUUID().substr(0, 8);
         document.getElementById('myId').textContent = myId;
 
-        console.log('🔌 Inicializando socket handlers...');
+        console.log('🔌 Inicializando socket handlers CALLER...');
         window.rtcCore.initialize(myId);
         window.rtcCore.setupSocketHandlers();
 
         // ✅ MARCA QUE O WEBRTC ESTÁ INICIALIZADO
         window.rtcCore.isInitialized = true;
-        console.log('✅ WebRTC inicializado com ID:', myId);
+        console.log('✅ WebRTC CALLER inicializado com ID:', myId);
 
         const urlParams = new URLSearchParams(window.location.search);
         const receiverId = urlParams.get('targetId') || '';
@@ -950,42 +744,25 @@ window.rtcCore.setDataChannelCallback(async (mensagem) => {
           lang: receiverLang
         };
 
-        // ✅ SÓ INICIA CONEXÃO SE TIVER receiverId E APÓS TUDO ESTAR PRONTO
-if (receiverId) {
-  document.getElementById('callActionBtn').style.display = 'none';
-  
-  if (localStream) {
-    const meuIdioma = await obterIdiomaCompleto(navigator.language);
-    
-    // ✅ CORREÇÃO: ESPERAR O WEBRTC ESTAR COMPLETAMENTE INICIALIZADO
-    console.log('⏳ Aguardando inicialização completa do WebRTC...');
-    
-    // Aguarda o WebRTC estar pronto (máximo 5 segundos)
-    await new Promise(resolve => {
-      const checkReady = () => {
-        if (window.rtcCore && 
-            window.rtcCore.peer && 
-            window.rtcCore.peer.signalingState === 'stable' &&
-            window.rtcCore.socket?.connected) {
-          console.log('✅ WebRTC completamente pronto!');
-          resolve(true);
-        } else {
-          setTimeout(checkReady, 100);
+        // ✅✅✅ CORREÇÃO CRÍTICA: INICIA CONEXÃO MESMO SEM CÂMERA
+        if (receiverId) {
+          document.getElementById('callActionBtn').style.display = 'none';
+          
+          // ✅✅✅ REMOVEMOS a verificação "if (localStream)" - AGORA SEMPRE INICIA!
+          const meuIdioma = window.meuIdiomaLocal || 'pt-BR';
+          
+          // ✅ PEQUENO ATRASO PARA GARANTIR QUE TUDO ESTÁ ESTÁVEL
+          setTimeout(() => {
+            // ✅✅✅ ENVIA null se câmera falhou - WebRTC deve aceitar!
+            const streamParaEnviar = window.localStream || null;
+            iniciarConexaoVisual(receiverId, receiverToken, myId, streamParaEnviar, meuIdioma);
+          }, 1000);
         }
-      };
-      checkReady();
-    });
-    
-    // AGORA inicia a conexão
-    console.log('🚀 Iniciando conexão automática...');
-    iniciarConexaoVisual(receiverId, receiverToken, myId, localStream, meuIdioma);
-  }
-}
 
         const navegadorLang = await obterIdiomaCompleto(navigator.language);
 
         const frasesParaTraduzir = {
-          "translator-label": "Real-time translation."
+           "translator-label": "Real-time translation."
         };
 
         (async () => {
@@ -1002,33 +779,43 @@ if (receiverId) {
         aplicarBandeiraRemota(receiverLang);
 
     } catch (error) {
-        console.error("Erro ao iniciar câmera:", error);
-        throw error;
+        // ✅✅✅ EM CASO DE ERRO: Remove loading E continua
+        console.error("❌ Erro não crítico na câmera CALLER:", error);
+        
+        const mobileLoading = document.getElementById('mobileLoading');
+        if (mobileLoading) {
+            mobileLoading.style.display = 'none';
+        }
+        
+        // ✅ NÃO FAZ throw error! Apenas retorna normalmente
+        console.log('🟡 CALLER continua funcionando (sem câmera)');
     }
 }
 
-// 🚀 INICIALIZAÇÃO AUTOMÁTICA (ATUALIZADA COM NOVAS FUNCIONALIDADES)
+// 🚀 INICIALIZAÇÃO AUTOMÁTICA
 window.onload = async () => {
     try {
         console.log('🚀 Iniciando aplicação caller automaticamente...');
         
         // 1. Obtém o idioma para tradução
-        const params = new URLSearchParams(window.location.search);
-        const lang = params.get('lang') || navigator.language || 'pt-BR';
+        const lang = navigator.language || 'pt-BR';
         
-        // 2. Traduz as frases fixas PRIMEIRO (NOVO)
-        await traduzirFrasesFixas(lang);
+        // ✅✅✅ PRIMEIRO: Aplica bandeira e GUARDA o idioma
+        await aplicarBandeiraLocal(lang);
+
+        // ✅✅✅ DEPOIS: Traduz frases com o idioma JÁ GUARDADO  
+        await traduzirFrasesFixas();
         
-        // 3. Inicia áudio
+        // 3. Inicia áudio (para desbloqueio)
         iniciarAudio();
         
         // 4. Carrega sons da máquina de escrever
         await carregarSomDigitacao();
         
-        // 5. Solicita TODAS as permissões (câmera + microfone) - AUTOMÁTICO
+        // 5. Solicita permissões (apenas vídeo) - AUTOMÁTICO
         await solicitarTodasPermissoes();
         
-        // 6. Configura o toggle das instruções (NOVO)
+        // 6. Configura o toggle das instruções
         setupInstructionToggle();
         
         // 7. Libera interface (remove loading)
@@ -1049,7 +836,7 @@ window.onload = async () => {
         console.error('❌ Erro ao inicializar caller:', error);
         
         if (typeof window.mostrarErroCarregamento === 'function') {
-            window.mostrarErroCarregamento('Erro ao solicitar permissões de câmera e microfone');
+            window.mostrarErroCarregamento('Erro ao solicitar permissões de câmera');
         } else {
             console.error('❌ Erro no carregamento:', error);
             alert('Erro ao inicializar: ' + error.message);
