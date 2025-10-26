@@ -10,6 +10,7 @@ class WebRTCCore {
     this.currentCaller = null;
     this.dataChannel = null;
     this.onDataChannelMessage = null;
+    this.onIncomingCall = null;
 
     window.rtcDataChannel = {
         send: (message) => {
@@ -136,6 +137,7 @@ class WebRTCCore {
 
     this.socket.on('incomingCall', data => {
         this.currentCaller = data.from;
+       window.lastCallerId = data.from;
         if (this.onIncomingCall) {
             this.onIncomingCall(data.offer, data.callerLang);
         }
