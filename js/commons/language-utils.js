@@ -33,8 +33,7 @@ export async function obterIdiomaCompleto(lang) {
 export async function aplicarBandeiraLocal(langCode) {
     try {
         // ✅ ATUALIZA o idioma local sempre que aplicar bandeira
-        window.idiomaLocal = langCode;
-        
+               
         const response = await fetch('assets/bandeiras/language-flags.json');
         const flags = await response.json();
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🏴';
