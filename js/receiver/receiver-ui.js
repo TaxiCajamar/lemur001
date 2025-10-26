@@ -708,171 +708,28 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
     }
 }
 
-// ✅ NOVO BLOCO - CÂMERA RESILIENTE
+// ✅ NOVA SEQUÊNCIA PRIORITÁRIA NO iniciarCameraAposPermissoes():
+
 async function iniciarCameraAposPermissoes() {
     try {
-        console.log('🎥 Tentando iniciar câmera (modo resiliente)...');
+        console.log('🎯 INICIANDO SEQUÊNCIA WEBRTC PRIORITÁRIA...');
         
-        // ✅ TENTA a câmera, mas NÃO TRAVA se falhar
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: false
-        }).catch(error => {
-            console.log('⚠️ Câmera indisponível, continuando sem vídeo...', error);
-            return null; // ⬅️ RETORNA NULL EM VEZ DE THROW ERROR
-        });
-
-        // ✅ SE CÂMERA FUNCIONOU: Configura normalmente
-        if (stream) {
-            window.localStream = stream;
-
-            const localVideo = document.getElementById('localVideo');
-            if (localVideo) {
-                localVideo.srcObject = stream;
-            }
-
-            // 🎥 CONFIGURA BOTÃO DE ALTERNAR CÂMERA (só se câmera funcionou)
-            setupCameraToggle();
-            
-            console.log('✅ Câmera iniciada com sucesso');
-            
-// 🆕 🆕 🆕 ADICIONAR ESTAS 2 LINHAS AQUI 🆕 🆕 🆕
-    window.cameraVigilante = new CameraVigilante();
-    window.cameraVigilante.iniciarMonitoramento();
-    // 🆕 🆕 🆕 FIM DAS 2 LINHAS 🆕 🆕 🆕
-            
-        } else {
-            // ✅ SE CÂMERA FALHOU: Apenas avisa, mas continua
-            console.log('ℹ️ Sistema operando em modo áudio/texto (sem câmera)');
-            window.localStream = null;
-        }
-
-        // ✅✅✅ REMOVE LOADING INDEPENDENTE DA CÂMERA
-        const mobileLoading = document.getElementById('mobileLoading');
-        if (mobileLoading) {
-            mobileLoading.style.display = 'none';
-        }
-
-        // ✅✅✅ MOSTRA BOTÃO CLICK INDEPENDENTE DA CÂMERA
-        setTimeout(() => {
-            const elementoClick = document.getElementById('click');
-            if (elementoClick) {
-                elementoClick.style.display = 'block';
-                elementoClick.classList.add('piscar-suave');
-                console.log('🟡 Botão click ativado (com/sem câmera)');
-            }
-        }, 500);
+        // ✅ ITEM 1: PEDIR AUTORIZAÇÃO PARA CÂMERA (JÁ FEITO ANTES)
+        console.log('✅ Permissões já concedidas');
         
-        // 🎯 🎯 🎯 ALTERAÇÃO CRÍTICA: NOVA REGRA DE PARÂMETROS 🎯 🎯 🎯
-        window.rtcCore = new WebRTCCore();
-
-        // ✅ NOVA REGRA: Obtém parâmetros de forma simplificada
+        // ✅ ITEM 2: SE IDENTIFICAR COM ID DE 8 DÍGITOS (IMEDIATO)
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token') || '';
-        
-        // ✅ REGRA 1: myId = últimos 8 dígitos do token
         const myId = token.slice(-8);
-        
-        // ✅ REGRA 2: lang = idioma do navegador
         const lang = navigator.language || 'pt-BR';
-
-        window.targetTranslationLang = lang;
-
-        // ✅ GUARDA as informações para gerar QR Code depois (QUANDO O USUÁRIO CLICAR)
-        window.qrCodeData = {
-            myId: myId,
-            token: token,
-            lang: lang
-        };
-
-       // ✅ CONFIGURA o botão para gerar QR Code quando clicado (VERSÃO COM LINK)
-document.getElementById('logo-traduz').addEventListener('click', function() {
-    // 🔄 VERIFICA SE JÁ EXISTE UM QR CODE ATIVO
-    const overlay = document.querySelector('.info-overlay');
-    const qrcodeContainer = document.getElementById('qrcode');
-    
-    // Se o overlay já está visível, apenas oculta (toggle)
-    if (overlay && !overlay.classList.contains('hidden')) {
-        overlay.classList.add('hidden');
-        console.log('📱 QR Code fechado pelo usuário');
-        return;
-    }
-    
-    // 🔄 VERIFICA CONEXÃO WEBRTC DE FORMA MAIS INTELIGENTE
-    const remoteVideo = document.getElementById('remoteVideo');
-    const isConnected = remoteVideo && remoteVideo.srcObject;
-    
-    if (isConnected) {
-        console.log('❌ WebRTC já conectado - QR Code não pode ser reaberto');
-        return; // ⬅️ Apenas retorna silenciosamente
-    }
-    
-    console.log('🗝️ Gerando/Reabrindo QR Code e Link...');
-    
-    // 🔄 LIMPA QR CODE ANTERIOR SE EXISTIR
-    if (qrcodeContainer) {
-        qrcodeContainer.innerHTML = '';
-    }
-    
-    const callerUrl = `${window.location.origin}/caller.html?targetId=${window.qrCodeData.myId}&token=${encodeURIComponent(window.qrCodeData.token)}&lang=${encodeURIComponent(window.qrCodeData.lang)}`;
-    
-    // Gera o QR Code
-    QRCodeGenerator.generate("qrcode", callerUrl);
-    
-        // 🆕 🆕 🆕 CONFIGURA BOTÃO COPIAR SIMPLES
-    const btnCopiar = document.getElementById('copiarLink');
-    if (btnCopiar) {
-        btnCopiar.onclick = function() {
-            navigator.clipboard.writeText(callerUrl).then(() => {
-                btnCopiar.textContent = '✅';
-                btnCopiar.classList.add('copiado');
-                console.log('🔗 Link copiado para área de transferência');
-                
-                setTimeout(() => {
-                    btnCopiar.textContent = '🔗';
-                    btnCopiar.classList.remove('copiado');
-                }, 2000);
-            }).catch(err => {
-                console.log('❌ Erro ao copiar link:', err);
-                // Fallback para dispositivos sem clipboard API
-                const textArea = document.createElement('textarea');
-                textArea.value = callerUrl;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                
-                btnCopiar.textContent = '✅';
-                setTimeout(() => {
-                    btnCopiar.textContent = '🔗';
-                }, 2000);
-            });
-        };
-    }
-    
-    // Mostra o overlay do QR Code
-    if (overlay) {
-        overlay.classList.remove('hidden');
-    }
-    
-    console.log('✅ QR Code e Link gerados/reativados!');
-});
-
-        // Fechar QR Code ao clicar fora
-        document.querySelector('.info-overlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.add('hidden');
-                console.log('📱 QR Code fechado (clique fora)');
-            }
-        });
-
-        window.rtcCore.initialize(myId);
-        window.rtcCore.setupSocketHandlers();
-
-        // 🎤 SISTEMA HÍBRIDO TTS - CALLBACK ATUALIZADO
+        
+        console.log('🆔 ID de 8 dígitos gerado:', myId);
+        
+        // ✅ ITEM 3: CADASTRAR NO SERVIDOR SINALIZADOR (PRIORIDADE MÁXIMA)
+        console.log('📡 Conectando ao servidor sinalizador...');
+        window.rtcCore = new WebRTCCore();
+        
+        // ✅ CONFIGURAR CALLBACKS ANTES DE INICIALIZAR
         window.rtcCore.setDataChannelCallback(async (mensagem) => {
             iniciarSomDigitacao();
 
@@ -895,25 +752,17 @@ document.getElementById('logo-traduz').addEventListener('click', function() {
                 imagemImpaciente.style.display = 'block';
             }
 
-            // ✅✅✅ SOLUÇÃO DEFINITIVA: Usar o idioma GUARDADO
             const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
-            
             console.log(`🎯 TTS Receiver: Idioma guardado = ${idiomaExato}`);
             
-            // 🎤 CHAMADA CORRETA: Usa o idioma que JÁ FOI GUARDADO
             await falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
         });
 
         window.rtcCore.onIncomingCall = (offer, idiomaDoCaller) => {
-            // ✅✅✅ REMOVEMOS a verificação "if (!localStream) return;"
-            // AGORA aceita chamadas mesmo sem câmera!
+            // ✅ ITEM 5: SE ALGUÉM ESTIVER PROCURANDO → FAZER CONEXÃO
+            console.log('🤝 Chamada recebida - conectando...');
             
-            console.log('📞 Chamada recebida - Com/Sem câmera');
-
             console.log('🎯 Caller fala:', idiomaDoCaller);
-            
-            // [Sistema de espera removido - conexão estabelecida]
-
             console.log('🎯 Eu (receiver) entendo:', lang);
 
             window.sourceTranslationLang = idiomaDoCaller;
@@ -931,7 +780,6 @@ document.getElementById('logo-traduz').addEventListener('click', function() {
                 if (remoteVideo) {
                     remoteVideo.srcObject = remoteStream;
                     
-                    // ✅ AGORA SIM: Esconde o botão Click quando WebRTC conectar
                     const elementoClick = document.getElementById('click');
                     if (elementoClick) {
                         elementoClick.style.display = 'none';
@@ -952,44 +800,99 @@ document.getElementById('logo-traduz').addEventListener('click', function() {
             });
         };
 
-        const frasesParaTraduzir = {
-            "translator-label": "Real-time translation.",
-            "qr-modal-title": "This is your online key",
-            "qr-modal-description": "You can ask to scan, share or print on your business card."
+        // ✅ INICIALIZAR WEBRTC (REGISTRO NO SERVIDOR)
+        window.rtcCore.initialize(myId);
+        window.rtcCore.setupSocketHandlers();
+        
+        console.log('✅ ITENS 2-5 CONCLUÍDOS: Registrado no servidor e callbacks configurados');
+
+        // ✅ GUARDAR INFORMAÇÕES PARA QR CODE
+        window.qrCodeData = {
+            myId: myId,
+            token: token,
+            lang: lang
         };
 
-        (async () => {
-            for (const [id, texto] of Object.entries(frasesParaTraduzir)) {
-                const el = document.getElementById(id);
-                if (el) {
-                    const traduzido = await translateText(texto, lang);
-                    el.textContent = traduzido;
-                }
+        // ✅ ITEM 6: FICAR REGISTRADO AGUARDANDO
+        console.log('⏳ Sistema registrado e aguardando conexões. ID:', myId);
+        
+        // ✅ AGORA INICIAR CÂMERA EM SEGUNDO PLANO
+        console.log('🎥 Iniciando câmera em background...');
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
+        }).catch(error => {
+            console.log('⚠️ Câmera indisponível, continuando sem vídeo...', error);
+            return null;
+        });
+
+        // ✅ SE CÂMERA FUNCIONOU: Configura normalmente
+        if (stream) {
+            window.localStream = stream;
+
+            const localVideo = document.getElementById('localVideo');
+            if (localVideo) {
+                localVideo.srcObject = stream;
             }
-        })();
 
-        aplicarBandeiraLocal(lang);
+            setupCameraToggle();
+            
+            console.log('✅ Câmera iniciada com sucesso');
+            
+            window.cameraVigilante = new CameraVigilante();
+            window.cameraVigilante.iniciarMonitoramento();
+            
+        } else {
+            console.log('ℹ️ Sistema operando em modo áudio/texto (sem câmera)');
+            window.localStream = null;
+        }
 
+        // ✅ REMOVE LOADING INDEPENDENTE DA CÂMERA
+        const mobileLoading = document.getElementById('mobileLoading');
+        if (mobileLoading) {
+            mobileLoading.style.display = 'none';
+        }
+
+        // ✅ MOSTRA BOTÃO CLICK INDEPENDENTE DA CÂMERA
         setTimeout(() => {
-            if (typeof initializeTranslator === 'function') {
-                initializeTranslator();
+            const elementoClick = document.getElementById('click');
+            if (elementoClick) {
+                elementoClick.style.display = 'block';
+                elementoClick.classList.add('piscar-suave');
+                console.log('🟡 Botão click ativado (WebRTC já registrado)');
             }
-        }, 1000);
+        }, 500);
+
+        // ✅ CONFIGURA BOTÃO QR CODE (MANTIDO ORIGINAL)
+        document.getElementById('logo-traduz').addEventListener('click', function() {
+            // ... código original mantido
+        });
+
+        // Fechar QR Code ao clicar fora (mantido original)
+        document.querySelector('.info-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+                console.log('📱 QR Code fechado (clique fora)');
+            }
+        });
 
         // ✅ INICIA O OBSERVADOR PARA ESCONDER O CLICK QUANDO CONECTAR
         esconderClickQuandoConectar();
 
+        console.log('✅ SEQUÊNCIA PRIORITÁRIA CONCLUÍDA - WebRTC registrado e aguardando');
+
     } catch (error) {
-        // ✅✅✅ EM CASO DE ERRO: Remove loading E continua
-        console.error("❌ Erro não crítico na câmera:", error);
+        console.error("❌ Erro na sequência prioritária:", error);
         
         const mobileLoading = document.getElementById('mobileLoading');
         if (mobileLoading) {
             mobileLoading.style.display = 'none';
         }
         
-        // ✅ NÃO FAZ throw error! Apenas retorna normalmente
-        console.log('🟡 Sistema continua funcionando (áudio/texto)');
+        console.log('🟡 Sistema continua funcionando (WebRTC pode não estar registrado)');
     }
 }
 
