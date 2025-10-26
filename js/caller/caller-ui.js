@@ -3,8 +3,14 @@ import {
     setupWebRTC, 
     procurarReceiver
 } from '../../core/webrtc-connection.js';
-import { aplicarBandeiraLocal, aplicarBandeiraRemota, definirIdiomaLocal } from '../commons/language-utils.js';
-import { setupInstructionToggle, traduzirFrasesFixas, solicitarPermissoes } from '../commons/ui-commons.js';
+import { 
+    aplicarBandeiraLocal, 
+    aplicarBandeiraRemota, 
+    definirIdiomaLocal,
+    setupInstructionToggle, 
+    traduzirFrasesFixas, 
+    solicitarPermissoes 
+} from '../commons/language-utils.js'; // ✅ TODOS IMPORTS DE UM SÓ ARQUIVO
 
 let permissaoConcedida = false;
 
