@@ -1,11 +1,11 @@
-// 📁 js/commons/language-utils.js - VERSÃO SIMPLIFICADA E AUTOMÁTICA
+// 📁 js/commons/language-utils.js - VERSÃO CORRIGIDA
 
 // ✅ APENAS IDIOMA LOCAL
-window.idiomaLocal = 'pt-BR';  // Idioma desta página
+window.idiomaLocal = 'pt-BR';  // Idioma padrão inicial
 
 // ✅ CONFIGURAÇÃO AUTOMÁTICA DO IDIOMA
 export async function configurarIdiomaAutomatico() {
-    // Define idioma automaticamente (exemplo: detectar navegador)
+    // Define idioma automaticamente (detecta navegador)
     const idiomaNavegador = navigator.language || 'pt-BR';
     window.idiomaLocal = idiomaNavegador;
     
@@ -56,36 +56,34 @@ export async function aplicarBandeira(langCode) {
 export function definirIdioma(langCode) {
     window.idiomaLocal = langCode;
     aplicarBandeira(langCode);
+    traduzirFrasesFixas(); // ← AGORA TRADUZ TAMBÉM AO MUDAR IDIOMA
 }
 
 export function obterIdioma() {
     return window.idiomaLocal || 'pt-BR';
 }
 
-// ✅ TRADUÇÃO DE FRASES FIXAS
+// ✅ TRADUÇÃO DE FRASES FIXAS - CORRIGIDAS COM AS FRASES REAIS DO HTML
 export async function traduzirFrasesFixas() {
     try {
         const lang = obterIdioma();
         console.log(`🌐 Traduzindo interface para: ${lang}`);
 
+        // 🎯 FRASES EXATAS DO SEU HTML
         const frases = {
             "translator-label": "Real-time translation.",
             "translator-label-2": "Real-time translation.", 
-            "welcome-text": "Hi, welcome!",
-            "tap-qr": "Tap that QR Code",
-            "quick-scan": "Quick scan",
-            "drop-voice": "Drop your voice", 
-            "check-replies": "Check the replies",
-            "flip-cam": "Flip the cam and show the vibes",
+            "welcome-text": "Welcome! Let's begin.",
+            "tap-qr": "Tap the QR code to start.",
+            "quick-scan": "Ask to scan the QR.",
+            "drop-voice": "Speak clearly.",
+            "check-replies": "Read the message.",
+            "flip-cam": "Flip the camera. Share!",
             "wait-connection": "Waiting for connection.",
-            "both-connected": "Both online."
+            "both-connected": "Both online.",
+            "qr-modal-title": "This is your online key",
+            "qr-modal-description": "You can ask to scan, share or print on your business card."
         };
-
-        // Adiciona frases específicas se for receiver
-        if (window.location.pathname.includes('receiver')) {
-            frases["qr-modal-title"] = "This is your online key";
-            frases["qr-modal-description"] = "You can ask to scan, share or print on your business card.";
-        }
 
         for (const [id, texto] of Object.entries(frases)) {
             const el = document.getElementById(id);
@@ -95,13 +93,13 @@ export async function traduzirFrasesFixas() {
             }
         }
 
-        aplicarBandeira(lang);
+        console.log(`✅ Interface traduzida para: ${lang}`);
     } catch (error) {
         console.error("Erro ao traduzir frases fixas:", error);
     }
 }
 
-// ✅ OUTRAS FUNÇÕES UTILITÁRIAS
+// ✅ OUTRAS FUNÇÕES UTILITÁRIAS (MANTIDAS)
 export function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
     const toggleButton = document.getElementById('instructionToggle');
