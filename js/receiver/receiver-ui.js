@@ -1,72 +1,22 @@
-// ✅ IMPORTS
-import { setupWebRTC } from '../../core/webrtc-connection.js';
+// ✅ IMPORTS CORRETOS E SIMPLIFICADOS
+import { 
+    setupWebRTC, 
+    cadastrarNoServidorSinalizador, 
+    verificarSeEstaSendoProcurado, 
+    atualizarStatusOnline,
+    desregistrarDoServidor 
+} from '../../core/webrtc-connection.js';
 import { QRCodeGenerator } from '../qrcode/qr-code-utils.js';
-import { aplicarBandeiraRemota, definirIdiomaLocal } from '../commons/language-utils.js';
+import { aplicarBandeiraRemota, definirIdiomaLocal, obterIdiomaLocal } from '../commons/language-utils.js'; // ✅ IMPORT ADICIONADO
 import { setupInstructionToggle, traduzirFrasesFixas, solicitarPermissoes, esconderElementoQuandoConectar } from '../commons/ui-commons.js';
 
 let permissaoConcedida = false;
 let verificarConexaoInterval;
 
-// ✅ URL DO SERVIDOR SINALIZADOR
-const SERVIDOR_SINALIZADOR = 'https://lemur-signal.onrender.com';
+// ❌ REMOVER: URL duplicada (já está no webrtc-connection.js)
+// ❌ REMOVER: Funções duplicadas do servidor (já importadas)
 
-// ✅ NOVA FUNÇÃO: Cadastrar ID no servidor sinalizador
-async function cadastrarNoServidorSinalizador(myId, token) {
-    try {
-        const response = await fetch(`${SERVIDOR_SINALIZADOR}/registrar`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: myId,
-                token: token,
-                status: 'online',
-                timestamp: Date.now()
-            })
-        });
-        
-        const result = await response.json();
-        return result.success;
-    } catch (error) {
-        console.error('Erro ao cadastrar no servidor:', error);
-        return false;
-    }
-}
-
-// ✅ NOVA FUNÇÃO: Verificar se está sendo procurado
-async function verificarSeEstaSendoProcurado(myId, token) {
-    try {
-        const response = await fetch(`${SERVIDOR_SINALIZADOR}/verificar/${myId}?token=${token}`);
-        const result = await response.json();
-        
-        if (result.procurado && result.callerId) {
-            return result.callerId; // Retorna ID do caller que está procurando
-        }
-        return null;
-    } catch (error) {
-        console.error('Erro ao verificar servidor:', error);
-        return null;
-    }
-}
-
-// ✅ NOVA FUNÇÃO: Atualizar status online
-async function atualizarStatusOnline(myId, token) {
-    try {
-        await fetch(`${SERVIDOR_SINALIZADOR}/atualizar`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: myId,
-                token: token,
-                status: 'online',
-                timestamp: Date.now()
-            })
-        });
-    } catch (error) {
-        console.error('Erro ao atualizar status:', error);
-    }
-}
-
-// ✅ NOVA FUNÇÃO: Conectar com caller específico
+// ✅ FUNÇÃO: Conectar com caller específico
 async function conectarComCaller(callerId, localStream) {
     if (!window.rtcCore) return;
     
@@ -78,8 +28,9 @@ async function conectarComCaller(callerId, localStream) {
             clearInterval(verificarConexaoInterval);
         }
         
-        // Conecta com o caller
-        window.rtcCore.startCall(callerId, localStream, window.idiomaReceiver);
+        // ✅ CORREÇÃO: Usar obterIdiomaLocal() em vez de window.idiomaReceiver
+        const meuIdioma = obterIdiomaLocal();
+        window.rtcCore.startCall(callerId, localStream, meuIdioma);
         
         // Atualiza UI para mostrar que está conectando
         const elementoClick = document.getElementById('click');
@@ -93,7 +44,7 @@ async function conectarComCaller(callerId, localStream) {
     }
 }
 
-// ✅ NOVA FUNÇÃO: Verificação contínua
+// ✅ FUNÇÃO: Verificação contínua
 function iniciarVerificacaoConexao(myId, token, localStream) {
     verificarConexaoInterval = setInterval(async () => {
         const callerId = await verificarSeEstaSendoProcurado(myId, token);
@@ -170,14 +121,14 @@ async function iniciarCameraAposPermissoes() {
             lang: lang
         };
 
-        // ✅ 1. CADASTRAR NO SERVIDOR SINALIZADOR
+        // ✅ 1. CADASTRAR NO SERVIDOR SINALIZADOR (usando função importada)
         console.log(`📝 Cadastrando no servidor: ${myId}`);
         const cadastrado = await cadastrarNoServidorSinalizador(myId, token);
         
         if (cadastrado) {
             console.log('✅ Registrado no servidor sinalizador');
             
-            // ✅ 2. VERIFICAR SE JÁ ESTÁ SENDO PROCURADO
+            // ✅ 2. VERIFICAR SE JÁ ESTÁ SENDO PROCURADO (usando função importada)
             console.log('🔍 Verificando se está sendo procurado...');
             const callerId = await verificarSeEstaSendoProcurado(myId, token);
             
@@ -240,16 +191,10 @@ window.addEventListener('beforeunload', function() {
         clearInterval(verificarConexaoInterval);
     }
     
-    // Tentar desregistrar do servidor
+    // ✅ CORREÇÃO: Usar função importada desregistrarDoServidor
     if (window.qrCodeData && window.qrCodeData.myId) {
-        fetch(`${SERVIDOR_SINALIZADOR}/desregistrar`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: window.qrCodeData.myId,
-                token: window.qrCodeData.token
-            })
-        }).catch(err => console.error('Erro ao desregistrar:', err));
+        desregistrarDoServidor(window.qrCodeData.myId, window.qrCodeData.token)
+            .catch(err => console.error('Erro ao desregistrar:', err));
     }
 });
 
