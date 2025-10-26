@@ -1,10 +1,123 @@
-// ✅ IMPORTS CORRETOS E COMPLETOS
+// ✅ IMPORTS
 import { setupWebRTC } from '../../core/webrtc-connection.js';
 import { QRCodeGenerator } from '../qrcode/qr-code-utils.js';
-import { aplicarBandeiraRemota } from '../commons/language-utils.js'; // ✅ IMPORT ADICIONADO
+import { aplicarBandeiraRemota, definirIdiomaLocal } from '../commons/language-utils.js';
 import { setupInstructionToggle, traduzirFrasesFixas, solicitarPermissoes, esconderElementoQuandoConectar } from '../commons/ui-commons.js';
 
 let permissaoConcedida = false;
+let verificarConexaoInterval;
+
+// ✅ URL DO SERVIDOR SINALIZADOR
+const SERVIDOR_SINALIZADOR = 'https://lemur-signal.onrender.com';
+
+// ✅ NOVA FUNÇÃO: Cadastrar ID no servidor sinalizador
+async function cadastrarNoServidorSinalizador(myId, token) {
+    try {
+        const response = await fetch(`${SERVIDOR_SINALIZADOR}/registrar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: myId,
+                token: token,
+                status: 'online',
+                timestamp: Date.now()
+            })
+        });
+        
+        const result = await response.json();
+        return result.success;
+    } catch (error) {
+        console.error('Erro ao cadastrar no servidor:', error);
+        return false;
+    }
+}
+
+// ✅ NOVA FUNÇÃO: Verificar se está sendo procurado
+async function verificarSeEstaSendoProcurado(myId, token) {
+    try {
+        const response = await fetch(`${SERVIDOR_SINALIZADOR}/verificar/${myId}?token=${token}`);
+        const result = await response.json();
+        
+        if (result.procurado && result.callerId) {
+            return result.callerId; // Retorna ID do caller que está procurando
+        }
+        return null;
+    } catch (error) {
+        console.error('Erro ao verificar servidor:', error);
+        return null;
+    }
+}
+
+// ✅ NOVA FUNÇÃO: Atualizar status online
+async function atualizarStatusOnline(myId, token) {
+    try {
+        await fetch(`${SERVIDOR_SINALIZADOR}/atualizar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: myId,
+                token: token,
+                status: 'online',
+                timestamp: Date.now()
+            })
+        });
+    } catch (error) {
+        console.error('Erro ao atualizar status:', error);
+    }
+}
+
+// ✅ NOVA FUNÇÃO: Conectar com caller específico
+async function conectarComCaller(callerId, localStream) {
+    if (!window.rtcCore) return;
+    
+    try {
+        console.log(`🔄 Conectando com caller: ${callerId}`);
+        
+        // Para a verificação contínua
+        if (verificarConexaoInterval) {
+            clearInterval(verificarConexaoInterval);
+        }
+        
+        // Conecta com o caller
+        window.rtcCore.startCall(callerId, localStream, window.idiomaReceiver);
+        
+        // Atualiza UI para mostrar que está conectando
+        const elementoClick = document.getElementById('click');
+        if (elementoClick) {
+            elementoClick.textContent = 'Conectando...';
+            elementoClick.classList.remove('piscar-suave');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao conectar com caller:', error);
+    }
+}
+
+// ✅ NOVA FUNÇÃO: Verificação contínua
+function iniciarVerificacaoConexao(myId, token, localStream) {
+    verificarConexaoInterval = setInterval(async () => {
+        const callerId = await verificarSeEstaSendoProcurado(myId, token);
+        
+        if (callerId) {
+            // ✅ Está sendo procurado - conectar imediatamente
+            console.log(`🎯 Encontrado! Conectando com caller: ${callerId}`);
+            conectarComCaller(callerId, localStream);
+        } else {
+            // ❌ Não está sendo procurado - permanecer online
+            console.log('⏳ Aguardando conexão... Status: Online');
+            
+            // Atualiza status online no servidor
+            await atualizarStatusOnline(myId, token);
+            
+            // Atualiza UI para mostrar status online
+            const elementoClick = document.getElementById('click');
+            if (elementoClick && !elementoClick.classList.contains('piscar-suave')) {
+                elementoClick.textContent = 'Online - Aguardando conexão';
+                elementoClick.classList.add('piscar-suave');
+            }
+        }
+    }, 3000); // Verifica a cada 3 segundos
+}
 
 async function iniciarCameraAposPermissoes() {
     try {
@@ -33,18 +146,21 @@ async function iniciarCameraAposPermissoes() {
                 if (elementoClick) {
                     elementoClick.style.display = 'block';
                     elementoClick.classList.add('piscar-suave');
+                    elementoClick.textContent = 'Online - Aguardando conexão';
                 }
             }, 500);
         }
 
-        // ✅ PASSAR CALLBACK PARA setupWebRTC
         const { myId } = setupWebRTC('receiver', {
             onBandeiraRemota: aplicarBandeiraRemota
         });
 
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token') || '';
-        const lang = params.get('lang') || navigator.language || 'pt-BR';
+        const lang = navigator.language || 'pt-BR';
+
+        // ✅ DEFINIR IDIOMA LOCAL
+        definirIdiomaLocal(lang);
 
         window.targetTranslationLang = lang;
 
@@ -54,6 +170,31 @@ async function iniciarCameraAposPermissoes() {
             lang: lang
         };
 
+        // ✅ 1. CADASTRAR NO SERVIDOR SINALIZADOR
+        console.log(`📝 Cadastrando no servidor: ${myId}`);
+        const cadastrado = await cadastrarNoServidorSinalizador(myId, token);
+        
+        if (cadastrado) {
+            console.log('✅ Registrado no servidor sinalizador');
+            
+            // ✅ 2. VERIFICAR SE JÁ ESTÁ SENDO PROCURADO
+            console.log('🔍 Verificando se está sendo procurado...');
+            const callerId = await verificarSeEstaSendoProcurado(myId, token);
+            
+            if (callerId) {
+                // ✅ 3. CONECTAR IMEDIATAMENTE
+                console.log('🎯 Conectando imediatamente...');
+                conectarComCaller(callerId, stream);
+            } else {
+                // ✅ 4. AGUARDAR ONLINE
+                console.log('⏳ Aguardando conexão...');
+                iniciarVerificacaoConexao(myId, token, stream);
+            }
+        } else {
+            console.error('❌ Falha ao registrar no servidor');
+        }
+
+        // Resto do código do QR Code permanece...
         document.getElementById('logo-traduz').addEventListener('click', function() {
             const overlay = document.querySelector('.info-overlay');
             const qrcodeContainer = document.getElementById('qrcode');
@@ -93,7 +234,25 @@ async function iniciarCameraAposPermissoes() {
     }
 }
 
-// Resto do código permanece igual...
+// Limpar intervalo quando a página fechar
+window.addEventListener('beforeunload', function() {
+    if (verificarConexaoInterval) {
+        clearInterval(verificarConexaoInterval);
+    }
+    
+    // Tentar desregistrar do servidor
+    if (window.qrCodeData && window.qrCodeData.myId) {
+        fetch(`${SERVIDOR_SINALIZADOR}/desregistrar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: window.qrCodeData.myId,
+                token: window.qrCodeData.token
+            })
+        }).catch(err => console.error('Erro ao desregistrar:', err));
+    }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     setupInstructionToggle();
 });
