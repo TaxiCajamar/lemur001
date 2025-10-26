@@ -1,4 +1,3 @@
-
 <!-- ============================================= -->
 <!-- CONFIGURAÇÃO INICIAL DO DOCUMENTO HTML -->
 <!-- ============================================= -->
@@ -68,48 +67,47 @@
     <!-- ============================================= -->
 
     <!-- 📋 Instruction box with toggle -->
-<div class="instruction-box expandido" id="instructionBox">
-  <button class="instruction-toggle" id="instructionToggle"></button>
-  <div class="instruction-content">
-    <div class="instruction-item">
-      <img src="assets/images/hello.png" alt="Hello icon" />
-      <span id="welcome-text">Welcome! Let's begin.</span>
+    <div class="instruction-box expandido" id="instructionBox">
+      <button class="instruction-toggle" id="instructionToggle"></button>
+      <div class="instruction-content">
+        <div class="instruction-item">
+          <img src="assets/images/hello.png" alt="Hello icon" />
+          <span id="welcome-text">Welcome! Let's begin.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/realtime.png" alt="Realtime icon" />
+          <span id="translator-label">Real-time translation.</span>  <!-- ✅ ID ÚNICO -->
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/QRcode.png" alt="QR icon" />
+          <span id="tap-qr">Tap the QR code to start.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/mobil.png" alt="Mobile icon" />
+          <span id="quick-scan">Ask to scan the QR.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/Ancioso.png" alt="Loading icon" />
+          <span id="wait-connection">Waiting for connection.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/juntos.png" alt="Connected icon" />
+          <span id="both-connected">Both online.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/trduz.png" alt="Message icon" />
+          <span id="check-replies">Read the message.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/mic.png" alt="Mic icon" />
+          <span id="drop-voice">Speak clearly.</span>
+        </div>
+        <div class="instruction-item">
+          <img src="assets/images/cam.png" alt="Camera icon" />
+          <span id="flip-cam">Flip the camera. Share!</span>
+        </div>
+      </div>
     </div>
-     <div class="instruction-item">
-  <img src="assets/images/realtime.png" alt="Realtime icon" />
-  <span id="translator-label-2">Real-time translation.</span>  <!-- ⬅️ MUDE PARA ID ÚNICO -->
-</div>
-    <div class="instruction-item">
-      <img src="assets/images/QRcode.png" alt="QR icon" />
-      <span id="tap-qr">Tap the QR code to start.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/mobil.png" alt="Mobile icon" />
-      <span id="quick-scan">Ask to scan the QR.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/Ancioso.png" alt="Loading icon" />
-      <span id="wait-connection">Waiting for connection.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/juntos.png" alt="Connected icon" />
-      <span id="both-connected">Both online.</span>
-    </div>
-     <div class="instruction-item">
-      <img src="assets/images/trduz.png" alt="Message icon" />
-      <span id="check-replies">Read the message.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/mic.png" alt="Mic icon" />
-      <span id="drop-voice">Speak clearly.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/cam.png" alt="Camera icon" />
-      <span id="flip-cam">Flip the camera. Share!</span>
-    </div>
-  </div>
-</div>
-
 
     <!-- ============================================= -->
     <!-- BOTÕES DE CONTROLE PRINCIPAIS -->
@@ -130,8 +128,8 @@
     <!-- ============================================= -->
 
     <!-- 🏷️ Subtítulo de tradução -->
-    <div class="translator-label" id="translator-label">
-      Real-time translation.
+    <div class="translator-label">
+      Real-time translation. <!-- ✅ SEM ID (apenas visual) -->
     </div>
 
     <!-- ============================================= -->
@@ -162,21 +160,21 @@
     <!-- OVERLAY DE QR CODE (INICIALMENTE OCULTO) -->
     <!-- ============================================= -->
 
-<!-- 🧾 Overlay com QR Code E BOTÃO COPIAR -->
-<div class="info-overlay hidden">
-  <h2 id="qr-modal-title">This is your online key</h2>
+    <!-- 🧾 Overlay com QR Code E BOTÃO COPIAR -->
+    <div class="info-overlay hidden">
+      <h2 id="qr-modal-title">This is your online key</h2>
 
-  <div class="qrcode-container">
-    <div id="qrcode"></div>
-  </div>
+      <div class="qrcode-container">
+        <div id="qrcode"></div>
+      </div>
 
-  <p class="qr-modal-description" id="qr-modal-description">
-    You can ask to scan, share or print on your business card.
-  </p>
+      <p class="qr-modal-description" id="qr-modal-description">
+        You can ask to scan, share or print on your business card.
+      </p>
 
-  <!-- 🆕 BOTÃO COPIAR SIMPLES E UNIVERSAL -->
- <button id="copiarLink" class="btn-copiar-simples">🔗</button>
-</div>
+      <!-- 🆕 BOTÃO COPIAR SIMPLES E UNIVERSAL -->
+      <button id="copiarLink" class="btn-copiar-simples">🔗</button>
+    </div>
 
     <!-- ============================================= -->
     <!-- ÁREA DE EXIBIÇÃO DE TEXTO TRADUZIDO -->
@@ -206,7 +204,7 @@
   <!-- ============================================= -->
 
   <!-- 🎛️ Modal de gravação -->
- <div class="recording-modal hidden-until-ready" id="recordingModal">
+  <div class="recording-modal hidden-until-ready" id="recordingModal">
     <div class="recording-indicator">
       <div class="recording-dot"></div>
       <div class="recording-text">●</div>
@@ -252,9 +250,9 @@
   <!-- IMPORTAÇÃO DOS SCRIPTS DA APLICAÇÃO -->
   <!-- ============================================= -->
 
-  <!-- 📦 Scripts do receptor -->
+  <!-- 📦 Scripts do receptor NA NOVA ESTRUTURA -->
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
-  <script src="./js/receiver/receiver-trz.js"></script>
+  <!-- ❌ REMOVER: receiver-trz.js (funções movidas para commons) -->
 
 </body>
 </html>
