@@ -1,6 +1,9 @@
 // ✅ IMPORTS CORRETOS E COMPLETOS
-import { setupWebRTC } from '../../core/webrtc-connection.js';
-import { aplicarBandeiraLocal, aplicarBandeiraRemota } from '../commons/language-utils.js';
+import { 
+    setupWebRTC, 
+    procurarReceiver  // ✅ IMPORT ADICIONADO
+} from '../../core/webrtc-connection.js';
+import { aplicarBandeiraLocal, aplicarBandeiraRemota, definirIdiomaLocal } from '../commons/language-utils.js';
 import { setupInstructionToggle, traduzirFrasesFixas, solicitarPermissoes } from '../commons/ui-commons.js';
 
 let permissaoConcedida = false;
@@ -68,7 +71,28 @@ function setupCameraToggle() {
     });
 }
 
-async function iniciarConexaoVisual(receiverId, localStream, meuIdioma) {
+// ✅ FUNÇÃO: Conectar com receiver
+async function conectarComReceiver(targetId, localStream, meuIdioma) {
+    if (!window.rtcCore) return;
+    
+    try {
+        console.log(`🔄 Conectando com receiver: ${targetId}`);
+        
+        window.rtcCore.startCall(targetId, localStream, meuIdioma);
+        
+        const callActionBtn = document.getElementById('callActionBtn');
+        if (callActionBtn) {
+            callActionBtn.textContent = 'Conectando...';
+            callActionBtn.disabled = true;
+        }
+        
+    } catch (error) {
+        console.error('Erro ao conectar com receiver:', error);
+    }
+}
+
+// ✅ FUNÇÃO PRINCIPAL DE CONEXÃO SIMPLIFICADA
+async function iniciarConexaoAutomatica(targetId, token, receiverLang, localStream, meuIdioma) {
     const aguardarWebRTCPronto = () => {
         return new Promise((resolve) => {
             const verificar = () => {
@@ -85,12 +109,31 @@ async function iniciarConexaoVisual(receiverId, localStream, meuIdioma) {
     try {
         await aguardarWebRTCPronto();
 
-        const tentarConexaoContinuamente = async () => {
-            window.rtcCore.startCall(receiverId, localStream, meuIdioma);
-            setTimeout(tentarConexaoContinuamente, 3000);
-        };
+        const callerId = crypto.randomUUID().substr(0, 8);
+        console.log(`🎯 Caller ID gerado: ${callerId}`);
 
-        tentarConexaoContinuamente();
+        console.log(`🔍 Procurando receiver: ${targetId}`);
+        const receiverOnline = await procurarReceiver(targetId, token, callerId, meuIdioma, receiverLang);
+        
+        if (receiverOnline) {
+            console.log('✅ Receiver online! Conectando...');
+            conectarComReceiver(targetId, localStream, meuIdioma);
+        } else {
+            console.log('❌ Receiver offline. Tentando novamente...');
+            
+            const tentarConexaoContinuamente = async () => {
+                const online = await procurarReceiver(targetId, token, callerId, meuIdioma, receiverLang);
+                
+                if (online) {
+                    console.log('✅ Agora está online! Conectando...');
+                    conectarComReceiver(targetId, localStream, meuIdioma);
+                } else {
+                    setTimeout(tentarConexaoContinuamente, 3000);
+                }
+            };
+            
+            tentarConexaoContinuamente();
+        }
 
     } catch (error) {
         console.error('Erro no fluxo de conexão:', error);
@@ -122,21 +165,26 @@ async function iniciarCameraAposPermissoes() {
 
         const urlParams = new URLSearchParams(window.location.search);
         const receiverId = urlParams.get('targetId') || '';
+        const token = urlParams.get('token') || ''; // ✅ ADICIONADO
         const receiverLang = urlParams.get('lang') || 'pt-BR';
+
+        // ✅ DEFINIR IDIOMA LOCAL DO CALLER
+        const meuIdioma = navigator.language || 'en-US';
+        definirIdiomaLocal(meuIdioma);
 
         if (receiverId) {
             document.getElementById('callActionBtn').style.display = 'none';
             
             if (stream) {
-                // ✅ A função traduzirFrasesFixas já aplica a bandeira local automaticamente
-                // através do ui-commons.js, então não precisa chamar aplicarBandeiraLocal aqui
-                
                 setTimeout(() => {
-                    iniciarConexaoVisual(receiverId, stream, window.meuIdiomaLocal);
+                    // ✅ CORREÇÃO: usar iniciarConexaoAutomatica com parâmetros corretos
+                    iniciarConexaoAutomatica(receiverId, token, receiverLang, stream, meuIdioma);
                 }, 2000);
             }
         }
 
+        // ✅ APLICAR BANDEIRAS
+        aplicarBandeiraLocal(meuIdioma);
         aplicarBandeiraRemota(receiverLang);
 
     } catch (error) {
