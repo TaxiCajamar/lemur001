@@ -31,10 +31,9 @@ export function setupInstructionToggle() {
     });
 }
 
-// ✅ CORREÇÃO: Remove parâmetro 'lang' e usa obterIdiomaLocal()
 export async function traduzirFrasesFixas(tipo = 'caller') {
     try {
-        // ✅ NOVO: Pega idioma automaticamente do sistema
+        // ✅ Pega idioma automaticamente do sistema
         const lang = obterIdiomaLocal();
         
         console.log(`🌐 Traduzindo interface ${tipo} para: ${lang}`);
@@ -42,12 +41,15 @@ export async function traduzirFrasesFixas(tipo = 'caller') {
         // Frases comuns a ambos
         const frasesComuns = {
             "translator-label": "Real-time translation.",
+            "translator-label-2": "Real-time translation.", // ✅ MESMA FRASE, LUGAR DIFERENTE
             "welcome-text": "Hi, welcome!",
             "tap-qr": "Tap that QR Code", 
             "quick-scan": "Quick scan",
             "drop-voice": "Drop your voice",
             "check-replies": "Check the replies",
-            "flip-cam": "Flip the cam and show the vibes"
+            "flip-cam": "Flip the cam and show the vibes",
+            "wait-connection": "Waiting for connection.",
+            "both-connected": "Both online."
         };
 
         // Frases específicas do receiver
@@ -56,19 +58,26 @@ export async function traduzirFrasesFixas(tipo = 'caller') {
             "qr-modal-description": "You can ask to scan, share or print on your business card."
         };
 
+        // ✅ Combina frases baseado no tipo
         const frasesParaTraduzir = tipo === 'receiver' 
             ? { ...frasesComuns, ...frasesReceiver } 
             : frasesComuns;
 
+        // ✅ Traduz CADA elemento individualmente
         for (const [id, texto] of Object.entries(frasesParaTraduzir)) {
             const el = document.getElementById(id);
             if (el) {
                 const traduzido = await translateText(texto, lang);
                 el.textContent = traduzido;
+                console.log(`✅ Traduzido: ${id} → ${traduzido}`);
+            } else {
+                console.log(`⚠️ Elemento não encontrado: ${id}`);
             }
         }
 
+        // ✅ Aplica bandeira do idioma local
         aplicarBandeiraLocal(lang);
+        
     } catch (error) {
         console.error("Erro ao traduzir frases fixas:", error);
     }
