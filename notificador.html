@@ -1,265 +1,141 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lemur-EchoMeP2P-Notificador</title>
-
-  <link rel="stylesheet" href="mobile-style.css" />
-
-  <style>
-    .info-overlay.hidden {
-      opacity: 0 !important;
-      pointer-events: none !important;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lemur-EchoMeP2P-Notificador</title>
+    <link rel="stylesheet" href="mobile-style.css" />
     
-    /* 🆕 ESTILOS PARA BOTÕES DE REDES SOCIAIS FIXAS (IGUAL AO RECEIVER) */
-    .social-links-fixed {
-      position: absolute;
-      top: 22%;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin: 10px 0;
-      flex-wrap: wrap;
-      width: 80%;
-      z-index: 10;
-    }
-
-    .social-btn-fixed {
-      width: 35px;
-      height: 35px;
-      border: none;
-      border-radius: 5px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s;
-      text-decoration: none;
-    }
-
-    .social-btn-fixed:hover {
-      transform: scale(1.1);
-    }
-
-    .linkedin { background: #0077b5; }
-    .instagram { background: #E4405F; }
-    .facebook { background: #3b5998; }
-    .website { background: #4CAF50; }
-    .whatsapp { background: #25d366; }
-
-    /* ✅ BOTÃO DE AÇÃO DO CALLER (QUE ESTAVA FALTANDO) */
-    .call-action-btn {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border: none;
-      border-radius: 50%;
-      width: 80px;
-      height: 80px;
-      color: white;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-
-    .call-action-btn:hover {
-      transform: translate(-50%, -50%) scale(1.1);
-      box-shadow: 0 12px 35px rgba(0,0,0,0.4);
-    }
-  </style>
+    <style>
+        /* ✅ GARANTE que o overlay comece OCULTO */
+        .info-overlay.hidden {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
 </head>
-
 <body>
-
-  <div class="box-principal">
-
+           
+    <!-- ✅ CONTEÚDO PRINCIPAL (ESCONDIDO INICIALMENTE) -->
+    <div class="box-principal">
+                      
+     <!-- 🐵 Logo Lemur -->
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
+            
+     <!-- 🌉 Imagem ponte -->
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
-        
+
+       <!-- ⏳ Loader de carregamento (IGUAL AO RECEIVER) -->
     <div id="mobileLoading" class="mobile-loader">
       <div class="loader-circle"></div>
     </div>
+        
+        <!-- Sub Titulo -->
+        <div class="translator-label" id="translator-label">
+            Real-time translation.
+        </div>
+           
+        <!-- Remoto & Local -->
+        <div class="remoter-Lang">🏳️</div>
+        <div class="local-Lang">🏳️</div>
+        <div class="local-mic-Lang">🏳️</div>
 
-    <!-- ✅ BOTÃO DE AÇÃO DO CALLER (QUE ESTAVA FALTANDO) -->
-    <button id="callActionBtn" class="call-action-btn" style="display: none;">
-      Connect
-    </button>
+        <!-- 🎥 Vídeo remoto (já existente) -->
+        <div class="video-wrapper">
+          <video id="remoteVideo" autoplay playsinline></video>
 
-    <div class="instruction-box expandido" id="instructionBox">
-      <button class="instruction-toggle" id="instructionToggle"></button>
-      <div class="instruction-content">
-        <div class="instruction-item">
-          <img src="assets/images/hello.png" alt="Hello icon" />
-          <span id="welcome-text">Welcome! Let's begin.</span>
+         <!-- 🎥 Vídeo local em PiP -->
+          <div class="pip-local-wrapper">
+            <video id="localVideo" autoplay muted playsinline></video>
+          </div>
         </div>
-        <div class="instruction-item">
-          <img src="assets/images/realtime.png" alt="Realtime icon" />
-          <span id="translator-label-2">Real-time translation.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/Ancioso.png" alt="Loading icon" />
-          <span id="wait-connection">Waiting for connection.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/juntos.png" alt="Connected icon" />
-          <span id="both-connected">Both online.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/trduz.png" alt="Message icon" />
-          <span id="check-replies">Read the message.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/mic.png" alt="Mic icon" />
-          <span id="drop-voice">Speak clearly.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/cam.png" alt="Camera icon" />
-          <span id="flip-cam">Flip the camera. Share!</span>
-        </div>
+        
+ <!-- 🧾 Overlay com informações (inicialmente oculto) -->
+    <div class="info-overlay hidden">
+      <span id="myId"></span>
+    </div>
+
+      <!-- ✅ APENAS A CAIXA PRINCIPAL DE TEXTO -->
+        <div id="texto-recebido"></div>
+
+        <!-- 🏳️ Bandeira do idioma local -->
+        <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
+       
+        <!-- 🎤 Microfone (MESMO ID DO RECEIVER) -->
+<button class="record-btn" id="recordButton" disabled>🎤</button>
+
+    </div> <!-- ✅ CORREÇÃO: FECHAMENTO DA DIV box-principal ADICIONADO AQUI -->
+
+<!-- 📋 Bloco de instruções compacto no rodapé - COM TOGGLE (IGUAL AO RECEIVER) -->
+  <div class="instruction-box expandido" id="instructionBox">
+    <button class="instruction-toggle" id="instructionToggle"></button>
+    <div class="instruction-content">
+      <div class="instruction-item">
+        <img src="assets/images/hello.png" alt="Hello icon" />
+        <span id="welcome-text">Hi, welcome!</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/QRcode.png" alt="QR icon" />
+        <span id="tap-qr">Tap that QR Code</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/mobil.png" alt="Mobile icon" />
+        <span id="quick-scan">Quick scan</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/mic.png" alt="Mic icon" />
+        <span id="drop-voice">Drop your voice</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/trduz.png" alt="Translate icon" />
+        <span id="check-replies">Check the replies</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/cam.png" alt="Camera icon" />
+        <span id="flip-cam">Flip the cam and show the vibes</span>
       </div>
     </div>
-
-    <button id="toggleCamera" class="camera-toggle-btn">
-      <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
-    </button>
-
-    <div class="translator-label" id="translator-label">
-      Real-time translation.
-    </div>
-
-    <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS (IGUAL AO RECEIVER) -->
-    <div class="social-links-fixed">
-      <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed linkedin">in</a>
-      <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed instagram">ig</a>
-      <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed facebook">f</a>
-      <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed website">🌐</a>
-      <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed whatsapp">w</a>
-    </div>
-
-    <div class="remoter-Lang">🏳️</div>
-    <div class="local-Lang">🏳️</div>
-    <div class="local-mic-Lang">🏳️</div>
-
-    <div class="video-wrapper">
-      <video id="remoteVideo" autoplay playsinline></video>
-      <div class="pip-local-wrapper">
-        <video id="localVideo" autoplay muted playsinline></video>
-      </div>
-    </div>
-   
-    <div id="texto-recebido"></div>
-
-    <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
-
-    <button class="record-btn" id="recordButton" disabled>🎤</button>
-
   </div>
 
-  <div class="recording-modal hidden-until-ready" id="recordingModal">
-    <div class="recording-indicator">
-      <div class="recording-dot"></div>
-      <div class="recording-text">●</div>
-      <div class="recording-timer" id="recordingTimer">0:00</div>
+  <!-- 🔄 Botão para alternar câmera (IGUAL AO RECEIVER) -->
+  <button id="toggleCamera" class="camera-toggle-btn">
+    <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
+  </button>
+
+    <!-- Modal de gravação -->
+    <div class="recording-modal hidden-until-ready" id="recordingModal">
+        <div class="recording-indicator">
+            <div class="recording-dot"></div>
+            <div class="recording-text">●</div>
+            <div class="recording-timer" id="recordingTimer">0:00</div>
+        </div>
+        <button class="send-button" id="sendButton">📤</button>
     </div>
-    <button class="send-button" id="sendButton">📤</button>
-  </div>
 
-  <!-- ✅ DEBUG TEMPORÁRIO -->
-  <div style="position: fixed; top: 10px; left: 10px; background: red; color: white; padding: 10px; z-index: 9999; font-size: 12px;">
-    <strong>DEBUG NOTIFICADOR</strong><br>
-    <span id="debugInfo">Carregando...</span>
-  </div>
+    <!-- 🔌 Scripts -->
+    <script src="https://lemur-signal-ings.onrender.com/socket.io/socket.io.js"></script>
+    
+    <script>
+       // ✅ FUNÇÃO GLOBAL PARA LIBERAR A INTERFACE (SIMPLIFICADA)
+        window.liberarInterface = function() {
+            console.log('✅ Interface já está visível');
+        };
+        
+        // ✅ SE HOUVER ERRO, MOSTRA MENSAGEM
+        window.mostrarErroCarregamento = function(mensagem) {
+            alert('Erro: ' + mensagem);
+        };
 
-  <!-- ✅ CORRIGIDO: Socket.IO DO CDN OFICIAL (IGUAL AO RECEIVER) -->
-  <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
-
-  <script>
-    // ===== CONFIGURAÇÃO GLOBAL SINCRONIZADA =====
-    window.SIGNALING_SERVER_URL = 'https://lemur-signal.onrender.com';
-    window.APP_CONFIG = {
-      debug: true,
-      autoReconnect: true
-    };
-
-    // ===== VERIFICAÇÃO DE DEPENDÊNCIAS (IGUAL AO RECEIVER) =====
-    function verificarDependencias() {
-      if (typeof io === 'undefined') {
-        console.error('❌ Socket.IO não carregado. Recarregando página...');
-        setTimeout(() => location.reload(), 2000);
-        return false;
-      }
-      console.log('✅ Todas as dependências carregadas (Notificador)');
-      return true;
-    }
-
-    // ===== FUNÇÕES GLOBAIS ATUALIZADAS =====
-    window.liberarInterface = function () {
-      console.log('✅ Interface do notificador liberada');
-      const mobileLoading = document.getElementById('mobileLoading');
-      if (mobileLoading) {
-        mobileLoading.style.display = 'none';
-      }
-    };
-
-    window.mostrarErroCarregamento = function (mensagem) {
-      console.error('❌ Erro no notificador:', mensagem);
-      alert('Erro no Notificador: ' + mensagem);
-    };
-
-    // ===== DEBUG DOS PARÂMETROS =====
-    function debugParametros() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const debugInfo = document.getElementById('debugInfo');
-      
-      if (debugInfo) {
-        debugInfo.innerHTML = `
-          URL: ${window.location.href}<br>
-          last8: "${urlParams.get('last8') || 'NÃO ENCONTRADO'}"<br>
-          targetId: "${urlParams.get('targetId') || 'NÃO ENCONTRADO'}"<br>
-          lang: "${urlParams.get('lang') || 'NÃO ENCONTRADO'}"<br>
-          Todos: ${JSON.stringify(Object.fromEntries(urlParams))}
-        `;
-      }
-      
-      console.log('🔍 DEBUG NOTIFICADOR - PARÂMETROS RECEBIDOS:');
-      console.log('📍 last8:', urlParams.get('last8'));
-      console.log('📍 targetId:', urlParams.get('targetId'));
-      console.log('📍 lang:', urlParams.get('lang'));
-      console.log('📍 URL Completa:', window.location.href);
-    }
-
-    // ===== INICIALIZAÇÃO SEGURA =====
-    document.addEventListener('DOMContentLoaded', function () {
-      console.log('🚀 Notificador - DOM Carregado');
-      
-      // ✅ DEBUG DOS PARÂMETROS
-      debugParametros();
-      
-      if (!verificarDependencias()) {
-        return;
-      }
-      
-      console.log('✅ Notificador pronto para inicialização');
-    });
-  </script>
-
-  <script type="module" src="./js/notificador/notificador-ui.js"></script>
-  <script src="./js/notificador/notificador-trz.js"></script>
-
+        // ✅ GARANTE que o overlay fique OCULTO ao carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.querySelector('.info-overlay');
+            if (overlay) {
+                overlay.classList.add('hidden');
+            }
+        });
+    </script>
+    
+    <script type="module" src="./js/notificador/notificador-ui.js"></script>
+    <script src="./js/notificador/notificador-trz.js"></script>
 </body>
 </html>
