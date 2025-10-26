@@ -198,7 +198,7 @@ window.onload = async () => {
         const params = new URLSearchParams(window.location.search);
         const lang = params.get('lang') || navigator.language || 'pt-BR';
         
-        await traduzirFrasesFixas(lang, 'caller');
+      await traduzirFrasesFixas('caller');
         permissaoConcedida = await solicitarPermissoes();
         setupInstructionToggle();
         
