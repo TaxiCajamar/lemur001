@@ -1,7 +1,7 @@
 // ✅ IMPORTS CORRETOS E COMPLETOS
 import { 
     setupWebRTC, 
-    procurarReceiver  // ✅ IMPORT ADICIONADO
+    procurarReceiver
 } from '../../core/webrtc-connection.js';
 import { aplicarBandeiraLocal, aplicarBandeiraRemota, definirIdiomaLocal } from '../commons/language-utils.js';
 import { setupInstructionToggle, traduzirFrasesFixas, solicitarPermissoes } from '../commons/ui-commons.js';
@@ -71,7 +71,7 @@ function setupCameraToggle() {
     });
 }
 
-// ✅ FUNÇÃO: Conectar com receiver
+// ✅ FUNÇÃO: Conectar com receiver (CORRIGIDA)
 async function conectarComReceiver(targetId, localStream, meuIdioma) {
     if (!window.rtcCore) return;
     
@@ -80,11 +80,7 @@ async function conectarComReceiver(targetId, localStream, meuIdioma) {
         
         window.rtcCore.startCall(targetId, localStream, meuIdioma);
         
-        const callActionBtn = document.getElementById('callActionBtn');
-        if (callActionBtn) {
-            callActionBtn.textContent = 'Conectando...';
-            callActionBtn.disabled = true;
-        }
+        // ✅ CORREÇÃO: Removida referência ao callActionBtn (não existe mais)
         
     } catch (error) {
         console.error('Erro ao conectar com receiver:', error);
@@ -165,7 +161,7 @@ async function iniciarCameraAposPermissoes() {
 
         const urlParams = new URLSearchParams(window.location.search);
         const receiverId = urlParams.get('targetId') || '';
-        const token = urlParams.get('token') || ''; // ✅ ADICIONADO
+        const token = urlParams.get('token') || '';
         const receiverLang = urlParams.get('lang') || 'pt-BR';
 
         // ✅ DEFINIR IDIOMA LOCAL DO CALLER
@@ -173,11 +169,11 @@ async function iniciarCameraAposPermissoes() {
         definirIdiomaLocal(meuIdioma);
 
         if (receiverId) {
-            document.getElementById('callActionBtn').style.display = 'none';
+            // ✅ CORREÇÃO: Remover referência ao callActionBtn que não existe
+            // document.getElementById('callActionBtn').style.display = 'none'; // ❌ REMOVER
             
             if (stream) {
                 setTimeout(() => {
-                    // ✅ CORREÇÃO: usar iniciarConexaoAutomatica com parâmetros corretos
                     iniciarConexaoAutomatica(receiverId, token, receiverLang, stream, meuIdioma);
                 }, 2000);
             }
@@ -198,7 +194,7 @@ window.onload = async () => {
         const params = new URLSearchParams(window.location.search);
         const lang = params.get('lang') || navigator.language || 'pt-BR';
         
-      await traduzirFrasesFixas('caller');
+        await traduzirFrasesFixas('caller'); // ✅ CORRETO (sem parâmetro lang)
         permissaoConcedida = await solicitarPermissoes();
         setupInstructionToggle();
         
