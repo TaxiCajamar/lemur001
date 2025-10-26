@@ -15,7 +15,7 @@ import {
     traduzirFrasesFixas, 
     solicitarPermissoes, 
     esconderElementoQuandoConectar 
-} from '../commons/language-utils.js'; // ✅ TODOS IMPORTS DE UM SÓ ARQUIVO
+} from '../commons/language-utils.js';
 
 let permissaoConcedida = false;
 let verificarConexaoInterval;
@@ -114,8 +114,12 @@ async function iniciarCameraAposPermissoes() {
         const token = params.get('token') || '';
         const lang = navigator.language || 'pt-BR';
 
-        // ✅ DEFINIR IDIOMA LOCAL
+        // ✅ DEFINIR IDIOMA LOCAL DINAMICAMENTE
         definirIdiomaLocal(lang);
+        console.log('🌐 Idioma definido:', lang);
+
+        // ✅ TRADUZIR FRASES APÓS DEFINIR IDIOMA
+        await traduzirFrasesFixas();
 
         window.targetTranslationLang = lang;
 
@@ -149,7 +153,7 @@ async function iniciarCameraAposPermissoes() {
             console.error('❌ Falha ao registrar no servidor');
         }
 
-        // Resto do código do QR Code permanece...
+        // Resto do código do QR Code
         document.getElementById('logo-traduz').addEventListener('click', function() {
             const overlay = document.querySelector('.info-overlay');
             const qrcodeContainer = document.getElementById('qrcode');
@@ -210,13 +214,15 @@ window.onload = async () => {
     try {
         const params = new URLSearchParams(window.location.search);
         
-        await traduzirFrasesFixas(); // ✅ SEM PARÂMETRO!
+        // ✅ APENAS SOLICITA PERMISSÕES - A TRADUÇÃO SERÁ FEITA DEPOIS
         permissaoConcedida = await solicitarPermissoes();
         
         if (typeof window.liberarInterface === 'function') {
             window.liberarInterface();
         }
         
+        // ✅ A TRADUÇÃO SERÁ FEITA DENTRO DE iniciarCameraAposPermissoes()
+        // DEPOIS QUE O IDIOMA FOR DEFINIDO DINAMICAMENTE
         await iniciarCameraAposPermissoes();
         
     } catch (error) {
