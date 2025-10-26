@@ -1,5 +1,10 @@
 // 📁 ui-commons.js
-import { obterIdiomaCompleto, aplicarBandeiraLocal, translateText, obterIdiomaLocal } from './language-utils.js';
+import { 
+    obterIdiomaCompleto, 
+    aplicarBandeiraLocal, 
+    translateText,
+    obterIdiomaLocal 
+} from './language-utils.js';
 
 export function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
@@ -33,15 +38,13 @@ export function setupInstructionToggle() {
 
 export async function traduzirFrasesFixas(tipo = 'caller') {
     try {
-        // ✅ Pega idioma automaticamente do sistema
         const lang = obterIdiomaLocal();
         
         console.log(`🌐 Traduzindo interface ${tipo} para: ${lang}`);
 
-        // Frases comuns a ambos
         const frasesComuns = {
             "translator-label": "Real-time translation.",
-            "translator-label-2": "Real-time translation.", // ✅ MESMA FRASE, LUGAR DIFERENTE
+            "translator-label-2": "Real-time translation.",
             "welcome-text": "Hi, welcome!",
             "tap-qr": "Tap that QR Code", 
             "quick-scan": "Quick scan",
@@ -52,32 +55,24 @@ export async function traduzirFrasesFixas(tipo = 'caller') {
             "both-connected": "Both online."
         };
 
-        // Frases específicas do receiver
         const frasesReceiver = {
             "qr-modal-title": "This is your online key",
             "qr-modal-description": "You can ask to scan, share or print on your business card."
         };
 
-        // ✅ Combina frases baseado no tipo
         const frasesParaTraduzir = tipo === 'receiver' 
             ? { ...frasesComuns, ...frasesReceiver } 
             : frasesComuns;
 
-        // ✅ Traduz CADA elemento individualmente
         for (const [id, texto] of Object.entries(frasesParaTraduzir)) {
             const el = document.getElementById(id);
             if (el) {
                 const traduzido = await translateText(texto, lang);
                 el.textContent = traduzido;
-                console.log(`✅ Traduzido: ${id} → ${traduzido}`);
-            } else {
-                console.log(`⚠️ Elemento não encontrado: ${id}`);
             }
         }
 
-        // ✅ Aplica bandeira do idioma local
         aplicarBandeiraLocal(lang);
-        
     } catch (error) {
         console.error("Erro ao traduzir frases fixas:", error);
     }
