@@ -210,7 +210,7 @@ window.onload = async () => {
     try {
         const params = new URLSearchParams(window.location.search);
         
-        await traduzirFrasesFixas('receiver'); // ✅ CORRETO
+        await traduzirFrasesFixas(); // ✅ SEM PARÂMETRO!
         permissaoConcedida = await solicitarPermissoes();
         
         if (typeof window.liberarInterface === 'function') {
