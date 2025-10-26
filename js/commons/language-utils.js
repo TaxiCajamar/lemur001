@@ -1,10 +1,20 @@
-// 📁 js/commons/language-utils.js - ARQUIVO HÍBRIDO COMPLETO
+// 📁 js/commons/language-utils.js - VERSÃO SIMPLIFICADA E AUTOMÁTICA
 
-// ✅ VARIÁVEIS SEPARADAS PARA RECEIVER E CALLER
-window.idiomaReceiver = 'pt-BR';  // Idioma DO RECEIVER
-window.idiomaCaller = 'en-US';    // Idioma DO CALLER
+// ✅ APENAS IDIOMA LOCAL
+window.idiomaLocal = 'pt-BR';  // Idioma desta página
 
-// ✅ API DE TRADUÇÃO CENTRALIZADA
+// ✅ CONFIGURAÇÃO AUTOMÁTICA DO IDIOMA
+export async function configurarIdiomaAutomatico() {
+    // Define idioma automaticamente (exemplo: detectar navegador)
+    const idiomaNavegador = navigator.language || 'pt-BR';
+    window.idiomaLocal = idiomaNavegador;
+    
+    // Aplica bandeira e traduz AUTOMATICAMENTE
+    await aplicarBandeira(window.idiomaLocal);
+    await traduzirFrasesFixas();
+}
+
+// ✅ API DE TRADUÇÃO
 export async function translateText(text, targetLang) {
     try {
         const response = await fetch('https://chat-tradutor.onrender.com/translate', {
@@ -20,94 +30,78 @@ export async function translateText(text, targetLang) {
     }
 }
 
-export async function obterIdiomaCompleto(lang) {
-    if (!lang) return 'pt-BR';
-    if (lang.includes('-')) return lang;
-
-    const response = await fetch('assets/bandeiras/language-flags.json');
-    const flags = await response.json();
-    const codigoCompleto = Object.keys(flags).find(key => key.startsWith(lang + '-'));
-    return codigoCompleto || `${lang}-${lang.toUpperCase()}`;
-}
-
-export async function aplicarBandeiraLocal(langCode) {
+// ✅ APENAS UMA FUNÇÃO PARA BANDEIRA
+export async function aplicarBandeira(langCode) {
     try {      
         const response = await fetch('assets/bandeiras/language-flags.json');
         const flags = await response.json();
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🏴';
 
-        const languageFlagElement = document.querySelector('.language-flag');
-        if (languageFlagElement) languageFlagElement.textContent = bandeira;
-
-        const localLangDisplay = document.querySelector('.local-Lang');
-        if (localLangDisplay) localLangDisplay.textContent = bandeira;
-
-    } catch (error) {
-        const languageFlagElement = document.querySelector('.language-flag');
-        if (languageFlagElement) languageFlagElement.textContent = '🏴';
+        // Aplica em todos os elementos de bandeira
+        document.querySelectorAll('.language-flag, .local-Lang').forEach(el => {
+            el.textContent = bandeira;
+        });
         
-        const localLangDisplay = document.querySelector('.local-Lang');
-        if (localLangDisplay) localLangDisplay.textContent = '🏴';
-    }
-}
-
-export async function aplicarBandeiraRemota(langCode) {
-    try {
-        const response = await fetch('assets/bandeiras/language-flags.json');
-        const flags = await response.json();
-        const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🏴';
-
-        const remoteLangElement = document.querySelector('.remoter-Lang');
-        if (remoteLangElement) remoteLangElement.textContent = bandeira;
+        // Atualiza o idioma local
+        window.idiomaLocal = langCode;
 
     } catch (error) {
-        const remoteLangElement = document.querySelector('.remoter-Lang');
-        if (remoteLangElement) remoteLangElement.textContent = '🏴';
+        document.querySelectorAll('.language-flag, .local-Lang').forEach(el => {
+            el.textContent = '🏴';
+        });
     }
 }
 
-// ✅ FUNÇÕES PARA GERENCIAR IDIOMAS
-export function definirIdiomaLocal(langCode) {
-    if (window.location.pathname.includes('receiver')) {
-        window.idiomaReceiver = langCode;
-    } else {
-        window.idiomaCaller = langCode;
+// ✅ FUNÇÕES SIMPLIFICADAS
+export function definirIdioma(langCode) {
+    window.idiomaLocal = langCode;
+    aplicarBandeira(langCode);
+}
+
+export function obterIdioma() {
+    return window.idiomaLocal || 'pt-BR';
+}
+
+// ✅ TRADUÇÃO DE FRASES FIXAS
+export async function traduzirFrasesFixas() {
+    try {
+        const lang = obterIdioma();
+        console.log(`🌐 Traduzindo interface para: ${lang}`);
+
+        const frases = {
+            "translator-label": "Real-time translation.",
+            "translator-label-2": "Real-time translation.", 
+            "welcome-text": "Hi, welcome!",
+            "tap-qr": "Tap that QR Code",
+            "quick-scan": "Quick scan",
+            "drop-voice": "Drop your voice", 
+            "check-replies": "Check the replies",
+            "flip-cam": "Flip the cam and show the vibes",
+            "wait-connection": "Waiting for connection.",
+            "both-connected": "Both online."
+        };
+
+        // Adiciona frases específicas se for receiver
+        if (window.location.pathname.includes('receiver')) {
+            frases["qr-modal-title"] = "This is your online key";
+            frases["qr-modal-description"] = "You can ask to scan, share or print on your business card.";
+        }
+
+        for (const [id, texto] of Object.entries(frases)) {
+            const el = document.getElementById(id);
+            if (el) {
+                const traduzido = await translateText(texto, lang);
+                el.textContent = traduzido;
+            }
+        }
+
+        aplicarBandeira(lang);
+    } catch (error) {
+        console.error("Erro ao traduzir frases fixas:", error);
     }
-    aplicarBandeiraLocal(langCode);
 }
 
-export function obterIdiomaLocal() {
-    if (window.location.pathname.includes('receiver')) {
-        return window.idiomaReceiver;
-    } else {
-        return window.idiomaCaller;
-    }
-}
-
-export function obterIdiomaReceiver() {
-    return window.idiomaReceiver || 'pt-BR';
-}
-
-export function obterIdiomaCaller() {
-    return window.idiomaCaller || 'en-US';
-}
-
-// 🗑️ REMOVIDA - FUNÇÃO EQUIVOCADA DE TRADUÇÃO DINÂMICA
-// export function obterParIdiomasTraducao() {
-//     if (window.location.pathname.includes('receiver')) {
-//         return {
-//             origem: window.idiomaCaller,
-//             destino: window.idiomaReceiver
-//         };
-//     } else {
-//         return {
-//             origem: window.idiomaReceiver,
-//             destino: window.idiomaCaller
-//         };
-//     }
-// }
-
-// ✅ FUNÇÕES DE UI (MANTIDAS)
+// ✅ OUTRAS FUNÇÕES UTILITÁRIAS
 export function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
     const toggleButton = document.getElementById('instructionToggle');
@@ -136,67 +130,6 @@ export function setupInstructionToggle() {
             isExpanded = false;
         }
     });
-}
-
-export async function traduzirFrasesFixas(tipo = 'caller') {
-    try {
-        const lang = obterIdiomaLocal();
-        
-        console.log(`🌐 Traduzindo interface ${tipo} para: ${lang}`);
-
-        if (tipo === 'receiver') {
-            // FRASES EXATAS DO RECEIVER
-            const frasesReceiver = {
-                "translator-label": "Real-time translation.",
-                "translator-label-2": "Real-time translation.",
-                "welcome-text": "Hi, welcome!",
-                "tap-qr": "Tap that QR Code", 
-                "quick-scan": "Quick scan",
-                "drop-voice": "Drop your voice",
-                "check-replies": "Check the replies",
-                "flip-cam": "Flip the cam and show the vibes",
-                "wait-connection": "Waiting for connection.",
-                "both-connected": "Both online.",
-                "qr-modal-title": "This is your online key",
-                "qr-modal-description": "You can ask to scan, share or print on your business card."
-            };
-
-            for (const [id, texto] of Object.entries(frasesReceiver)) {
-                const el = document.getElementById(id);
-                if (el) {
-                    const traduzido = await translateText(texto, lang);
-                    el.textContent = traduzido;
-                }
-            }
-
-        } else {
-            // FRASES EXATAS DO CALLER
-            const frasesCaller = {
-                "translator-label": "Real-time translation.",
-                "translator-label-2": "Real-time translation.",
-                "welcome-text": "Hi, welcome!",
-                "tap-qr": "Tap that QR Code", 
-                "quick-scan": "Quick scan",
-                "drop-voice": "Drop your voice",
-                "check-replies": "Check the replies",
-                "flip-cam": "Flip the cam and show the vibes",
-                "wait-connection": "Waiting for connection.",
-                "both-connected": "Both online."
-            };
-
-            for (const [id, texto] of Object.entries(frasesCaller)) {
-                const el = document.getElementById(id);
-                if (el) {
-                    const traduzido = await translateText(texto, lang);
-                    el.textContent = traduzido;
-                }
-            }
-        }
-
-        aplicarBandeiraLocal(lang);
-    } catch (error) {
-        console.error("Erro ao traduzir frases fixas:", error);
-    }
 }
 
 export async function solicitarPermissoes() {
