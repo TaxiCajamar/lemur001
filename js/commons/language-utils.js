@@ -92,21 +92,22 @@ export function obterIdiomaCaller() {
     return window.idiomaCaller || 'en-US';
 }
 
-export function obterParIdiomasTraducao() {
-    if (window.location.pathname.includes('receiver')) {
-        return {
-            origem: window.idiomaCaller,
-            destino: window.idiomaReceiver
-        };
-    } else {
-        return {
-            origem: window.idiomaReceiver,
-            destino: window.idiomaCaller
-        };
-    }
-}
+// 🗑️ REMOVIDA - FUNÇÃO EQUIVOCADA DE TRADUÇÃO DINÂMICA
+// export function obterParIdiomasTraducao() {
+//     if (window.location.pathname.includes('receiver')) {
+//         return {
+//             origem: window.idiomaCaller,
+//             destino: window.idiomaReceiver
+//         };
+//     } else {
+//         return {
+//             origem: window.idiomaReceiver,
+//             destino: window.idiomaCaller
+//         };
+//     }
+// }
 
-// ✅ FUNÇÕES DE UI
+// ✅ FUNÇÕES DE UI (MANTIDAS)
 export function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
     const toggleButton = document.getElementById('instructionToggle');
