@@ -1,5 +1,5 @@
 // 📁 ui-commons.js
-import { obterIdiomaCompleto, aplicarBandeiraLocal, translateText } from './language-utils.js';
+import { obterIdiomaCompleto, aplicarBandeiraLocal, translateText, obterIdiomaLocal } from './language-utils.js';
 
 export function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
@@ -31,8 +31,14 @@ export function setupInstructionToggle() {
     });
 }
 
-export async function traduzirFrasesFixas(lang, tipo = 'caller') {
+// ✅ CORREÇÃO: Remove parâmetro 'lang' e usa obterIdiomaLocal()
+export async function traduzirFrasesFixas(tipo = 'caller') {
     try {
+        // ✅ NOVO: Pega idioma automaticamente do sistema
+        const lang = obterIdiomaLocal();
+        
+        console.log(`🌐 Traduzindo interface ${tipo} para: ${lang}`);
+
         // Frases comuns a ambos
         const frasesComuns = {
             "translator-label": "Real-time translation.",
