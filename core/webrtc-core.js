@@ -1,3 +1,4 @@
+
 // core/webrtc-core.js
 import { getIceServers, SIGNALING_SERVER_URL } from './internet-config.js';
 
@@ -10,17 +11,12 @@ class WebRTCCore {
     this.currentCaller = null;
     this.dataChannel = null;
     this.onDataChannelMessage = null;
-    this.initialized = false;
-    this.userId = null;
+    this.onIncomingCall = null;
 
-    // ✅ CORREÇÃO: Data Channel global mais robusto
     window.rtcDataChannel = {
         send: (message) => {
             if (this.dataChannel && this.dataChannel.readyState === 'open') {
                 this.dataChannel.send(message);
-                console.log('📤 Mensagem enviada via DataChannel:', message);
-            } else {
-                console.log('❌ DataChannel não está aberto');
             }
         },
         isOpen: () => {
@@ -29,347 +25,145 @@ class WebRTCCore {
     };
 
     this.iceServers = getIceServers();
-    console.log('✅ WebRTCCore inicializado com servidores ICE:', this.iceServers);
   }
 
-  // ✅ VERIFICAÇÃO DE PRONTIDÃO CORRIGIDA
-  isReady() {
-    return this.peer && 
-           this.peer.signalingState === 'stable' && 
-           this.initialized;
-  }
-
-  // ✅ CONFIGURAR SOCKET
-  setSocket(socket) {
-    this.socket = socket;
-    console.log('✅ Socket configurado no WebRTC Core');
-  }
-
-  // ✅ INICIALIZAÇÃO COMPLETA
-  async initialize(userId) {
-    try {
-      this.userId = userId;
-      console.log('🎯 Inicializando WebRTC Core para usuário:', userId);
-      
-      // Registra no servidor de signaling
-      this.socket.emit('register', { id: userId });
-      
-      this.initialized = true;
-      console.log('✅ WebRTC Core inicializado com sucesso');
-      
-    } catch (error) {
-      console.error('❌ Erro na inicialização do WebRTC Core:', error);
-      throw error;
-    }
-  }
-
-  // ✅ SETUP DATA CHANNEL CORRIGIDO
   setupDataChannelHandlers() {
-    if (!this.dataChannel) {
-      console.log('❌ DataChannel não disponível para configurar handlers');
-      return;
-    }
+    if (!this.dataChannel) return;
     
     this.dataChannel.onopen = () => {
-      console.log('✅ DataChannel conectado - pronto para enviar mensagens');
+        console.log('DataChannel connected');
     };
 
     this.dataChannel.onmessage = (event) => {
-      console.log('📩 Mensagem recebida via DataChannel:', event.data);
-      if (this.onDataChannelMessage) {
-        this.onDataChannelMessage(event.data);
-      } else {
-        console.log('⚠️ Nenhum callback configurado para DataChannel');
-      }
-    };
-
-    this.dataChannel.onclose = () => {
-      console.log('🔴 DataChannel fechado');
+        console.log('Message received:', event.data);
+        if (this.onDataChannelMessage) {
+            this.onDataChannelMessage(event.data);
+        }
     };
 
     this.dataChannel.onerror = (error) => {
-      console.error('❌ DataChannel error:', error);
+        console.error('DataChannel error:', error);
     };
   }
 
-  // ✅ START CALL CORRIGIDO - MUITO MAIS ROBUSTO
-  async startCall(targetId, stream, callerLang) {
-    try {
-      console.log('📞 Iniciando chamada WebRTC para:', targetId);
-      
-      // ✅ VALIDAÇÕES CRÍTICAS
-      if (!this.socket || !this.socket.connected) {
-        throw new Error('Socket não conectado');
-      }
-
-      if (!targetId) {
-        throw new Error('ID do target não fornecido');
-      }
-
-      this.localStream = stream;
-      
-      // ✅ CONFIGURAÇÃO DO PEER CONNECTION
-      this.peer = new RTCPeerConnection({ 
-        iceServers: this.iceServers,
-        iceCandidatePoolSize: 10
-      });
-
-      console.log('✅ PeerConnection criado');
-
-      // ✅ CONFIGURA DATA CHANNEL
-      this.dataChannel = this.peer.createDataChannel('chat', {
-        ordered: true
-      });
-      this.setupDataChannelHandlers();
-
-      // ✅ ADICIONA TRACKS LOCAIS (se stream disponível)
-      if (stream) {
-        stream.getTracks().forEach(track => {
-          this.peer.addTrack(track, stream);
-          console.log(`✅ Track ${track.kind} adicionada`);
-        });
-      } else {
-        console.log('ℹ️ Chamada sem stream local (modo áudio/texto)');
-      }
-
-      // ✅ CONFIGURA HANDLERS DE EVENTOS
-      this.peer.ontrack = (event) => {
-        console.log('🎥 Track remota recebida:', event.track.kind);
-        if (this.remoteStreamCallback && event.streams[0]) {
-          this.remoteStreamCallback(event.streams[0]);
-        }
-      };
-
-      this.peer.onicecandidate = (event) => {
-        if (event.candidate) {
-          console.log('❄️ Enviando ICE candidate para:', targetId);
-          this.socket.emit('ice-candidate', {
-            to: targetId,
-            candidate: event.candidate
-          });
-        } else {
-          console.log('✅ Todos os ICE candidates coletados');
-        }
-      };
-
-      this.peer.oniceconnectionstatechange = () => {
-        console.log('🔌 ICE connection state:', this.peer.iceConnectionState);
-      };
-
-      this.peer.onsignalingstatechange = () => {
-        console.log('📡 Signaling state:', this.peer.signalingState);
-      };
-
-      // ✅ CRIA E ENVIA OFERTA
-      console.log('🔄 Criando oferta...');
-      const offer = await this.peer.createOffer();
-      await this.peer.setLocalDescription(offer);
-      
-      console.log('✅ Oferta criada, enviando via signaling...');
-      
-      this.socket.emit('call', {
-        to: targetId,
-        offer: this.peer.localDescription,
-        callerLang: callerLang,
-        fromId: this.userId
-      });
-
-      console.log('✅ Chamada iniciada com sucesso');
-
-    } catch (error) {
-      console.error('❌ Erro crítico em startCall:', error);
-      throw error;
-    }
+  initialize(userId) {
+    this.socket.emit('register', userId);
   }
 
-  // ✅ HANDLE INCOMING CALL CORRIGIDO
-  async handleIncomingCall(offer, localStream, callback) {
-    try {
-      console.log('📞 Processando chamada recebida...');
-      
-      this.localStream = localStream;
-      
-      // ✅ CRIA PEER CONNECTION
-      this.peer = new RTCPeerConnection({ 
-        iceServers: this.iceServers,
-        iceCandidatePoolSize: 10
-      });
+  startCall(targetId, stream, callerLang) {
+    this.localStream = stream;
+    this.peer = new RTCPeerConnection({ iceServers: this.iceServers });
 
-      console.log('✅ PeerConnection criado para resposta');
+    this.dataChannel = this.peer.createDataChannel('chat');
+    this.setupDataChannelHandlers();
 
-      // ✅ CONFIGURA DATA CHANNEL
-      this.peer.ondatachannel = (event) => {
-        console.log('📨 DataChannel recebido');
+    stream.getTracks().forEach(track => {
+        this.peer.addTrack(track, stream);
+    });
+
+    this.peer.ontrack = event => {
+        if (this.remoteStreamCallback) {
+            this.remoteStreamCallback(event.streams[0]);
+        }
+    };
+
+    this.peer.onicecandidate = event => {
+        if (event.candidate) {
+            this.socket.emit('ice-candidate', {
+                to: targetId,
+                candidate: event.candidate
+            });
+        }
+    };
+
+    this.peer.createOffer()
+        .then(offer => this.peer.setLocalDescription(offer))
+        .then(() => {
+            this.socket.emit('call', {
+                to: targetId,
+                offer: this.peer.localDescription,
+                callerLang
+            });
+        });
+  }
+
+  handleIncomingCall(offer, localStream, callback) {
+    this.peer = new RTCPeerConnection({ iceServers: this.iceServers });
+
+    if (localStream) {
+        localStream.getTracks().forEach(track => {
+            this.peer.addTrack(track, localStream);
+        });
+    }
+
+    this.peer.ondatachannel = (event) => {
         this.dataChannel = event.channel;
         this.setupDataChannelHandlers();
-      };
+    };
 
-      // ✅ ADICIONA TRACKS LOCAIS
-      if (localStream) {
-        localStream.getTracks().forEach(track => {
-          this.peer.addTrack(track, localStream);
-          console.log(`✅ Track ${track.kind} adicionada`);
-        });
-      }
+    this.peer.ontrack = event => callback(event.streams[0]);
 
-      // ✅ CONFIGURA HANDLERS
-      this.peer.ontrack = (event) => {
-        console.log('🎥 Stream remota recebida na resposta');
-        callback(event.streams[0]);
-      };
-
-      this.peer.onicecandidate = (event) => {
-        if (event.candidate && this.currentCaller) {
-          console.log('❄️ Enviando ICE candidate de resposta');
-          this.socket.emit('ice-candidate', {
-            to: this.currentCaller,
-            candidate: event.candidate
-          });
+    this.peer.onicecandidate = event => {
+        if (event.candidate) {
+            this.socket.emit('ice-candidate', {
+                to: this.currentCaller,
+                candidate: event.candidate
+            });
         }
-      };
+    };
 
-      // ✅ PROCESSA OFERTA E CRIA RESPOSTA
-      console.log('🔄 Configurando oferta remota...');
-      await this.peer.setRemoteDescription(new RTCSessionDescription(offer));
-      
-      console.log('🔄 Criando resposta...');
-      const answer = await this.peer.createAnswer();
-      await this.peer.setLocalDescription(answer);
-      
-      console.log('✅ Enviando resposta...');
-      this.socket.emit('answer', {
-        to: this.currentCaller,
-        answer: this.peer.localDescription
-      });
-
-      console.log('✅ Chamada recebida processada com sucesso');
-
-    } catch (error) {
-      console.error('❌ Erro ao processar chamada recebida:', error);
-      throw error;
-    }
+    this.peer.setRemoteDescription(new RTCSessionDescription(offer))
+        .then(() => this.peer.createAnswer())
+        .then(answer => this.peer.setLocalDescription(answer))
+        .then(() => {
+            this.socket.emit('answer', {
+                to: this.currentCaller,
+                answer: this.peer.localDescription
+            });
+        });
   }
 
-  // ✅ SETUP SOCKET HANDLERS CORRIGIDO
   setupSocketHandlers() {
-    console.log('🔌 Configurando handlers do socket...');
-
-    // ✅ RESPOSTA À OFERTA
-    this.socket.on('answer', (data) => {
-      console.log('✅ Resposta recebida:', data);
-      if (this.peer && this.peer.signalingState === 'have-local-offer') {
-        this.peer.setRemoteDescription(new RTCSessionDescription(data.answer))
-          .then(() => {
-            console.log('✅ Resposta configurada com sucesso');
-          })
-          .catch(error => {
-            console.error('❌ Erro ao configurar resposta:', error);
-          });
-      }
+    this.socket.on('acceptAnswer', data => {
+        if (this.peer) {
+            this.peer.setRemoteDescription(new RTCSessionDescription(data.answer));
+        }
     });
 
-    // ✅ ICE CANDIDATES
-    this.socket.on('ice-candidate', (data) => {
-      console.log('❄️ ICE candidate recebido:', data);
-      if (this.peer && this.peer.remoteDescription) {
-        this.peer.addIceCandidate(new RTCIceCandidate(data.candidate))
-          .then(() => {
-            console.log('✅ ICE candidate adicionado');
-          })
-          .catch(error => {
-            console.error('❌ Erro ao adicionar ICE candidate:', error);
-          });
-      } else {
-        console.log('⚠️ Peer não pronto para ICE candidate');
-      }
+    this.socket.on('ice-candidate', candidate => {
+        if (this.peer) {
+            this.peer.addIceCandidate(new RTCIceCandidate(candidate));
+        }
     });
 
-    // ✅ CHAMADA RECEBIDA
-    this.socket.on('incomingCall', (data) => {
-      console.log('📞 Chamada recebida de:', data.from);
-      this.currentCaller = data.from;
-      if (this.onIncomingCall) {
-        this.onIncomingCall(data.offer, data.callerLang);
-      }
+    this.socket.on('incomingCall', data => {
+        this.currentCaller = data.from;
+       window.lastCallerId = data.from;
+        if (this.onIncomingCall) {
+            this.onIncomingCall(data.offer, data.callerLang);
+        }
     });
-
-    // ✅ CONFIRMAÇÃO DE REGISTRO
-    this.socket.on('registered', (data) => {
-      console.log('✅ Registrado no servidor com sucesso:', data);
-    });
-
-    console.log('✅ Handlers do socket configurados');
   }
 
-  // ✅ HANDLE ANSWER SEPARADO
-  async handleAnswer(answer) {
-    try {
-      if (!this.peer) {
-        throw new Error('PeerConnection não existe');
-      }
-
-      console.log('🔄 Configurando resposta remota...');
-      await this.peer.setRemoteDescription(new RTCSessionDescription(answer));
-      console.log('✅ Resposta configurada com sucesso');
-      
-    } catch (error) {
-      console.error('❌ Erro ao configurar resposta:', error);
-      throw error;
-    }
-  }
-
-  // ✅ HANDLE ICE CANDIDATE SEPARADO
-  async handleIceCandidate(candidate) {
-    try {
-      if (!this.peer || !this.peer.remoteDescription) {
-        console.log('⚠️ Peer não pronto para ICE candidate');
-        return;
-      }
-
-      await this.peer.addIceCandidate(new RTCIceCandidate(candidate));
-      console.log('✅ ICE candidate adicionado');
-      
-    } catch (error) {
-      console.error('❌ Erro ao adicionar ICE candidate:', error);
-    }
-  }
-
-  // ✅ SET LOCAL STREAM
-  setLocalStream(stream) {
-    this.localStream = stream;
-    console.log('✅ Stream local configurado no WebRTC Core');
-  }
-
-  // ✅ CALLBACKS
   setRemoteStreamCallback(callback) {
     this.remoteStreamCallback = callback;
-    console.log('✅ Callback de stream remoto configurado');
   }
 
   setDataChannelCallback(callback) {
     this.onDataChannelMessage = callback;
-    console.log('✅ Callback de DataChannel configurado');
   }
 
-  setIncomingCallCallback(callback) {
-    this.onIncomingCall = callback;
-    console.log('✅ Callback de chamada recebida configurado');
-  }
-
-  // ✅ ENVIAR MENSAGEM
   sendMessage(message) {
     if (this.dataChannel && this.dataChannel.readyState === 'open') {
-      this.dataChannel.send(message);
-      console.log('✅ Mensagem enviada:', message);
-      return true;
-    } else {
-      console.log('❌ DataChannel não está aberto para enviar mensagem');
-      return false;
+        this.dataChannel.send(message);
     }
   }
 
-  // ✅ ATUALIZAR STREAM DE VÍDEO
-  async updateVideoStream(newStream) {
+  /**
+   * 🎥 ATUALIZA STREAM DE VÍDEO DURANTA CHAMADA ATIVA
+   * Método seguro para alternar câmeras sem quebrar WebRTC
+   */
+  updateVideoStream(newStream) {
     return new Promise(async (resolve, reject) => {
       try {
         if (!this.peer || this.peer.connectionState !== 'connected') {
@@ -380,7 +174,10 @@ class WebRTCCore {
 
         console.log('🔄 Atualizando stream de vídeo no WebRTC Core...');
         
+        // Atualiza o stream local
         this.localStream = newStream;
+        
+        // Obtém a nova track de vídeo
         const newVideoTrack = newStream.getVideoTracks()[0];
         
         if (!newVideoTrack) {
@@ -388,6 +185,7 @@ class WebRTCCore {
           return;
         }
 
+        // Encontra e atualiza TODOS os senders de vídeo
         const senders = this.peer.getSenders();
         let videoSendersUpdated = 0;
         
@@ -404,10 +202,10 @@ class WebRTCCore {
         }
 
         if (videoSendersUpdated > 0) {
-          console.log(`✅ ${videoSendersUpdated} senders de vídeo atualizados`);
+          console.log(`✅ ${videoSendersUpdated} senders de vídeo atualizados com sucesso`);
           resolve(true);
         } else {
-          console.log('⚠️ Nenhum sender de vídeo encontrado');
+          console.log('⚠️ Nenhum sender de vídeo encontrado para atualizar');
           resolve(false);
         }
         
@@ -416,20 +214,6 @@ class WebRTCCore {
         reject(error);
       }
     });
-  }
-
-  // ✅ FECHAR CONEXÃO
-  close() {
-    if (this.dataChannel) {
-      this.dataChannel.close();
-    }
-    if (this.peer) {
-      this.peer.close();
-    }
-    if (this.localStream) {
-      this.localStream.getTracks().forEach(track => track.stop());
-    }
-    console.log('🔴 WebRTC Core fechado');
   }
 }
 
