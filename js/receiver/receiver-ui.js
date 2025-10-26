@@ -202,12 +202,14 @@ document.addEventListener('DOMContentLoaded', function() {
     setupInstructionToggle();
 });
 
+// ... (código anterior permanece igual)
+
 window.onload = async () => {
     try {
         const params = new URLSearchParams(window.location.search);
-        const lang = params.get('lang') || navigator.language || 'pt-BR';
+        // ✅ CORREÇÃO: Removida variável 'lang' não utilizada
         
-       await traduzirFrasesFixas('receiver');
+        await traduzirFrasesFixas('receiver'); // ✅ CORRETO
         permissaoConcedida = await solicitarPermissoes();
         
         if (typeof window.liberarInterface === 'function') {
