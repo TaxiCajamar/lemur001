@@ -1,4 +1,9 @@
-// 📁 language-utils.js
+// 📁 js/commons/language-utils.js
+
+// ✅ VARIÁVEIS SEPARADAS PARA RECEIVER E CALLER
+window.idiomaReceiver = 'pt-BR';  // Idioma DO RECEIVER
+window.idiomaCaller = 'en-US';    // Idioma DO CALLER
+
 export async function obterIdiomaCompleto(lang) {
     if (!lang) return 'pt-BR';
     if (lang.includes('-')) return lang;
@@ -58,4 +63,41 @@ export async function translateText(text, targetLang) {
     } catch (error) {
         return text;
     }
+}
+
+// ✅ FUNÇÕES PARA GERENCIAR IDIOMAS SEPARADAMENTE
+export function definirIdiomaLocal(langCode) {
+    // Detecta automaticamente se é receiver ou caller
+    if (window.location.pathname.includes('receiver')) {
+        window.idiomaReceiver = langCode;
+    } else {
+        window.idiomaCaller = langCode;
+    }
+    aplicarBandeiraLocal(langCode);
+}
+
+export function obterIdiomaLocal() {
+    // Retorna o idioma correto baseado na página
+    if (window.location.pathname.includes('receiver')) {
+        return window.idiomaReceiver;
+    } else {
+        return window.idiomaCaller;
+    }
+}
+
+// ✅ FUNÇÕES ESPECÍFICAS PARA TRADUÇÃO FUTURA
+export function obterIdiomaReceiver() {
+    return window.idiomaReceiver || 'pt-BR';
+}
+
+export function obterIdiomaCaller() {
+    return window.idiomaCaller || 'en-US';
+}
+
+// ✅ FUNÇÃO PARA TRADUÇÃO BIDIRECIONAL (futuro)
+export function obterParIdiomasTraducao() {
+    return {
+        origem: obterIdiomaReceiver(),  // De: Receiver
+        destino: obterIdiomaCaller()    // Para: Caller
+    };
 }
