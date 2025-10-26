@@ -1,15 +1,25 @@
 import { WebRTCCore } from '../../core/webrtc-core.js';
 
-export function setupWebRTC(role = 'receiver') {
+export function setupWebRTC(role = 'receiver', callbacks = {}) {
     window.rtcCore = new WebRTCCore();
 
     // 🆔 Geração de ID baseada no role
     let myId;
+    
     if (role === 'receiver') {
-        const url = window.location.href;
-        const fixedId = url.split('?')[1] || crypto.randomUUID().substr(0, 8);
-        myId = fixedId.substr(0, 8);
+        // Extrair últimos 8 dígitos do token
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || '';
+        
+        if (token && token.length >= 8) {
+            // Pega últimos 8 caracteres do token
+            myId = token.slice(-8);
+        } else {
+            // Fallback: gera ID aleatório se token muito curto ou não existir
+            myId = crypto.randomUUID().substr(0, 8);
+        }
     } else {
+        // Caller: sempre gera ID aleatório
         myId = crypto.randomUUID().substr(0, 8);
     }
 
@@ -39,8 +49,9 @@ export function setupWebRTC(role = 'receiver') {
                     }
                 }
 
-                if (idiomaDoCaller) {
-                    aplicarBandeiraRemota(idiomaDoCaller);
+                // ✅ CHAMADA VIA CALLBACK EXTERNO
+                if (idiomaDoCaller && callbacks.onBandeiraRemota) {
+                    callbacks.onBandeiraRemota(idiomaDoCaller);
                 }
             });
         };
@@ -49,17 +60,4 @@ export function setupWebRTC(role = 'receiver') {
     return { myId, rtcCore: window.rtcCore };
 }
 
-// 🏳️ Função auxiliar (já existe no seu UI)
-async function aplicarBandeiraRemota(langCode) {
-    try {
-        const response = await fetch('assets/bandeiras/language-flags.json');
-        const flags = await response.json();
-        const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🏴';
-
-        const remoteLangElement = document.querySelector('.remoter-Lang');
-        if (remoteLangElement) remoteLangElement.textContent = bandeira;
-    } catch (error) {
-        const remoteLangElement = document.querySelector('.remoter-Lang');
-        if (remoteLangElement) remoteLangElement.textContent = '🏴';
-    }
-}
+// ❌ REMOVER função aplicarBandeiraRemota duplicada daqui
