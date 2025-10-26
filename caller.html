@@ -23,26 +23,27 @@
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
 
     <!-- 🐵 Imagem do Lemur Impaciente durante conexão -->
-<img id="lemurWaiting" src="assets/images/lemurImpaciente.png" alt="Aguardando conexão" style="display: none;" />
+    <img id="lemurWaiting" src="assets/images/lemurImpaciente.png" alt="Aguardando conexão" style="display: none;" />
 
     <!-- 🌉 Imagem ponte -->
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
     
-    <!-- ⏳ Loader de carregamento (IGUAL AO RECEIVER) -->
+    <!-- ⏳ Loader de carregamento -->
     <div id="mobileLoading" class="mobile-loader">
       <div class="loader-circle"></div>
     </div>
 
     <!-- 🏷️ Subtítulo de tradução -->
-    <div class="translator-label" id="translator-label">
-      Real-time translation.
+    <div class="translator-label">
+      Real-time translation. <!-- ✅ SEM ID (apenas visual) -->
     </div>
 
-    <div class="remoter-Lang">🏳️</div>
-    <div class="local-Lang">🏳️</div>
+    <!-- 🏳️ Indicadores de Idioma -->
+    <div class="remoter-Lang">🏳️</div> <!-- ✅ Idioma do Receiver -->
+    <div class="local-Lang">🏳️</div>   <!-- ✅ Idioma do Caller -->
     <div class="local-mic-Lang">🏳️</div>
 
-    <!-- 🎥 Vídeo remoto -->
+    <!-- 🎥 Container de vídeo -->
     <div class="video-wrapper">
       <video id="remoteVideo" autoplay playsinline></video>
 
@@ -57,8 +58,6 @@
       <span id="myId"></span>
     </div>
 
-    <button id="callActionBtn" style="display: none;">SEND 🚀</button>
-
     <!-- ✅ APENAS A CAIXA PRINCIPAL DE TEXTO -->
     <div id="texto-recebido"></div>
 
@@ -71,45 +70,46 @@
   </div>
 
   <!-- 📋 Instruction box with toggle -->
-<div class="instruction-box expandido" id="instructionBox">
-  <button class="instruction-toggle" id="instructionToggle"></button>
-  <div class="instruction-content">
-    <div class="instruction-item">
-      <img src="assets/images/hello.png" alt="Hello icon" />
-      <span id="welcome-text">Welcome! Let's begin.</span>
-    </div>
-    <div class="instruction-item">
-  <img src="assets/images/realtime.png" alt="Realtime icon" />
-  <span id="translator-label-2">Real-time translation.</span>  <!-- ⬅️ MUDE PARA ID ÚNICO -->
-</div>
-    <div class="instruction-item">
-      <img src="assets/images/Ancioso.png" alt="Loading icon" />
-      <span id="wait-connection">Waiting for connection.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/juntos.png" alt="Connected icon" />
-      <span id="both-connected">Both online.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/trduz.png" alt="Message icon" />
-      <span id="check-replies">Read the message.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/mic.png" alt="Mic icon" />
-      <span id="drop-voice">Speak clearly.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/cam.png" alt="Camera icon" />
-      <span id="flip-cam">Flip the camera. Share!</span>
+  <div class="instruction-box expandido" id="instructionBox">
+    <button class="instruction-toggle" id="instructionToggle"></button>
+    <div class="instruction-content">
+      <div class="instruction-item">
+        <img src="assets/images/hello.png" alt="Hello icon" />
+        <span id="welcome-text">Welcome! Let's begin.</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/realtime.png" alt="Realtime icon" />
+        <span id="translator-label">Real-time translation.</span> <!-- ✅ ID ÚNICO -->
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/Ancioso.png" alt="Loading icon" />
+        <span id="wait-connection">Waiting for connection.</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/juntos.png" alt="Connected icon" />
+        <span id="both-connected">Both online.</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/trduz.png" alt="Message icon" />
+        <span id="check-replies">Read the message.</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/mic.png" alt="Mic icon" />
+        <span id="drop-voice">Speak clearly.</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/cam.png" alt="Camera icon" />
+        <span id="flip-cam">Flip the camera. Share!</span>
+      </div>
     </div>
   </div>
-</div>
 
-  <!-- 🔄 Botão para alternar câmera (IGUAL AO RECEIVER) -->
+  <!-- 🔄 Botão para alternar câmera -->
   <button id="toggleCamera" class="camera-toggle-btn">
     <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
   </button>
 
+  <!-- 🎛️ Modal de gravação -->
   <div class="recording-modal" id="recordingModal">
     <div class="recording-indicator">
       <div class="recording-dot"></div>
@@ -119,20 +119,21 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
+  <!-- 🔌 Socket.IO para comunicação em tempo real -->
   <script src="https://lemur-signal.onrender.com/socket.io/socket.io.js"></script>
   
   <script>
-    // ✅ FUNÇÃO GLOBAL PARA LIBERAR A INTERFACE (IGUAL AO RECEIVER)
+    // ✅ FUNÇÃO GLOBAL PARA LIBERAR A INTERFACE
     window.liberarInterface = function () {
       console.log('✅ Interface já está visível');
     };
 
-    // ✅ EXIBE ERRO DE CARREGAMENTO (IGUAL AO RECEIVER)
+    // ✅ EXIBE ERRO DE CARREGAMENTO
     window.mostrarErroCarregamento = function (mensagem) {
       alert('Erro: ' + mensagem);
     };
 
-    // ✅ OCULTA OVERLAY AO CARREGAR (IGUAL AO RECEIVER)
+    // ✅ OCULTA OVERLAY AO CARREGAR
     document.addEventListener('DOMContentLoaded', function () {
       const overlay = document.querySelector('.info-overlay');
       if (overlay) {
@@ -141,7 +142,9 @@
     });
   </script>
   
+  <!-- 📦 Scripts do caller NA NOVA ESTRUTURA -->
   <script type="module" src="./js/caller/caller-ui.js"></script>
-  <script src="./js/caller/caller-trz.js"></script>
+  <!-- ❌ REMOVER: caller-trz.js (funções movidas para commons) -->
+
 </body>
 </html>
