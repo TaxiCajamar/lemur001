@@ -17,16 +17,23 @@ let webrtcConnection;
 // ✅ FUNÇÃO SIMPLIFICADA: Configurar callbacks quando receber chamada
 function configurarCallbacksWebRTC() {
     return {
+        onLocalStream: (localStream) => {
+            console.log('📹 Stream LOCAL recebido - vai para PIP');
+            
+            // ✅ ATRIBUI AO LOCALVIDEO (PIP)
+            const localVideo = document.getElementById('localVideo');
+            if (localVideo) {
+                localVideo.srcObject = localStream;
+            }
+        },
+        
         onRemoteStream: (remoteStream) => {
-            console.log('📹 Stream remota recebida');
+            console.log('📹 Stream REMOTA recebida - vai para box principal');
             
             // Desativa áudio remoto
             remoteStream.getAudioTracks().forEach(track => track.enabled = false);
 
-            // Atualiza UI
-            const overlay = document.querySelector('.info-overlay');
-            if (overlay) overlay.classList.add('hidden');
-
+            // ✅ ATRIBUI AO REMOTEVIDEO (BOX PRINCIPAL)
             const remoteVideo = document.getElementById('remoteVideo');
             if (remoteVideo) {
                 remoteVideo.srcObject = remoteStream;
