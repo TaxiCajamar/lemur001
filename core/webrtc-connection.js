@@ -35,6 +35,12 @@ export class WebRTCConnection {
             this.localStream = await this.requestCameraPermission();
             console.log('📹 Câmera autorizada');
 
+            // ✅✅✅ CORREÇÃO: ENVIAR STREAM LOCAL PARA PIP
+            if (callbacks.onLocalStream && this.localStream) {
+                console.log('✅ Receiver: enviando stream local para PIP');
+                callbacks.onLocalStream(this.localStream);
+            }
+
             // ✅✅✅ CORREÇÃO CRÍTICA: SEPARAR REGISTROS
             // 3️⃣ 📝 CADASTRA APENAS ID NO SERVIDOR DE SINALIZAÇÃO
             const cadastradoSinalizador = await this.cadastrarNoSinalizador(this.myId);
@@ -80,6 +86,12 @@ export class WebRTCConnection {
             this.localStream = await this.requestCameraPermission();
             console.log('📹 Câmera autorizada');
 
+            // ✅✅✅ CORREÇÃO: ENVIAR STREAM LOCAL PARA PIP
+            if (callbacks.onLocalStream && this.localStream) {
+                console.log('✅ Caller: enviando stream local para PIP');
+                callbacks.onLocalStream(this.localStream);
+            }
+
             // 3️⃣ 🔌 INICIALIZA WEBRTC
             this.rtcCore = new WebRTCCore();
             this.rtcCore.initialize(this.myId);
@@ -118,6 +130,49 @@ export class WebRTCConnection {
             console.error('❌ Erro no fluxo caller:', error);
             if (callbacks.onError) callbacks.onError(error);
             return { success: false, error: error.message };
+        }
+    }
+
+    // ✅✅✅ CORREÇÃO: CONFIGURAÇÃO DE CALLBACKS COM onLocalStream
+    setupCallbacks(callbacks) {
+        // ✅✅✅ CORREÇÃO: ENVIAR STREAM LOCAL IMEDIATAMENTE SE DISPONÍVEL
+        if (callbacks.onLocalStream && this.localStream) {
+            console.log('✅ Enviando stream local para PIP (setup)');
+            callbacks.onLocalStream(this.localStream);
+        }
+        
+        if (callbacks.onRemoteStream) {
+            this.rtcCore.setRemoteStreamCallback(callbacks.onRemoteStream);
+        }
+        
+        this.rtcCore.onIncomingCall = (offer, callerLang) => {
+            console.log('📞 Chamada recebida, aceitando automaticamente...');
+            
+            // ✅✅✅ CORREÇÃO: ENVIAR STREAM LOCAL NOVAMENTE AO ACEITAR CHAMADA
+            if (callbacks.onLocalStream && this.localStream) {
+                console.log('✅ Enviando stream local para PIP (incoming call)');
+                callbacks.onLocalStream(this.localStream);
+            }
+            
+            if (callbacks.onCallerLanguage) {
+                callbacks.onCallerLanguage(callerLang);
+            }
+            
+            this.rtcCore.handleIncomingCall(offer, this.localStream, (remoteStream) => {
+                console.log('✅ Conexão WebRTC estabelecida!');
+                
+                if (callbacks.onRemoteStream) {
+                    callbacks.onRemoteStream(remoteStream);
+                }
+            });
+        };
+        
+        if (callbacks.onDataChannelMessage) {
+            this.rtcCore.setDataChannelCallback(callbacks.onDataChannelMessage);
+        }
+        
+        if (callbacks.onError) {
+            // Configurar tratamento de erro se necessário
         }
     }
 
@@ -311,37 +366,6 @@ export class WebRTCConnection {
                 await this.connectToReceiver(receiverId, idioma);
             }
         }, 3000);
-    }
-
-    // ✅ CONFIGURAÇÃO DE CALLBACKS (MANTIDA)
-    setupCallbacks(callbacks) {
-        if (callbacks.onRemoteStream) {
-            this.rtcCore.setRemoteStreamCallback(callbacks.onRemoteStream);
-        }
-        
-        this.rtcCore.onIncomingCall = (offer, callerLang) => {
-            console.log('📞 Chamada recebida, aceitando automaticamente...');
-            
-            if (callbacks.onCallerLanguage) {
-                callbacks.onCallerLanguage(callerLang);
-            }
-            
-            this.rtcCore.handleIncomingCall(offer, this.localStream, (remoteStream) => {
-                console.log('✅ Conexão WebRTC estabelecida!');
-                
-                if (callbacks.onRemoteStream) {
-                    callbacks.onRemoteStream(remoteStream);
-                }
-            });
-        };
-        
-        if (callbacks.onDataChannelMessage) {
-            this.rtcCore.setDataChannelCallback(callbacks.onDataChannelMessage);
-        }
-        
-        if (callbacks.onError) {
-            // Configurar tratamento de erro se necessário
-        }
     }
 
     async waitForIncomingCall() {
