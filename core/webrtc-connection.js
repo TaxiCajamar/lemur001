@@ -10,7 +10,13 @@ export class WebRTCConnection {
         this.localStream = null;
     }
 
-    // ✅ FLUXO CORRETO DO RECEIVER (MANTIDO IGUAL)
+    // ✅ NOVO MÉTODO: Sincronizar stream com UI
+    setLocalStream(stream) {
+        this.localStream = stream;
+        console.log('✅ Stream sincronizado com WebRTCConnection');
+    }
+
+    // ✅ FLUXO CORRETO DO RECEIVER (CORRIGIDO)
     async startReceiverFlow(token, callbacks = {}) {
         this.role = 'receiver';
         
@@ -19,28 +25,28 @@ export class WebRTCConnection {
             this.myId = this.generateReceiverId(token);
             console.log('🆔 Receiver ID:', this.myId);
 
-            // 2️⃣ 📹 PEDE PERMISSÃO DA CÂMERA
-            this.localStream = await this.requestCameraPermission();
-            console.log('📹 Câmera autorizada');
-
-            // 3️⃣ 🔌 INICIALIZA WEBRTC
+            // ✅ CORREÇÃO: Configurar callbacks ANTES de tudo
             this.rtcCore = new WebRTCCore();
             this.rtcCore.initialize(this.myId);
             this.setupCallbacks(callbacks);
 
-            // 4️⃣ 📝 CADASTRA NO SERVIDOR
+            // 2️⃣ 📹 PEDE PERMISSÃO DA CÂMERA (agora usa stream existente)
+            this.localStream = await this.requestCameraPermission();
+            console.log('📹 Câmera autorizada');
+
+            // 3️⃣ 📝 CADASTRA NO SERVIDOR
             const cadastrado = await this.cadastrarReceiver(this.myId, token);
             if (!cadastrado) throw new Error('Falha ao cadastrar');
 
-            // 5️⃣ 🔍 VERIFICA SE JÁ ESTÁ SENDO PROCURADO
+            // 4️⃣ 🔍 VERIFICA SE JÁ ESTÁ SENDO PROCURADO
             const callerId = await this.verificarSeEstaSendoProcurado(this.myId, token);
             
             if (callerId) {
-                // 6️⃣ 🎯 SE ESTÁ SENDO PROCURADO → CONECTA IMEDIATAMENTE
+                // 5️⃣ 🎯 SE ESTÁ SENDO PROCURADO → CONECTA IMEDIATAMENTE
                 console.log('🎯 Conectando com caller:', callerId);
                 await this.waitForIncomingCall();
             } else {
-                // 7️⃣ ⏳ SE NÃO → FICA AGUARDANDO
+                // 6️⃣ ⏳ SE NÃO → FICA AGUARDANDO
                 console.log('⏳ Aguardando conexão...');
                 this.setupConnectionHandlers();
             }
@@ -111,18 +117,26 @@ export class WebRTCConnection {
     // ✅ MÉTODO CORRIGIDO: RESOLVE CONFLITO DE CÂMERAS
     async requestCameraPermission() {
         try {
-            // ✅ PRIMEIRO TENTA USAR STREAM EXISTENTE (do UI)
+            // ✅ PRIMEIRO USA STREAM EXISTENTE (sincronizado)
+            if (this.localStream) {
+                console.log('✅ Usando stream sincronizado do UI');
+                return this.localStream;
+            }
+            
+            // ✅ SEGUNDO USA STREAM GLOBAL
             if (window.localStream) {
-                console.log('✅ Usando stream de câmera existente do UI');
+                console.log('✅ Usando stream global do window');
+                this.localStream = window.localStream;
                 return window.localStream;
             }
             
-            // ✅ SE NÃO EXISTIR, CRIA NOVA (SEM ÁUDIO - igual ao UI)
+            // ✅ SÓ CRIA NOVO SE NÃO EXISTIR NENHUM
             console.log('📹 Solicitando nova permissão de câmera (sem áudio)');
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 video: true, 
                 audio: false
             });
+            this.localStream = stream;
             return stream;
         } catch (error) {
             throw new Error('Permissão da câmera negada: ' + error.message);
