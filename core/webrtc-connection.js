@@ -108,11 +108,20 @@ export class WebRTCConnection {
         return crypto.randomUUID().substr(0, 8);
     }
 
+    // ✅✅✅ MÉTODO CORRIGIDO: RESOLVE CONFLITO DE CÂMERAS
     async requestCameraPermission() {
         try {
+            // ✅ PRIMEIRO TENTA USAR STREAM EXISTENTE (do UI)
+            if (window.localStream) {
+                console.log('✅ Usando stream de câmera existente do UI');
+                return window.localStream;
+            }
+            
+            // ✅ SE NÃO EXISTIR, CRIA NOVA (SEM ÁUDIO - igual ao UI)
+            console.log('📹 Solicitando nova permissão de câmera (sem áudio)');
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 video: true, 
-                audio: true 
+                audio: false  // ← IMPORTANTE: false para não conflitar com UI
             });
             return stream;
         } catch (error) {
@@ -121,6 +130,146 @@ export class WebRTCConnection {
     }
 
     // ... (resto dos métodos permanece igual)
+
+    async cadastrarReceiver(myId, token) {
+        try {
+            const response = await fetch(`${SERVIDOR_SINALIZADOR}/registrar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: myId,
+                    token: token,
+                    status: 'online',
+                    timestamp: Date.now()
+                })
+            });
+            const result = await response.json();
+            return result.success;
+        } catch (error) {
+            console.error('Erro ao cadastrar receiver:', error);
+            return false;
+        }
+    }
+
+    async verificarSeEstaSendoProcurado(myId, token) {
+        try {
+            const response = await fetch(`${SERVIDOR_SINALIZADOR}/verificar/${myId}?token=${token}`);
+            const result = await response.json();
+            return result.procurado ? result.callerId : null;
+        } catch (error) {
+            console.error('Erro ao verificar:', error);
+            return null;
+        }
+    }
+
+    async verificarReceiverOnline(receiverId, token) {
+        try {
+            const response = await fetch(`${SERVIDOR_SINALIZADOR}/verificar-online/${receiverId}?token=${token}`);
+            const result = await response.json();
+            return result.online || false;
+        } catch (error) {
+            console.error('Erro ao verificar receiver:', error);
+            return false;
+        }
+    }
+
+    async connectToReceiver(receiverId, token, idioma) {
+        try {
+            const response = await fetch(`${SERVIDOR_SINALIZADOR}/procurar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    callerId: this.myId,
+                    targetId: receiverId,
+                    token: token,
+                    callerLang: idioma,
+                    timestamp: Date.now()
+                })
+            });
+            const result = await response.json();
+            return result.success;
+        } catch (error) {
+            console.error('Erro ao conectar com receiver:', error);
+            throw error;
+        }
+    }
+
+    async sendFirebaseNotification(token, receiverId) {
+        // ✅ IMPLEMENTAÇÃO DO FIREBASE AQUI
+        console.log('📲 Enviando notificação Firebase para:', receiverId);
+        // await firebase.messaging().send(...)
+        return true;
+    }
+
+    // ✅ CONFIGURAÇÃO DE CALLBACKS
+    setupCallbacks(callbacks) {
+        if (callbacks.onRemoteStream) {
+            this.rtcCore.setRemoteStreamCallback(callbacks.onRemoteStream);
+        }
+        if (callbacks.onCallerLanguage) {
+            this.rtcCore.onIncomingCall = (offer, callerLang) => {
+                callbacks.onCallerLanguage(callerLang);
+                this.rtcCore.handleIncomingCall(offer, this.localStream, callbacks.onRemoteStream);
+            };
+        }
+        if (callbacks.onDataChannelMessage) {
+            this.rtcCore.setDataChannelCallback(callbacks.onDataChannelMessage);
+        }
+    }
+
+    // ✅ AGUARDAR CONEXÕES
+    async waitForIncomingCall() {
+        return new Promise((resolve) => {
+            this.rtcCore.onIncomingCall = (offer, callerLang) => {
+                console.log('📞 Chamada recebida de:', callerLang);
+                this.rtcCore.handleIncomingCall(offer, this.localStream, (remoteStream) => {
+                    if (this.onRemoteStream) this.onRemoteStream(remoteStream);
+                    resolve(remoteStream);
+                });
+            };
+        });
+    }
+
+    async waitForReceiverOnline(receiverId, token, idioma) {
+        console.log('⏳ Aguardando receiver ficar online...');
+        
+        // Verifica a cada 3 segundos se o receiver está online
+        const checkInterval = setInterval(async () => {
+            const online = await this.verificarReceiverOnline(receiverId, token);
+            if (online) {
+                clearInterval(checkInterval);
+                console.log('🎯 Receiver ficou online, conectando...');
+                await this.connectToReceiver(receiverId, token, idioma);
+            }
+        }, 3000);
+    }
+
+    setupConnectionHandlers() {
+        // Configura handlers para chamadas futuras
+        this.rtcCore.setupSocketHandlers();
+    }
+
+    // ✅ LIMPEZA
+    async cleanup() {
+        if (this.localStream) {
+            this.localStream.getTracks().forEach(track => track.stop());
+        }
+        if (this.myId) {
+            await this.desregistrarDoServidor(this.myId);
+        }
+    }
+
+    async desregistrarDoServidor(myId) {
+        try {
+            await fetch(`${SERVIDOR_SINALIZADOR}/desregistrar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: myId })
+            });
+        } catch (error) {
+            console.error('Erro ao desregistrar:', error);
+        }
+    }
 }
 
 export function setupWebRTC() {
