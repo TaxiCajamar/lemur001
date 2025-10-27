@@ -14,61 +14,61 @@
       pointer-events: none !important;
     }
     
-    /* 🆕 ESTILOS PARA BOTÕES DE COMPARTILHAMENTO NO QR CODE */
-.social-buttons {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin: 15px 0;
-  flex-wrap: wrap;
-}
+    /* 🎯 BOTÕES SIMPLIFICADOS */
+    .social-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 15px 0;
+      flex-wrap: wrap;
+    }
 
-.social-btn {
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 5px;
-  background: transparent; /* Fundo transparente para mostrar as logos */
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+    .social-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 5px;
+      background: transparent;
+      cursor: pointer;
+    }
 
-/* 🆕 ESTILOS PARA LINKS FIXOS DE REDES SOCIAIS */
-.social-links-fixed {
-  position: absolute;
-  top: 22%;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin: 10px 0;
-  flex-wrap: wrap;
-  width: 80%;
-  z-index: 10;
-}
+    .social-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 3px;
+    }
 
-.social-btn-fixed {
-  width: 35px;
-  height: 35px;
-  border: none;
-  border-radius: 5px;
-  background: transparent; /* Fundo transparente */
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-}
+    .social-links-fixed {
+      position: absolute;
+      top: 22%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 10px 0;
+      flex-wrap: wrap;
+      width: 80%;
+      z-index: 10;
+    }
 
-/* 🖼️ ESTILO PARA AS IMAGENS DOS LOGOS */
-.social-icon {
-  width: 24px;  /* Tamanho adequado para as logos */
-  height: 24px;
-  object-fit: contain; /* Mantém proporção sem distorcer */
-}
+    .social-btn-fixed {
+      width: 35px;
+      height: 35px;
+      border: none;
+      border-radius: 5px;
+      background: transparent;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .social-btn-fixed img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 2px;
+    }
   </style>
 </head>
 
@@ -159,25 +159,25 @@
       Real-time translation.
     </div>
 
-   <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS - COM LOGOS REAIS -->
+   <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS - SIMPLIFICADO -->
 <div class="social-links-fixed">
-  <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed linkedin">
-    <img src="assets/images/linke.png" alt="LinkedIn" class="social-icon">
+  <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/linke.png" alt="LinkedIn">
   </a>
-  <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed instagram">
-    <img src="assets/images/insta.png" alt="Instagram" class="social-icon">
+  <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/insta.png" alt="Instagram">
   </a>
-  <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed facebook">
-    <img src="assets/images/face.png" alt="Facebook" class="social-icon">
+  <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/face.png" alt="Facebook">
   </a>
-  <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed website">
-    <img src="assets/images/redeX.png" alt="Website" class="social-icon">
+  <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/redeX.png" alt="Website">
   </a>
-  <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed whatsapp">
-    <img src="assets/images/wattsap.png" alt="WhatsApp" class="social-icon">
+  <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/wattsap.png" alt="WhatsApp">
   </a>
-  <a href="https://t.me/lemurinnovation" target="_blank" class="social-btn-fixed telegram">
-    <img src="assets/images/telegran.png" alt="Telegram" class="social-icon">
+  <a href="https://t.me/lemurinnovation" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/telegran.png" alt="Telegram">
   </a>
 </div>
 
@@ -215,22 +215,22 @@
         You can ask to scan, share or print on your business card.
       </p>
 
-     <!-- 🆕 BOTÕES DE COMPARTILHAMENTO NO QR CODE COM LOGOS -->
+     <!-- 🆕 BOTÕES DE COMPARTILHAMENTO - SIMPLIFICADO -->
 <div class="social-buttons">
-  <button class="social-btn facebook" onclick="compartilharSocial('facebook')">
-    <img src="assets/images/face.png" alt="Facebook" class="social-icon">
+  <button class="social-btn" onclick="compartilharSocial('facebook')">
+    <img src="assets/images/face.png" alt="Facebook">
   </button>
-  <button class="social-btn twitter" onclick="compartilharSocial('twitter')">
-    <img src="assets/images/redeX.png" alt="Twitter/X" class="social-icon">
+  <button class="social-btn" onclick="compartilharSocial('twitter')">
+    <img src="assets/images/redeX.png" alt="Twitter/X">
   </button>
-  <button class="social-btn linkedin" onclick="compartilharSocial('linkedin')">
-    <img src="assets/images/linke.png" alt="LinkedIn" class="social-icon">
+  <button class="social-btn" onclick="compartilharSocial('linkedin')">
+    <img src="assets/images/linke.png" alt="LinkedIn">
   </button>
-  <button class="social-btn whatsapp" onclick="compartilharSocial('whatsapp')">
-    <img src="assets/images/wattsap.png" alt="WhatsApp" class="social-icon">
+  <button class="social-btn" onclick="compartilharSocial('whatsapp')">
+    <img src="assets/images/wattsap.png" alt="WhatsApp">
   </button>
-  <button class="social-btn telegram" onclick="compartilharSocial('telegram')">
-    <img src="assets/images/telegran.png" alt="Telegram" class="social-icon">
+  <button class="social-btn" onclick="compartilharSocial('telegram')">
+    <img src="assets/images/telegran.png" alt="Telegram">
   </button>
 </div>
 
