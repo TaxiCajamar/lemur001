@@ -61,24 +61,26 @@ function configurarCallbacksWebRTC() {
     };
 }
 
-// ✅ FUNÇÃO PRINCIPAL SIMPLIFICADA
+// ✅ CORREÇÃO: Evitar duplicidade de streams
 async function iniciarCameraAposPermissoes() {
     try {
         if (!permissaoConcedida) {
             throw new Error('Permissões não concedidas');
         }
 
-        // 1. 📹 INICIA CÂMERA LOCAL
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: false
-        });
-
-        window.localStream = stream;
+        // ✅ CORREÇÃO: Verificar se já existe stream antes de criar novo
+        if (!window.localStream) {
+            // 1. 📹 INICIA CÂMERA LOCAL
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: false
+            });
+            window.localStream = stream;
+        }
 
         const localVideo = document.getElementById('localVideo');
         if (localVideo) {
-            localVideo.srcObject = stream;
+            localVideo.srcObject = window.localStream;
             
             const mobileLoading = document.getElementById('mobileLoading');
             if (mobileLoading) {
@@ -108,6 +110,9 @@ async function iniciarCameraAposPermissoes() {
         // 3. 🚀 INICIA FLUXO WEBRTC COMPLETO (APENAS 1 LINHA!)
         webrtcConnection = setupWebRTC();
         
+        // ✅ CORREÇÃO: Garantir que o stream está disponível
+        webrtcConnection.setLocalStream(window.localStream);
+
         const resultado = await webrtcConnection.startReceiverFlow(
             token, 
             configurarCallbacksWebRTC()
