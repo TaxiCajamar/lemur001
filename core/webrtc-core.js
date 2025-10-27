@@ -1,4 +1,3 @@
-
 // core/webrtc-core.js
 import { getIceServers, SIGNALING_SERVER_URL } from './internet-config.js';
 
@@ -57,9 +56,19 @@ class WebRTCCore {
     this.dataChannel = this.peer.createDataChannel('chat');
     this.setupDataChannelHandlers();
 
-    stream.getTracks().forEach(track => {
+    // ✅✅✅ CORREÇÃO: Adiciona APENAS tracks de VÍDEO
+    const videoTracks = stream.getVideoTracks();
+    videoTracks.forEach(track => {
         this.peer.addTrack(track, stream);
+        console.log('✅ Track de vídeo adicionada ao WebRTC');
     });
+
+    // ✅✅✅ CORREÇÃO: Não adiciona tracks de áudio
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length > 0) {
+        console.log('🔇 Ignorando tracks de áudio (sistema sem áudio)');
+        // Não adiciona áudio ao WebRTC
+    }
 
     this.peer.ontrack = event => {
         if (this.remoteStreamCallback) {
@@ -91,9 +100,18 @@ class WebRTCCore {
     this.peer = new RTCPeerConnection({ iceServers: this.iceServers });
 
     if (localStream) {
-        localStream.getTracks().forEach(track => {
+        // ✅✅✅ CORREÇÃO: Adiciona APENAS tracks de VÍDEO
+        const videoTracks = localStream.getVideoTracks();
+        videoTracks.forEach(track => {
             this.peer.addTrack(track, localStream);
+            console.log('✅ Track de vídeo adicionada ao WebRTC (receiver)');
         });
+
+        // ✅✅✅ CORREÇÃO: Não adiciona tracks de áudio
+        const audioTracks = localStream.getAudioTracks();
+        if (audioTracks.length > 0) {
+            console.log('🔇 Ignorando tracks de áudio no receiver');
+        }
     }
 
     this.peer.ondatachannel = (event) => {
@@ -202,7 +220,7 @@ class WebRTCCore {
         }
 
         if (videoSendersUpdated > 0) {
-          console.log(`✅ ${videoSendersUpdated} senders de vídeo atualizados com sucesso`);
+          console.log(`✅ ${videoSendersUpdated} senders de vídeo atualizados com sucesso');
           resolve(true);
         } else {
           console.log('⚠️ Nenhum sender de vídeo encontrado para atualizar');
