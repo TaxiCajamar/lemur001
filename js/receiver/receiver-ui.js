@@ -46,7 +46,7 @@ function configurarCallbacksWebRTC() {
             }
         },
         
-        onCallerLanguage: (idiomaCaller) => {
+  onCallerLanguage: (idiomaCaller) => {
   aplicarBandeiraRemota(idiomaCaller);
 
   // ✅ Oculta o QR Code após conexão
@@ -55,8 +55,7 @@ function configurarCallbacksWebRTC() {
     overlay.classList.add('hidden');
     console.log('🧼 QR Code ocultado após conexão');
   }
-}
-        },
+},
         
         onDataChannelMessage: (message) => {
             console.log('💬 Mensagem recebida:', message);
