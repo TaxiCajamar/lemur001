@@ -233,8 +233,8 @@ class WebRTCCore {
           }
         }
 
-        if (videoSendersUpdated > 0) {
-          console.log(`✅ ${videoSendersUpdated} senders de vídeo atualizados com sucesso');
+        if (videoSellersUpdated > 0) {
+          console.log(`✅ ${videoSendersUpdated} senders de vídeo atualizados com sucesso`);
           resolve(true);
         } else {
           console.log('⚠️ Nenhum sender de vídeo encontrado para atualizar');
