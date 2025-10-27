@@ -96,6 +96,7 @@ class WebRTCCore {
         });
   }
 
+  // ✅ CORREÇÃO CRÍTICA: Configurar ontrack ANTES de processar offer
   handleIncomingCall(offer, localStream, callback) {
     this.peer = new RTCPeerConnection({ iceServers: this.iceServers });
 
@@ -114,12 +115,20 @@ class WebRTCCore {
         }
     }
 
+    // ✅ CORREÇÃO CRÍTICA: Configurar ontrack ANTES de setRemoteDescription
+    this.peer.ontrack = (event) => {
+        console.log('🎯 Evento ontrack disparado!', event.streams);
+        if (event.streams && event.streams[0]) {
+            const remoteStream = event.streams[0];
+            console.log('📹 Stream remota recebida no core:', remoteStream.id);
+            callback(remoteStream);
+        }
+    };
+
     this.peer.ondatachannel = (event) => {
         this.dataChannel = event.channel;
         this.setupDataChannelHandlers();
     };
-
-    this.peer.ontrack = event => callback(event.streams[0]);
 
     this.peer.onicecandidate = event => {
         if (event.candidate) {
@@ -130,6 +139,7 @@ class WebRTCCore {
         }
     };
 
+    // ✅ AGORA CONFIGURA O ontrack ANTES de processar a offer
     this.peer.setRemoteDescription(new RTCSessionDescription(offer))
         .then(() => this.peer.createAnswer())
         .then(answer => this.peer.setLocalDescription(answer))
@@ -138,6 +148,10 @@ class WebRTCCore {
                 to: this.currentCaller,
                 answer: this.peer.localDescription
             });
+            console.log('✅ Answer enviado para o caller');
+        })
+        .catch(error => {
+            console.error('❌ Erro ao processar incoming call:', error);
         });
   }
 
@@ -220,7 +234,7 @@ class WebRTCCore {
         }
 
         if (videoSendersUpdated > 0) {
-          console.log(`✅ ${videoSendersUpdated} senders de vídeo atualizados com sucesso`);
+          console.log(`✅ ${videoSendersUpdated} senders de vídeo atualizados com sucesso');
           resolve(true);
         } else {
           console.log('⚠️ Nenhum sender de vídeo encontrado para atualizar');
