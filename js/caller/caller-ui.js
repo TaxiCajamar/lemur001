@@ -153,18 +153,18 @@ async function iniciarCameraAposPermissoes() {
 
         // 3. 🚀 INICIA FLUXO WEBRTC COMPLETO (APENAS 1 LINHA!)
         if (receiverId && token) {
-            webrtcConnection = setupWebRTC();
-            
-            const qrData = {
-                token: token,
-                receiverId: receiverId,
-                idioma: receiverLang
-            };
+    webrtcConnection = setupWebRTC();
+    
+    const qrData = {
+        token: token,
+        receiverId: receiverId,
+        idioma: meuIdioma  // ✅ Correção aplicada corretamente
+    };
 
-            const resultado = await webrtcConnection.startCallerFlow(
-                qrData, 
-                configurarCallbacksWebRTC()
-            );
+    const resultado = await webrtcConnection.startCallerFlow(
+        qrData, 
+        configurarCallbacksWebRTC()
+    );
 
             if (resultado.success) {
                 console.log('✅ Caller iniciado com ID:', resultado.id);
