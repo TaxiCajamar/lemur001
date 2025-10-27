@@ -1,8 +1,5 @@
-// ✅ IMPORTS CORRETOS E COMPLETOS
-import { 
-    setupWebRTC, 
-    procurarReceiver
-} from '../../core/webrtc-connection.js';
+// ✅ IMPORTS ATUALIZADOS - AGORA SÓ PRECISA DE UMA FUNÇÃO!
+import { setupWebRTC } from '../../core/webrtc-connection.js';
 import { 
     aplicarBandeiraLocal, 
     aplicarBandeiraRemota, 
@@ -14,7 +11,43 @@ import {
 } from '../commons/language-utils.js';
 
 let permissaoConcedida = false;
+let webrtcConnection;
 
+// ✅ FUNÇÃO: Configurar callbacks WebRTC
+function configurarCallbacksWebRTC() {
+    return {
+        onRemoteStream: (remoteStream) => {
+            console.log('📹 Stream remota recebida');
+            
+            // Desativa áudio remoto
+            remoteStream.getAudioTracks().forEach(track => track.enabled = false);
+
+            // Atualiza UI
+            const remoteVideo = document.getElementById('remoteVideo');
+            if (remoteVideo) {
+                remoteVideo.srcObject = remoteStream;
+                
+                // Esconde elementos de loading/aguardando
+                const elementoAguardando = document.querySelector('.aguardando-conexao');
+                if (elementoAguardando) {
+                    elementoAguardando.style.display = 'none';
+                }
+            }
+        },
+        
+        onError: (error) => {
+            console.error('❌ Erro WebRTC:', error);
+            
+            // Mostra erro na UI
+            const elementoAguardando = document.querySelector('.aguardando-conexao');
+            if (elementoAguardando) {
+                elementoAguardando.textContent = 'Erro de conexão - Tente novamente';
+            }
+        }
+    };
+}
+
+// ✅ FUNÇÃO: Alternar câmera (MANTIDA IGUAL)
 function setupCameraToggle() {
     const toggleButton = document.getElementById('toggleCamera');
     let currentCamera = 'user';
@@ -54,18 +87,13 @@ function setupCameraToggle() {
 
             window.localStream = newStream;
 
-            if (window.rtcCore && window.rtcCore.peer) {
-                const connectionState = window.rtcCore.peer.connectionState;
+            // ✅ ATUALIZADO: Usar a nova conexão WebRTC
+            if (webrtcConnection && webrtcConnection.rtcCore) {
+                const connectionState = webrtcConnection.rtcCore.peer?.connectionState;
                 
                 if (connectionState === 'connected') {
-                    const newVideoTrack = newStream.getVideoTracks()[0];
-                    const senders = window.rtcCore.peer.getSenders();
-                    
-                    for (const sender of senders) {
-                        if (sender.track && sender.track.kind === 'video') {
-                            await sender.replaceTrack(newVideoTrack);
-                        }
-                    }
+                    // Usa o novo método seguro para atualizar stream
+                    await webrtcConnection.rtcCore.updateVideoStream(newStream);
                 }
             }
 
@@ -78,71 +106,14 @@ function setupCameraToggle() {
     });
 }
 
-async function conectarComReceiver(targetId, localStream, meuIdioma) {
-    if (!window.rtcCore) return;
-    
-    try {
-        console.log(`🔄 Conectando com receiver: ${targetId}`);
-        window.rtcCore.startCall(targetId, localStream, meuIdioma);
-    } catch (error) {
-        console.error('Erro ao conectar com receiver:', error);
-    }
-}
-
-async function iniciarConexaoAutomatica(targetId, token, receiverLang, localStream, meuIdioma) {
-    const aguardarWebRTCPronto = () => {
-        return new Promise((resolve) => {
-            const verificar = () => {
-                if (window.rtcCore && window.rtcCore.socket && window.rtcCore.socket.connected) {
-                    resolve(true);
-                } else {
-                    setTimeout(verificar, 500);
-                }
-            };
-            verificar();
-        });
-    };
-
-    try {
-        await aguardarWebRTCPronto();
-
-        const callerId = crypto.randomUUID().substr(0, 8);
-        console.log(`🎯 Caller ID gerado: ${callerId}`);
-
-        console.log(`🔍 Procurando receiver: ${targetId}`);
-        const receiverOnline = await procurarReceiver(targetId, token, callerId, meuIdioma, receiverLang);
-        
-        if (receiverOnline) {
-            console.log('✅ Receiver online! Conectando...');
-            conectarComReceiver(targetId, localStream, meuIdioma);
-        } else {
-            console.log('❌ Receiver offline. Tentando novamente...');
-            
-            const tentarConexaoContinuamente = async () => {
-                const online = await procurarReceiver(targetId, token, callerId, meuIdioma, receiverLang);
-                
-                if (online) {
-                    console.log('✅ Agora está online! Conectando...');
-                    conectarComReceiver(targetId, localStream, meuIdioma);
-                } else {
-                    setTimeout(tentarConexaoContinuamente, 3000);
-                }
-            };
-            
-            tentarConexaoContinuamente();
-        }
-
-    } catch (error) {
-        console.error('Erro no fluxo de conexão:', error);
-    }
-}
-
+// ✅ FUNÇÃO PRINCIPAL SIMPLIFICADA
 async function iniciarCameraAposPermissoes() {
     try {
         if (!permissaoConcedida) {
             throw new Error('Permissões não concedidas');
         }
 
+        // 1. 📹 INICIA CÂMERA LOCAL
         const stream = await navigator.mediaDevices.getUserMedia({ 
             video: true, 
             audio: false 
@@ -156,55 +127,91 @@ async function iniciarCameraAposPermissoes() {
 
         setupCameraToggle();
 
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const { myId } = setupWebRTC('caller');
-
+        // 2. 🌐 CONFIGURA IDIOMA
         const urlParams = new URLSearchParams(window.location.search);
         const receiverId = urlParams.get('targetId') || '';
         const token = urlParams.get('token') || '';
         const receiverLang = urlParams.get('lang') || 'pt-BR';
 
-        // ✅ DEFINIR IDIOMA LOCAL DO CALLER DINAMICAMENTE
         const meuIdioma = navigator.language || 'en-US';
         definirIdiomaLocal(meuIdioma);
         console.log('🌐 Idioma caller definido:', meuIdioma);
-
-        // ✅ TRADUZIR FRASES APÓS DEFINIR IDIOMA
         await traduzirFrasesFixas();
-
-        if (receiverId) {
-            if (stream) {
-                setTimeout(() => {
-                    iniciarConexaoAutomatica(receiverId, token, receiverLang, stream, meuIdioma);
-                }, 2000);
-            }
-        }
 
         // ✅ APLICAR BANDEIRAS
         aplicarBandeiraLocal(meuIdioma);
         aplicarBandeiraRemota(receiverLang);
 
+        // 3. 🚀 INICIA FLUXO WEBRTC COMPLETO (APENAS 1 LINHA!)
+        if (receiverId && token) {
+            webrtcConnection = setupWebRTC();
+            
+            const qrData = {
+                token: token,
+                receiverId: receiverId,
+                idioma: receiverLang
+            };
+
+            const resultado = await webrtcConnection.startCallerFlow(
+                qrData, 
+                configurarCallbacksWebRTC()
+            );
+
+            if (resultado.success) {
+                console.log('✅ Caller iniciado com ID:', resultado.id);
+                
+                // Atualiza UI para mostrar status
+                const elementoAguardando = document.querySelector('.aguardando-conexao');
+                if (elementoAguardando) {
+                    elementoAguardando.textContent = 'Conectando...';
+                }
+            } else {
+                throw new Error(resultado.error);
+            }
+        } else {
+            console.error('❌ Dados do QR Code incompletos');
+            throw new Error('Link de conexão inválido');
+        }
+
     } catch (error) {
-        console.error("Erro ao iniciar câmera:", error);
+        console.error("Erro ao iniciar caller:", error);
+        
+        // Mostra erro na UI
+        const elementoAguardando = document.querySelector('.aguardando-conexao');
+        if (elementoAguardando) {
+            elementoAguardando.textContent = 'Erro - ' + error.message;
+        }
+        
         throw error;
     }
 }
 
+// ✅ LIMPEZA SIMPLIFICADA
+window.addEventListener('beforeunload', function() {
+    if (webrtcConnection) {
+        webrtcConnection.cleanup();
+    }
+});
+
 window.onload = async () => {
     try {
-        // ✅ APENAS SOLICITA PERMISSÕES - A TRADUÇÃO SERÁ FEITA DEPOIS
+        // ✅ SOLICITA PERMISSÕES
         permissaoConcedida = await solicitarPermissoes();
         setupInstructionToggle();
         
         const mobileLoading = document.getElementById('mobileLoading');
         if (mobileLoading) mobileLoading.style.display = 'none';
         
-        // ✅ A TRADUÇÃO SERÁ FEITA DENTRO DE iniciarCameraAposPermissoes()
+        // ✅ INICIA FLUXO COMPLETO
         await iniciarCameraAposPermissoes();
         
     } catch (error) {
         console.error('Erro ao inicializar caller:', error);
-        alert('Erro ao inicializar: ' + error.message);
+        
+        // Mostra erro para o usuário
+        const mobileLoading = document.getElementById('mobileLoading');
+        if (mobileLoading) {
+            mobileLoading.textContent = 'Erro: ' + error.message;
+        }
     }
 };
