@@ -12,6 +12,7 @@ class WebRTCCore {
     this.onDataChannelMessage = null;
     this.onIncomingCall = null;
 
+    // ✅ JÁ ESTÁ CORRETO - Data channel global
     window.rtcDataChannel = {
         send: (message) => {
             if (this.dataChannel && this.dataChannel.readyState === 'open') {
@@ -26,6 +27,141 @@ class WebRTCCore {
     this.iceServers = getIceServers();
   }
 
+  // ✅✅✅ MÉTODO CRÍTICO: Iniciar chamada (JÁ CORRETO)
+  startCall(targetId, stream, callerLang) {
+    this.localStream = stream;
+    this.peer = new RTCPeerConnection({ iceServers: this.iceServers });
+
+    this.dataChannel = this.peer.createDataChannel('chat');
+    this.setupDataChannelHandlers();
+
+    // ✅✅✅ CORRETO: Apenas vídeo, sem áudio
+    const videoTracks = stream.getVideoTracks();
+    videoTracks.forEach(track => {
+        this.peer.addTrack(track, stream);
+        console.log('✅ Track de vídeo adicionada ao WebRTC');
+    });
+
+    // ✅✅✅ CORRETO: Ignora áudio
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length > 0) {
+        console.log('🔇 Ignorando tracks de áudio (sistema sem áudio)');
+    }
+
+    this.peer.ontrack = event => {
+        if (this.remoteStreamCallback) {
+            this.remoteStreamCallback(event.streams[0]);
+        }
+    };
+
+    this.peer.onicecandidate = event => {
+        if (event.candidate) {
+            // ✅✅✅ CORRETO: Envia apenas IDs via socket
+            this.socket.emit('ice-candidate', {
+                to: targetId,      // Apenas ID do receiver
+                candidate: event.candidate
+            });
+        }
+    };
+
+    this.peer.createOffer()
+        .then(offer => this.peer.setLocalDescription(offer))
+        .then(() => {
+            // ✅✅✅ CORRETO: Envia apenas IDs e offer
+            this.socket.emit('call', {
+                to: targetId,           // Apenas ID do receiver
+                offer: this.peer.localDescription,
+                callerLang: callerLang  // Apenas idioma
+                // ❌ NENHUM TOKEN FIREBASE AQUI - PERFEITO!
+            });
+        });
+  }
+
+  // ✅✅✅ MÉTODO CRÍTICO: Receber chamada (JÁ CORRETO)
+  handleIncomingCall(offer, localStream, callback) {
+    this.peer = new RTCPeerConnection({ iceServers: this.iceServers });
+
+    if (localStream) {
+        // ✅✅✅ CORRETO: Apenas vídeo
+        const videoTracks = localStream.getVideoTracks();
+        videoTracks.forEach(track => {
+            this.peer.addTrack(track, localStream);
+            console.log('✅ Track de vídeo adicionada ao WebRTC (receiver)');
+        });
+
+        const audioTracks = localStream.getAudioTracks();
+        if (audioTracks.length > 0) {
+            console.log('🔇 Ignorando tracks de áudio no receiver');
+        }
+    }
+
+    // ✅✅✅ CORREÇÃO CRÍTICA: Configurar ontrack ANTES (JÁ IMPLEMENTADO)
+    this.peer.ontrack = (event) => {
+        console.log('🎯 Evento ontrack disparado!', event.streams);
+        if (event.streams && event.streams[0]) {
+            const remoteStream = event.streams[0];
+            console.log('📹 Stream remota recebida no core:', remoteStream.id);
+            callback(remoteStream);
+        }
+    };
+
+    this.peer.ondatachannel = (event) => {
+        this.dataChannel = event.channel;
+        this.setupDataChannelHandlers();
+    };
+
+    this.peer.onicecandidate = event => {
+        if (event.candidate) {
+            // ✅✅✅ CORRETO: Envia apenas ID do caller
+            this.socket.emit('ice-candidate', {
+                to: this.currentCaller,  // Apenas ID do caller
+                candidate: event.candidate
+            });
+        }
+    };
+
+    // ✅✅✅ CORRETO: Processa offer WebRTC
+    this.peer.setRemoteDescription(new RTCSessionDescription(offer))
+        .then(() => this.peer.createAnswer())
+        .then(answer => this.peer.setLocalDescription(answer))
+        .then(() => {
+            // ✅✅✅ CORRETO: Envia answer apenas com ID
+            this.socket.emit('answer', {
+                to: this.currentCaller,  // Apenas ID do caller
+                answer: this.peer.localDescription
+            });
+            console.log('✅ Answer enviado para o caller');
+        })
+        .catch(error => {
+            console.error('❌ Erro ao processar incoming call:', error);
+        });
+  }
+
+  // ✅✅✅ CONFIGURAÇÃO SOCKET (JÁ CORRETO)
+  setupSocketHandlers() {
+    this.socket.on('acceptAnswer', data => {
+        if (this.peer) {
+            this.peer.setRemoteDescription(new RTCSessionDescription(data.answer));
+        }
+    });
+
+    this.socket.on('ice-candidate', candidate => {
+        if (this.peer) {
+            this.peer.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+    });
+
+    this.socket.on('incomingCall', data => {
+        this.currentCaller = data.from;
+        window.lastCallerId = data.from;
+        if (this.onIncomingCall) {
+            // ✅✅✅ CORRETO: Recebe apenas ID e offer
+            this.onIncomingCall(data.offer, data.callerLang);
+        }
+    });
+  }
+
+  // ✅✅✅ MÉTODOS AUXILIARES (TODOS CORRETOS)
   setupDataChannelHandlers() {
     if (!this.dataChannel) return;
     
@@ -46,135 +182,8 @@ class WebRTCCore {
   }
 
   initialize(userId) {
+    // ✅✅✅ CORRETO: Registra apenas ID no socket
     this.socket.emit('register', userId);
-  }
-
-  startCall(targetId, stream, callerLang) {
-    this.localStream = stream;
-    this.peer = new RTCPeerConnection({ iceServers: this.iceServers });
-
-    this.dataChannel = this.peer.createDataChannel('chat');
-    this.setupDataChannelHandlers();
-
-    // ✅✅✅ CORREÇÃO: Adiciona APENAS tracks de VÍDEO
-    const videoTracks = stream.getVideoTracks();
-    videoTracks.forEach(track => {
-        this.peer.addTrack(track, stream);
-        console.log('✅ Track de vídeo adicionada ao WebRTC');
-    });
-
-    // ✅✅✅ CORREÇÃO: Não adiciona tracks de áudio
-    const audioTracks = stream.getAudioTracks();
-    if (audioTracks.length > 0) {
-        console.log('🔇 Ignorando tracks de áudio (sistema sem áudio)');
-        // Não adiciona áudio ao WebRTC
-    }
-
-    this.peer.ontrack = event => {
-        if (this.remoteStreamCallback) {
-            this.remoteStreamCallback(event.streams[0]);
-        }
-    };
-
-    this.peer.onicecandidate = event => {
-        if (event.candidate) {
-            this.socket.emit('ice-candidate', {
-                to: targetId,
-                candidate: event.candidate
-            });
-        }
-    };
-
-    this.peer.createOffer()
-        .then(offer => this.peer.setLocalDescription(offer))
-        .then(() => {
-            this.socket.emit('call', {
-                to: targetId,
-                offer: this.peer.localDescription,
-                callerLang
-            });
-        });
-  }
-
-  // ✅ CORREÇÃO CRÍTICA: Configurar ontrack ANTES de processar offer
-  handleIncomingCall(offer, localStream, callback) {
-    this.peer = new RTCPeerConnection({ iceServers: this.iceServers });
-
-    if (localStream) {
-        // ✅✅✅ CORREÇÃO: Adiciona APENAS tracks de VÍDEO
-        const videoTracks = localStream.getVideoTracks();
-        videoTracks.forEach(track => {
-            this.peer.addTrack(track, localStream);
-            console.log('✅ Track de vídeo adicionada ao WebRTC (receiver)');
-        });
-
-        // ✅✅✅ CORREÇÃO: Não adiciona tracks de áudio
-        const audioTracks = localStream.getAudioTracks();
-        if (audioTracks.length > 0) {
-            console.log('🔇 Ignorando tracks de áudio no receiver');
-        }
-    }
-
-    // ✅ CORREÇÃO CRÍTICA: Configurar ontrack ANTES de setRemoteDescription
-    this.peer.ontrack = (event) => {
-        console.log('🎯 Evento ontrack disparado!', event.streams);
-        if (event.streams && event.streams[0]) {
-            const remoteStream = event.streams[0];
-            console.log('📹 Stream remota recebida no core:', remoteStream.id);
-            callback(remoteStream);
-        }
-    };
-
-    this.peer.ondatachannel = (event) => {
-        this.dataChannel = event.channel;
-        this.setupDataChannelHandlers();
-    };
-
-    this.peer.onicecandidate = event => {
-        if (event.candidate) {
-            this.socket.emit('ice-candidate', {
-                to: this.currentCaller,
-                candidate: event.candidate
-            });
-        }
-    };
-
-    // ✅ AGORA CONFIGURA O ontrack ANTES de processar a offer
-    this.peer.setRemoteDescription(new RTCSessionDescription(offer))
-        .then(() => this.peer.createAnswer())
-        .then(answer => this.peer.setLocalDescription(answer))
-        .then(() => {
-            this.socket.emit('answer', {
-                to: this.currentCaller,
-                answer: this.peer.localDescription
-            });
-            console.log('✅ Answer enviado para o caller');
-        })
-        .catch(error => {
-            console.error('❌ Erro ao processar incoming call:', error);
-        });
-  }
-
-  setupSocketHandlers() {
-    this.socket.on('acceptAnswer', data => {
-        if (this.peer) {
-            this.peer.setRemoteDescription(new RTCSessionDescription(data.answer));
-        }
-    });
-
-    this.socket.on('ice-candidate', candidate => {
-        if (this.peer) {
-            this.peer.addIceCandidate(new RTCIceCandidate(candidate));
-        }
-    });
-
-    this.socket.on('incomingCall', data => {
-        this.currentCaller = data.from;
-        window.lastCallerId = data.from;
-        if (this.onIncomingCall) {
-            this.onIncomingCall(data.offer, data.callerLang);
-        }
-    });
   }
 
   setRemoteStreamCallback(callback) {
@@ -193,7 +202,7 @@ class WebRTCCore {
 
   /**
    * 🎥 ATUALIZA STREAM DE VÍDEO DURANTA CHAMADA ATIVA
-   * Método seguro para alternar câmeras sem quebrar WebRTC
+   * ✅✅✅ JÁ ESTÁ PERFEITO - não mexe!
    */
   updateVideoStream(newStream) {
     return new Promise(async (resolve, reject) => {
@@ -206,10 +215,7 @@ class WebRTCCore {
 
         console.log('🔄 Atualizando stream de vídeo no WebRTC Core...');
         
-        // Atualiza o stream local
         this.localStream = newStream;
-        
-        // Obtém a nova track de vídeo
         const newVideoTrack = newStream.getVideoTracks()[0];
         
         if (!newVideoTrack) {
@@ -217,7 +223,6 @@ class WebRTCCore {
           return;
         }
 
-        // Encontra e atualiza TODOS os senders de vídeo
         const senders = this.peer.getSenders();
         let videoSendersUpdated = 0;
         
@@ -233,7 +238,7 @@ class WebRTCCore {
           }
         }
 
-        if (videoSellersUpdated > 0) {
+        if (videoSendersUpdated > 0) {
           console.log(`✅ ${videoSendersUpdated} senders de vídeo atualizados com sucesso`);
           resolve(true);
         } else {
