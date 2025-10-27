@@ -60,15 +60,15 @@ body {
 /* BOTÕES DE COMPARTILHAMENTO NO QR CODE */
 .social-buttons {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
   margin: 15px 0;
   flex-wrap: wrap;
 }
 
 .social-btn {
-  width: 15px;
-  height: 15px;
+  width: 25px;
+  height: 25px;
   border: none;
   border-radius: 5px;
   color: white;
