@@ -1,6 +1,7 @@
 import { WebRTCCore } from './webrtc-core.js';
 
 const SERVIDOR_SINALIZADOR = 'https://lemur-signal.onrender.com';
+const SERVIDOR_APP = 'https://serve-app.onrender.com'; // ✅ SEU BACKEND FIREBASE
 
 export class WebRTCConnection {
     constructor() {
@@ -16,7 +17,7 @@ export class WebRTCConnection {
         console.log('✅ Stream sincronizado com WebRTCConnection');
     }
 
-    // ✅ FLUXO CORRETO DO RECEIVER (CORRIGIDO)
+    // ✅ FLUXO CORRETO DO RECEIVER (SEPARANDO RESPONSABILIDADES)
     async startReceiverFlow(token, callbacks = {}) {
         this.role = 'receiver';
         
@@ -34,19 +35,24 @@ export class WebRTCConnection {
             this.localStream = await this.requestCameraPermission();
             console.log('📹 Câmera autorizada');
 
-            // 3️⃣ 📝 CADASTRA NO SERVIDOR
-            const cadastrado = await this.cadastrarReceiver(this.myId, token);
-            if (!cadastrado) throw new Error('Falha ao cadastrar');
+            // ✅✅✅ CORREÇÃO CRÍTICA: SEPARAR REGISTROS
+            // 3️⃣ 📝 CADASTRA APENAS ID NO SERVIDOR DE SINALIZAÇÃO
+            const cadastradoSinalizador = await this.cadastrarNoSinalizador(this.myId);
+            if (!cadastradoSinalizador) throw new Error('Falha ao cadastrar no sinalizador');
 
-            // 4️⃣ 🔍 VERIFICA SE JÁ ESTÁ SENDO PROCURADO
-            const callerId = await this.verificarSeEstaSendoProcurado(this.myId, token);
+            // 4️⃣ 📱 CADASTRA TOKEN FIREBASE NO SEU BACKEND
+            const cadastradoFirebase = await this.cadastrarTokenFirebase(this.myId, token);
+            if (!cadastradoFirebase) console.log('⚠️ Atenção: Token Firebase não registrado');
+
+            // 5️⃣ 🔍 VERIFICA SE JÁ ESTÁ SENDO PROCURADO (APENAS ID)
+            const callerId = await this.verificarSeEstaSendoProcurado(this.myId);
             
             if (callerId) {
-                // 5️⃣ 🎯 SE ESTÁ SENDO PROCURADO → CONECTA IMEDIATAMENTE
+                // 6️⃣ 🎯 SE ESTÁ SENDO PROCURADO → CONECTA IMEDIATAMENTE
                 console.log('🎯 Conectando com caller:', callerId);
                 await this.waitForIncomingCall();
             } else {
-                // 6️⃣ ⏳ SE NÃO → FICA AGUARDANDO
+                // 7️⃣ ⏳ SE NÃO → FICA AGUARDANDO
                 console.log('⏳ Aguardando conexão...');
                 this.setupConnectionHandlers();
             }
@@ -60,7 +66,7 @@ export class WebRTCConnection {
         }
     }
 
-    // ✅ FLUXO CORRETO DO CALLER (COM CONEXÃO AUTOMÁTICA)
+    // ✅ FLUXO CORRETO DO CALLER (COM NOTIFICAÇÃO FIREBASE REAL)
     async startCallerFlow(qrData, callbacks = {}) {
         this.role = 'caller';
         const { token, receiverId, idioma } = qrData;
@@ -79,18 +85,31 @@ export class WebRTCConnection {
             this.rtcCore.initialize(this.myId);
             this.setupCallbacks(callbacks);
 
-            // 4️⃣ 🔍 VERIFICA SE RECEIVER ESTÁ ONLINE
-            const receiverOnline = await this.verificarReceiverOnline(receiverId, token);
+            // ✅✅✅ CORREÇÃO: VERIFICAÇÃO APENAS COM ID
+            // 4️⃣ 🔍 VERIFICA SE RECEIVER ESTÁ ONLINE (APENAS ID)
+            const receiverOnline = await this.verificarReceiverOnline(receiverId);
             
             if (receiverOnline) {
                 // 5️⃣ 🎯 SE ONLINE → CONECTA IMEDIATAMENTE
                 console.log('🎯 Receiver online, conectando...');
-                await this.connectToReceiver(receiverId, token, idioma);
+                await this.connectToReceiver(receiverId, idioma);
             } else {
-                // 6️⃣ 📱 SE OFFLINE → MANDA AVISO FIREBASE E AGUARDA
-                console.log('📱 Receiver offline, enviando notificação...');
-                await this.sendFirebaseNotification(token, receiverId);
-                await this.waitForReceiverOnline(receiverId, token, idioma);
+                // 6️⃣ 📱 SE OFFLINE → MANDA NOTIFICAÇÃO FIREBASE REAL
+                console.log('📱 Receiver offline, enviando notificação Firebase...');
+                
+                const notificacaoEnviada = await this.enviarNotificacaoWakeUp(
+                    token,           // Token Firebase do receiver
+                    receiverId,      // ID do receiver
+                    this.myId,       // ID do caller
+                    idioma           // Idioma do caller
+                );
+                
+                if (notificacaoEnviada) {
+                    console.log('🔔 Notificação enviada, aguardando receiver ficar online...');
+                    await this.waitForReceiverOnline(receiverId, idioma);
+                } else {
+                    throw new Error('Falha ao enviar notificação');
+                }
             }
 
             return { success: true, id: this.myId };
@@ -102,62 +121,105 @@ export class WebRTCConnection {
         }
     }
 
-    // ✅ MÉTODOS PRINCIPAIS
-    generateReceiverId(token) {
-        if (!token || token.length < 8) {
-            return crypto.randomUUID().substr(0, 8);
-        }
-        return token.slice(-8);
-    }
-
-    generateCallerId() {
-        return crypto.randomUUID().substr(0, 8);
-    }
-
-    // ✅ MÉTODO CORRIGIDO: RESOLVE CONFLITO DE CÂMERAS
-    async requestCameraPermission() {
+    // ✅✅✅ CORREÇÃO 1: CADASTRO APENAS ID NO SINALIZADOR
+    async cadastrarNoSinalizador(myId) {
         try {
-            // ✅ PRIMEIRO USA STREAM EXISTENTE (sincronizado)
-            if (this.localStream) {
-                console.log('✅ Usando stream sincronizado do UI');
-                return this.localStream;
-            }
-            
-            // ✅ SEGUNDO USA STREAM GLOBAL
-            if (window.localStream) {
-                console.log('✅ Usando stream global do window');
-                this.localStream = window.localStream;
-                return window.localStream;
-            }
-            
-            // ✅ SÓ CRIA NOVO SE NÃO EXISTIR NENHUM
-            console.log('📹 Solicitando nova permissão de câmera (sem áudio)');
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: true, 
-                audio: false
+            const response = await fetch(`${SERVIDOR_SINALIZADOR}/registrar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: myId,           // ✅ APENAS O ID
+                    status: 'online',
+                    timestamp: Date.now()
+                    // ❌ NÃO ENVIA TOKEN FIREBASE AQUI
+                })
             });
-            this.localStream = stream;
-            return stream;
+            const result = await response.json();
+            return result.success;
         } catch (error) {
-            throw new Error('Permissão da câmera negada: ' + error.message);
+            console.error('Erro ao cadastrar no sinalizador:', error);
+            return false;
         }
     }
 
-    // ✅✅✅ MÉTODO CORRIGIDO: AGORA INICIA WEBRTC AUTOMATICAMENTE
-    async connectToReceiver(receiverId, token, idioma) {
+    // ✅✅✅ CORREÇÃO 2: CADASTRO TOKEN FIREBASE NO SEU BACKEND
+    async cadastrarTokenFirebase(receiverId, token) {
+        try {
+            const response = await fetch(`${SERVIDOR_APP}/registrar-token`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    receiverId: receiverId,  // ID do receiver
+                    fcmToken: token,         // Token Firebase
+                    tipo: 'receiver',
+                    timestamp: Date.now()
+                })
+            });
+            const result = await response.json();
+            return result.success;
+        } catch (error) {
+            console.error('Erro ao cadastrar token Firebase:', error);
+            return false;
+        }
+    }
+
+    // ✅✅✅ CORREÇÃO 3: NOTIFICAÇÃO FIREBASE REAL
+    async enviarNotificacaoWakeUp(receiverToken, receiverId, meuId, meuIdioma) {
+        try {
+            console.log('🔔 Enviando notificação para acordar receiver...');
+            
+            const response = await fetch(`${SERVIDOR_APP}/send-notification`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: receiverToken,
+                    title: '📞 Nova Chamada de Vídeo',
+                    body: `Toque para atender a chamada de vídeo`,
+                    data: {
+                        type: 'wake_up',
+                        callerId: meuId,
+                        callerLang: meuIdioma,
+                        receiverId: receiverId
+                    }
+                })
+            });
+
+            const result = await response.json();
+            console.log('✅ Notificação enviada:', result);
+            return result.success;
+        } catch (error) {
+            console.error('❌ Erro ao enviar notificação:', error);
+            return false;
+        }
+    }
+
+    // ✅✅✅ CORREÇÃO 4: VERIFICAÇÃO APENAS COM ID (SEM TOKEN)
+    async verificarReceiverOnline(receiverId) {
+        try {
+            const response = await fetch(`${SERVIDOR_SINALIZADOR}/verificar-online/${receiverId}`);
+            const result = await response.json();
+            return result.online || false;
+        } catch (error) {
+            console.error('Erro ao verificar receiver:', error);
+            return false;
+        }
+    }
+
+    // ✅✅✅ CORREÇÃO 5: CONEXÃO APENAS COM ID
+    async connectToReceiver(receiverId, idioma) {
         try {
             console.log(`🎯 Iniciando conexão WebRTC com receiver: ${receiverId}`);
             
-            // 1️⃣ AVISA O SERVIDOR QUE QUER CONECTAR
+            // ✅ AVISA O SERVIDOR QUE QUER CONECTAR (APENAS IDs)
             const response = await fetch(`${SERVIDOR_SINALIZADOR}/procurar`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    callerId: this.myId,
-                    targetId: receiverId,
-                    token: token,
-                    callerLang: idioma,
+                    callerId: this.myId,        // ID do caller
+                    targetId: receiverId,       // ID do receiver
+                    callerLang: idioma,         // Idioma
                     timestamp: Date.now()
+                    // ❌ NÃO ENVIA TOKEN FIREBASE AQUI
                 })
             });
             
@@ -166,9 +228,8 @@ export class WebRTCConnection {
             if (result.success) {
                 console.log('✅ Servidor autorizou conexão, iniciando WebRTC...');
                 
-                // 2️⃣ ✅✅✅ INICIA A CHAMADA WEBRTC REAL! (CORREÇÃO CRÍTICA)
+                // ✅ INICIA A CHAMADA WEBRTC REAL
                 if (this.rtcCore && this.localStream) {
-                    // ⏰ Pequeno delay para garantir que o receiver está pronto
                     setTimeout(() => {
                         this.rtcCore.startCall(receiverId, this.localStream, idioma);
                         console.log('🚀 Chamada WebRTC iniciada automaticamente!');
@@ -189,29 +250,47 @@ export class WebRTCConnection {
         }
     }
 
-    async cadastrarReceiver(myId, token) {
+    // ✅ MÉTODOS AUXILIARES (MANTIDOS)
+    generateReceiverId(token) {
+        if (!token || token.length < 8) {
+            return crypto.randomUUID().substr(0, 8);
+        }
+        return token.slice(-8);
+    }
+
+    generateCallerId() {
+        return crypto.randomUUID().substr(0, 8);
+    }
+
+    async requestCameraPermission() {
         try {
-            const response = await fetch(`${SERVIDOR_SINALIZADOR}/registrar`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: myId,
-                    token: token,
-                    status: 'online',
-                    timestamp: Date.now()
-                })
+            if (this.localStream) {
+                console.log('✅ Usando stream sincronizado do UI');
+                return this.localStream;
+            }
+            
+            if (window.localStream) {
+                console.log('✅ Usando stream global do window');
+                this.localStream = window.localStream;
+                return window.localStream;
+            }
+            
+            console.log('📹 Solicitando nova permissão de câmera (sem áudio)');
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: true, 
+                audio: false
             });
-            const result = await response.json();
-            return result.success;
+            this.localStream = stream;
+            return stream;
         } catch (error) {
-            console.error('Erro ao cadastrar receiver:', error);
-            return false;
+            throw new Error('Permissão da câmera negada: ' + error.message);
         }
     }
 
-    async verificarSeEstaSendoProcurado(myId, token) {
+    // ✅✅✅ CORREÇÃO 6: VERIFICAÇÃO APENAS COM ID
+    async verificarSeEstaSendoProcurado(myId) {
         try {
-            const response = await fetch(`${SERVIDOR_SINALIZADOR}/verificar/${myId}?token=${token}`);
+            const response = await fetch(`${SERVIDOR_SINALIZADOR}/verificar/${myId}`);
             const result = await response.json();
             return result.procurado ? result.callerId : null;
         } catch (error) {
@@ -220,42 +299,36 @@ export class WebRTCConnection {
         }
     }
 
-    async verificarReceiverOnline(receiverId, token) {
-        try {
-            const response = await fetch(`${SERVIDOR_SINALIZADOR}/verificar-online/${receiverId}?token=${token}`);
-            const result = await response.json();
-            return result.online || false;
-        } catch (error) {
-            console.error('Erro ao verificar receiver:', error);
-            return false;
-        }
+    // ✅✅✅ CORREÇÃO 7: AGUARDAR APENAS COM ID
+    async waitForReceiverOnline(receiverId, idioma) {
+        console.log('⏳ Aguardando receiver ficar online...');
+        
+        const checkInterval = setInterval(async () => {
+            const online = await this.verificarReceiverOnline(receiverId);
+            if (online) {
+                clearInterval(checkInterval);
+                console.log('🎯 Receiver ficou online, conectando...');
+                await this.connectToReceiver(receiverId, idioma);
+            }
+        }, 3000);
     }
 
-    async sendFirebaseNotification(token, receiverId) {
-        console.log('📲 Enviando notificação Firebase para:', receiverId);
-        return true;
-    }
-
-    // ✅✅✅ CONFIGURAÇÃO DE CALLBACKS CORRIGIDA - ACEITA CHAMADA AUTOMATICAMENTE
+    // ✅ CONFIGURAÇÃO DE CALLBACKS (MANTIDA)
     setupCallbacks(callbacks) {
         if (callbacks.onRemoteStream) {
             this.rtcCore.setRemoteStreamCallback(callbacks.onRemoteStream);
         }
         
-        // ✅✅✅ ESTA PARTE É CRÍTICA - ACEITAR CHAMADA AUTOMATICAMENTE
         this.rtcCore.onIncomingCall = (offer, callerLang) => {
             console.log('📞 Chamada recebida, aceitando automaticamente...');
             
-            // Notifica o UI sobre o idioma do caller
             if (callbacks.onCallerLanguage) {
                 callbacks.onCallerLanguage(callerLang);
             }
             
-            // ✅ ACEITA A CHAMADA AUTOMATICAMENTE (SEM BOTÃO)
             this.rtcCore.handleIncomingCall(offer, this.localStream, (remoteStream) => {
                 console.log('✅ Conexão WebRTC estabelecida!');
                 
-                // Chama o callback do UI para mostrar o vídeo remoto
                 if (callbacks.onRemoteStream) {
                     callbacks.onRemoteStream(remoteStream);
                 }
@@ -271,7 +344,6 @@ export class WebRTCConnection {
         }
     }
 
-    // ✅ AGUARDAR CONEXÕES
     async waitForIncomingCall() {
         return new Promise((resolve) => {
             this.rtcCore.onIncomingCall = (offer, callerLang) => {
@@ -282,19 +354,6 @@ export class WebRTCConnection {
                 });
             };
         });
-    }
-
-    async waitForReceiverOnline(receiverId, token, idioma) {
-        console.log('⏳ Aguardando receiver ficar online...');
-        
-        const checkInterval = setInterval(async () => {
-            const online = await this.verificarReceiverOnline(receiverId, token);
-            if (online) {
-                clearInterval(checkInterval);
-                console.log('🎯 Receiver ficou online, conectando...');
-                await this.connectToReceiver(receiverId, token, idioma);
-            }
-        }, 3000);
     }
 
     setupConnectionHandlers() {
