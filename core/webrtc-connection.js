@@ -10,7 +10,7 @@ export class WebRTCConnection {
         this.localStream = null;
     }
 
-    // ✅ FLUXO CORRETO DO RECEIVER
+    // ✅ FLUXO CORRETO DO RECEIVER (MANTIDO IGUAL)
     async startReceiverFlow(token, callbacks = {}) {
         this.role = 'receiver';
         
@@ -19,11 +19,11 @@ export class WebRTCConnection {
             this.myId = this.generateReceiverId(token);
             console.log('🆔 Receiver ID:', this.myId);
 
-            // 2️⃣ 📹 PEDE PERMISSÃO DA CÂMERA (AGORA É PASSO 2!)
+            // 2️⃣ 📹 PEDE PERMISSÃO DA CÂMERA
             this.localStream = await this.requestCameraPermission();
             console.log('📹 Câmera autorizada');
 
-            // 3️⃣ 🔌 INICIALIZA WEBRTC (AGORA É PASSO 3!)
+            // 3️⃣ 🔌 INICIALIZA WEBRTC
             this.rtcCore = new WebRTCCore();
             this.rtcCore.initialize(this.myId);
             this.setupCallbacks(callbacks);
@@ -54,7 +54,7 @@ export class WebRTCConnection {
         }
     }
 
-    // ✅ FLUXO CORRETO DO CALLER (SEQUÊNCIA CORRIGIDA!)
+    // ✅ FLUXO CORRETO DO CALLER (COM CONEXÃO AUTOMÁTICA)
     async startCallerFlow(qrData, callbacks = {}) {
         this.role = 'caller';
         const { token, receiverId, idioma } = qrData;
@@ -64,11 +64,11 @@ export class WebRTCConnection {
             this.myId = this.generateCallerId();
             console.log('🆔 Caller ID:', this.myId);
 
-            // 2️⃣ 📹 PEDE PERMISSÃO DA CÂMERA (AGORA É PASSO 2!)
+            // 2️⃣ 📹 PEDE PERMISSÃO DA CÂMERA
             this.localStream = await this.requestCameraPermission();
             console.log('📹 Câmera autorizada');
 
-            // 3️⃣ 🔌 INICIALIZA WEBRTC (AGORA É PASSO 3!)
+            // 3️⃣ 🔌 INICIALIZA WEBRTC
             this.rtcCore = new WebRTCCore();
             this.rtcCore.initialize(this.myId);
             this.setupCallbacks(callbacks);
@@ -96,7 +96,7 @@ export class WebRTCConnection {
         }
     }
 
-    // ✅ MÉTODOS PRINCIPAIS (MANTIDOS)
+    // ✅ MÉTODOS PRINCIPAIS
     generateReceiverId(token) {
         if (!token || token.length < 8) {
             return crypto.randomUUID().substr(0, 8);
@@ -108,7 +108,7 @@ export class WebRTCConnection {
         return crypto.randomUUID().substr(0, 8);
     }
 
-    // ✅✅✅ MÉTODO CORRIGIDO: RESOLVE CONFLITO DE CÂMERAS
+    // ✅ MÉTODO CORRIGIDO: RESOLVE CONFLITO DE CÂMERAS
     async requestCameraPermission() {
         try {
             // ✅ PRIMEIRO TENTA USAR STREAM EXISTENTE (do UI)
@@ -121,7 +121,7 @@ export class WebRTCConnection {
             console.log('📹 Solicitando nova permissão de câmera (sem áudio)');
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 video: true, 
-                audio: false  // ← IMPORTANTE: false para não conflitar com UI
+                audio: false
             });
             return stream;
         } catch (error) {
@@ -129,7 +129,51 @@ export class WebRTCConnection {
         }
     }
 
-    // ... (resto dos métodos permanece igual)
+    // ✅✅✅ MÉTODO CORRIGIDO: AGORA INICIA WEBRTC AUTOMATICAMENTE
+    async connectToReceiver(receiverId, token, idioma) {
+        try {
+            console.log(`🎯 Iniciando conexão WebRTC com receiver: ${receiverId}`);
+            
+            // 1️⃣ AVISA O SERVIDOR QUE QUER CONECTAR
+            const response = await fetch(`${SERVIDOR_SINALIZADOR}/procurar`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    callerId: this.myId,
+                    targetId: receiverId,
+                    token: token,
+                    callerLang: idioma,
+                    timestamp: Date.now()
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                console.log('✅ Servidor autorizou conexão, iniciando WebRTC...');
+                
+                // 2️⃣ ✅✅✅ INICIA A CHAMADA WEBRTC REAL! (CORREÇÃO CRÍTICA)
+                if (this.rtcCore && this.localStream) {
+                    // ⏰ Pequeno delay para garantir que o receiver está pronto
+                    setTimeout(() => {
+                        this.rtcCore.startCall(receiverId, this.localStream, idioma);
+                        console.log('🚀 Chamada WebRTC iniciada automaticamente!');
+                    }, 1000);
+                    
+                    return true;
+                } else {
+                    throw new Error('WebRTC não inicializado ou stream não disponível');
+                }
+            } else {
+                console.log('❌ Receiver offline, aguardando...');
+                return false;
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao conectar com receiver:', error);
+            throw error;
+        }
+    }
 
     async cadastrarReceiver(myId, token) {
         try {
@@ -173,47 +217,43 @@ export class WebRTCConnection {
         }
     }
 
-    async connectToReceiver(receiverId, token, idioma) {
-        try {
-            const response = await fetch(`${SERVIDOR_SINALIZADOR}/procurar`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    callerId: this.myId,
-                    targetId: receiverId,
-                    token: token,
-                    callerLang: idioma,
-                    timestamp: Date.now()
-                })
-            });
-            const result = await response.json();
-            return result.success;
-        } catch (error) {
-            console.error('Erro ao conectar com receiver:', error);
-            throw error;
-        }
-    }
-
     async sendFirebaseNotification(token, receiverId) {
-        // ✅ IMPLEMENTAÇÃO DO FIREBASE AQUI
         console.log('📲 Enviando notificação Firebase para:', receiverId);
-        // await firebase.messaging().send(...)
         return true;
     }
 
-    // ✅ CONFIGURAÇÃO DE CALLBACKS
+    // ✅✅✅ CONFIGURAÇÃO DE CALLBACKS CORRIGIDA - ACEITA CHAMADA AUTOMATICAMENTE
     setupCallbacks(callbacks) {
         if (callbacks.onRemoteStream) {
             this.rtcCore.setRemoteStreamCallback(callbacks.onRemoteStream);
         }
-        if (callbacks.onCallerLanguage) {
-            this.rtcCore.onIncomingCall = (offer, callerLang) => {
+        
+        // ✅✅✅ ESTA PARTE É CRÍTICA - ACEITAR CHAMADA AUTOMATICAMENTE
+        this.rtcCore.onIncomingCall = (offer, callerLang) => {
+            console.log('📞 Chamada recebida, aceitando automaticamente...');
+            
+            // Notifica o UI sobre o idioma do caller
+            if (callbacks.onCallerLanguage) {
                 callbacks.onCallerLanguage(callerLang);
-                this.rtcCore.handleIncomingCall(offer, this.localStream, callbacks.onRemoteStream);
-            };
-        }
+            }
+            
+            // ✅ ACEITA A CHAMADA AUTOMATICAMENTE (SEM BOTÃO)
+            this.rtcCore.handleIncomingCall(offer, this.localStream, (remoteStream) => {
+                console.log('✅ Conexão WebRTC estabelecida!');
+                
+                // Chama o callback do UI para mostrar o vídeo remoto
+                if (callbacks.onRemoteStream) {
+                    callbacks.onRemoteStream(remoteStream);
+                }
+            });
+        };
+        
         if (callbacks.onDataChannelMessage) {
             this.rtcCore.setDataChannelCallback(callbacks.onDataChannelMessage);
+        }
+        
+        if (callbacks.onError) {
+            // Configurar tratamento de erro se necessário
         }
     }
 
@@ -233,7 +273,6 @@ export class WebRTCConnection {
     async waitForReceiverOnline(receiverId, token, idioma) {
         console.log('⏳ Aguardando receiver ficar online...');
         
-        // Verifica a cada 3 segundos se o receiver está online
         const checkInterval = setInterval(async () => {
             const online = await this.verificarReceiverOnline(receiverId, token);
             if (online) {
@@ -245,7 +284,6 @@ export class WebRTCConnection {
     }
 
     setupConnectionHandlers() {
-        // Configura handlers para chamadas futuras
         this.rtcCore.setupSocketHandlers();
     }
 
