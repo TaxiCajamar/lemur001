@@ -16,13 +16,23 @@ let webrtcConnection;
 // ✅ FUNÇÃO: Configurar callbacks WebRTC
 function configurarCallbacksWebRTC() {
     return {
+        onLocalStream: (localStream) => {
+            console.log('📹 Stream LOCAL recebido - vai para PIP');
+            
+            // ✅ ATRIBUI AO LOCALVIDEO (PIP)
+            const localVideo = document.getElementById('localVideo');
+            if (localVideo) {
+                localVideo.srcObject = localStream;
+            }
+        },
+        
         onRemoteStream: (remoteStream) => {
-            console.log('📹 Stream remota recebida');
+            console.log('📹 Stream REMOTA recebida - vai para box principal');
             
             // Desativa áudio remoto
             remoteStream.getAudioTracks().forEach(track => track.enabled = false);
 
-            // Atualiza UI
+            // ✅ ATRIBUI AO REMOTEVIDEO (BOX PRINCIPAL)
             const remoteVideo = document.getElementById('remoteVideo');
             if (remoteVideo) {
                 remoteVideo.srcObject = remoteStream;
@@ -38,7 +48,6 @@ function configurarCallbacksWebRTC() {
         onError: (error) => {
             console.error('❌ Erro WebRTC:', error);
             
-            // Mostra erro na UI
             const elementoAguardando = document.querySelector('.aguardando-conexao');
             if (elementoAguardando) {
                 elementoAguardando.textContent = 'Erro de conexão - Tente novamente';
