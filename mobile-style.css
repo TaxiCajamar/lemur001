@@ -54,7 +54,7 @@ body {
 }
 
 /* =============================================
-   REDES SOCIAIS - MEDIDAS ORIGINAIS RESTAURADAS
+   REDES SOCIAIS - MEDIDAS AJUSTADAS
    ============================================= */
 
 /* BOTÕES DE COMPARTILHAMENTO NO QR CODE */
@@ -62,19 +62,16 @@ body {
   display: flex;
   gap: 6px;
   justify-content: center;
-  margin: 15px 0;
+  margin: 12px 0;
   flex-wrap: wrap;
 }
 
 .social-btn {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border: none;
   border-radius: 5px;
-  color: white;
-  font-weight: bold;
   cursor: pointer;
-  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,23 +90,20 @@ body {
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
+  gap: 5px;
   justify-content: center;
-  margin: 10px 0;
+  margin: 8px 0;
   flex-wrap: wrap;
   width: 80%;
   z-index: 10;
 }
 
 .social-btn-fixed {
-  width: 35px;
-  height: 35px;
+  width: 28px;
+  height: 28px;
   border: none;
   border-radius: 5px;
-  color: white;
-  font-weight: bold;
   cursor: pointer;
-  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -124,8 +118,8 @@ body {
 
 /* ÍCONES DE REDES SOCIAIS */
 .social-icon {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   object-fit: contain;
   transition: transform 0.2s ease;
 }
