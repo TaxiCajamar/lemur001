@@ -81,52 +81,6 @@ function configurarCallbacksWebRTC() {
         }
     };
 }
-        
-        onCallerLanguage: (idiomaCaller) => {
-            aplicarBandeiraRemota(idiomaCaller);
-
-            // ✅ Oculta o QR Code após conexão
-            const overlay = document.querySelector('.info-overlay');
-            if (overlay) {
-                overlay.classList.add('hidden');
-                console.log('🧼 QR Code ocultado após conexão');
-            }
-        },
-
-        onDataChannelMessage: (message) => {
-            console.log('💬 Mensagem recebida:', message);
-            // Aqui você pode tratar mensagens de texto se quiser
-        },
-
-        onError: (error) => {
-            console.error('❌ Erro WebRTC:', error);
-            
-            const elementoClick = document.getElementById('click');
-            if (elementoClick) {
-                elementoClick.textContent = 'Erro de conexão';
-                elementoClick.classList.remove('piscar-suave');
-            }
-        }
-    };
-}
-
-        
-        onDataChannelMessage: (message) => {
-            console.log('💬 Mensagem recebida:', message);
-            // Aqui você pode tratar mensagens de texto se quiser
-        },
-        
-        onError: (error) => {
-            console.error('❌ Erro WebRTC:', error);
-            
-            const elementoClick = document.getElementById('click');
-            if (elementoClick) {
-                elementoClick.textContent = 'Erro de conexão';
-                elementoClick.classList.remove('piscar-suave');
-            }
-        }
-    };
-}
 
 // ✅ CORREÇÃO: Evitar duplicidade de streams
 async function iniciarCameraAposPermissoes() {
