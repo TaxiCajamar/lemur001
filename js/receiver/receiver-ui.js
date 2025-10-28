@@ -37,25 +37,79 @@ function configurarCallbacksWebRTC() {
             const remoteVideo = document.getElementById('remoteVideo');
             if (remoteVideo) {
                 remoteVideo.srcObject = remoteStream;
-                
+
+                // ✅ Oculta o botão de espera
                 const elementoClick = document.getElementById('click');
                 if (elementoClick) {
                     elementoClick.style.display = 'none';
                     elementoClick.classList.remove('piscar-suave');
                 }
+
+                // ✅ Oculta o lêmure ansioso
+                const lemur = document.getElementById('lemurAnciosoWaiting');
+                if (lemur) {
+                    lemur.style.display = 'none';
+                    console.log('🧼 Lêmure ansioso ocultado após vídeo remoto');
+                }
             }
         },
         
-  onCallerLanguage: (idiomaCaller) => {
-  aplicarBandeiraRemota(idiomaCaller);
+        onCallerLanguage: (idiomaCaller) => {
+            aplicarBandeiraRemota(idiomaCaller);
 
-  // ✅ Oculta o QR Code após conexão
-  const overlay = document.querySelector('.info-overlay');
-  if (overlay) {
-    overlay.classList.add('hidden');
-    console.log('🧼 QR Code ocultado após conexão');
-  }
-},
+            // ✅ Oculta o QR Code após conexão
+            const overlay = document.querySelector('.info-overlay');
+            if (overlay) {
+                overlay.classList.add('hidden');
+                console.log('🧼 QR Code ocultado após conexão');
+            }
+        },
+
+        onDataChannelMessage: (message) => {
+            console.log('💬 Mensagem recebida:', message);
+            // Aqui você pode tratar mensagens de texto se quiser
+        },
+
+        onError: (error) => {
+            console.error('❌ Erro WebRTC:', error);
+            
+            const elementoClick = document.getElementById('click');
+            if (elementoClick) {
+                elementoClick.textContent = 'Erro de conexão';
+                elementoClick.classList.remove('piscar-suave');
+            }
+        }
+    };
+}
+        
+        onCallerLanguage: (idiomaCaller) => {
+            aplicarBandeiraRemota(idiomaCaller);
+
+            // ✅ Oculta o QR Code após conexão
+            const overlay = document.querySelector('.info-overlay');
+            if (overlay) {
+                overlay.classList.add('hidden');
+                console.log('🧼 QR Code ocultado após conexão');
+            }
+        },
+
+        onDataChannelMessage: (message) => {
+            console.log('💬 Mensagem recebida:', message);
+            // Aqui você pode tratar mensagens de texto se quiser
+        },
+
+        onError: (error) => {
+            console.error('❌ Erro WebRTC:', error);
+            
+            const elementoClick = document.getElementById('click');
+            if (elementoClick) {
+                elementoClick.textContent = 'Erro de conexão';
+                elementoClick.classList.remove('piscar-suave');
+            }
+        }
+    };
+}
+
         
         onDataChannelMessage: (message) => {
             console.log('💬 Mensagem recebida:', message);
