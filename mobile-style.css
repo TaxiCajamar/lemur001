@@ -385,6 +385,8 @@ body {
 }
 
 .pip-local-wrapper video {
+ position: relative;
+  z-index: 20;
   width: 100%;
   height: 100%;
   object-fit: cover;
