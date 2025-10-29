@@ -361,7 +361,7 @@ body {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   border: 0.3vw solid #4CAF50;
   z-index: 5;
-  background: url('assets/images/telalemur.png') center/cover no-repeat;
+  background: transparent;
 }
 
 .video-wrapper video {
