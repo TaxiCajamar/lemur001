@@ -1,3 +1,30 @@
+// ✅ Configuração de rede e servidores ICE
+const SIGNALING_SERVER_URL = 'https://lemur-signal.onrender.com';
+
+const getIceServers = () => [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun2.l.google.com:19302' },
+  { urls: 'stun:stun3.l.google.com:19302' },
+  { urls: 'stun:stun4.l.google.com:19302' },
+  {
+    urls: 'turn:openrelay.metered.ca:80',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  },
+  {
+    urls: 'turn:openrelay.metered.ca:443',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  },
+  {
+    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  }
+];
+
+// ✅ Função principal WebRTC
 export async function iniciarWebRTCPacote(token) {
   // ✅ Injeta estilo exclusivo para o vídeo remoto
   const estiloVideoRemoto = document.createElement('style');
@@ -18,6 +45,9 @@ export async function iniciarWebRTCPacote(token) {
   `;
   document.head.appendChild(estiloVideoRemoto);
 
+  // ✅ Conecta ao servidor de sinalização
+  const socket = io(SIGNALING_SERVER_URL);
+
   // 📹 Captura da câmera local
   const localStream = await navigator.mediaDevices.getUserMedia({
     video: true,
@@ -32,7 +62,7 @@ export async function iniciarWebRTCPacote(token) {
 
   // 🌐 Cria conexão WebRTC
   const peer = new RTCPeerConnection({
-    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    iceServers: getIceServers()
   });
 
   // 📤 Envia câmera local para o peer
