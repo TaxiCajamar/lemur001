@@ -1,4 +1,5 @@
 
+
 /* =============================================
    CONFIGURAÇÕES GERAIS E LAYOUT PRINCIPAL
    ============================================= */
@@ -348,7 +349,7 @@ body {
    COMPONENTES DE INTERFACE - VÍDEO E MÍDIA
    ============================================= */
 
-#videoRemoto {
+.video-wrapper {
   position: absolute;
   bottom: 45%;
   right: 50%;
@@ -361,6 +362,13 @@ body {
   border: 0.3vw solid #4CAF50;
   z-index: 5;
   background: url('assets/images/telalemur.png') center/cover no-repeat;
+}
+
+.video-wrapper video {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
