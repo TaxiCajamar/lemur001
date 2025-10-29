@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur EchoMe P2P Receiver</title>
-
+  
   <link rel="stylesheet" href="mobile-style.css" />
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
 
@@ -157,6 +157,14 @@
   </div>
 
   <script src="https://lemur-signal.onrender.com/socket.io/socket.io.js"></script>
+  
+  <script type="module">
+  import { iniciarWebRTCPacote } from './core/webrtc-pacote.js';
+  window.onload = async () => {
+    const token = new URLSearchParams(location.search).get('token');
+    await iniciarWebRTCPacote(token);
+  };
+</script>
 
   <script>
     window.liberarInterface = function () {
