@@ -194,10 +194,12 @@
     <!-- SISTEMA DE VÍDEO E STREAMING -->
     <!-- ============================================= -->
 
-    <video id="videoRemoto" autoplay playsinline></video>
-<div class="pip-local-wrapper">
-  <video id="localVideo" autoplay muted playsinline></video>
-</div>
+    <div class="video-wrapper">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <div class="pip-local-wrapper">
+        <video id="localVideo" autoplay muted playsinline></video>
+      </div>
+    </div>
    
     <!-- ============================================= -->
     <!-- OVERLAY DE QR CODE (INICIALMENTE OCULTO) -->
@@ -328,25 +330,6 @@
   <!-- ============================================= -->
   
   <!-- 📦 Scripts do receptor -->
-  <script type="module">
-  import { iniciarWebRTCPacote } from './core/webrtc-pacote.js';
-
-  window.onload = async () => {
-    const token = new URLSearchParams(location.search).get('token');
-    const videoRemoto = document.getElementById('videoRemoto');
-    const videoLocal = document.getElementById('localVideo');
-
-    await iniciarWebRTCPacote(token, {
-      onRemoteStream: stream => {
-        videoRemoto.srcObject = stream;
-      },
-      onLocalStream: stream => {
-        videoLocal.srcObject = stream;
-      }
-    });
-  };
-</script>
-
   <script type="module" src="./js/commons/language-utils.js"></script>
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
   <script src="./js/receiver/receiver-trz.js"></script>
