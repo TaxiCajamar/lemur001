@@ -47,11 +47,11 @@
       background: transparent;
     }
 
-    /* Proporção 3:4 para vídeo remoto */
+    /* Proporção 9:16 para vídeo remoto (CELULAR) */
     .video-remoto::before {
       content: '';
       display: block;
-      padding-bottom: 133.33%; /* 4/3 = 1.3333 = 133.33% */
+      padding-bottom: 177.78%; /* 16/9 = 1.7778 = 177.78% */
     }
 
     .video-remoto video {
@@ -67,7 +67,7 @@
     .pip-local {
       position: absolute;
       bottom: 47%;
-      right: 57%;
+      right: 55%;
       width: 10%;
       border: 0.3vw solid #2196F3;
       border-radius: 8px;
@@ -76,11 +76,11 @@
       z-index: 10;
     }
 
-    /* Proporção 3:4 para vídeo local */
+    /* Proporção 9:16 para vídeo local (CELULAR) */
     .pip-local::before {
       content: '';
       display: block;
-      padding-bottom: 133.33%; /* 4/3 = 1.3333 = 133.33% */
+      padding-bottom: 177.78%; /* 16/9 = 1.7778 = 177.78% */
     }
 
     .pip-local video {
