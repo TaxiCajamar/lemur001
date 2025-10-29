@@ -101,7 +101,8 @@
     <div class="local-mic-Lang">🏳️</div>
 
     <!-- 🎥 Vídeo remoto -->
-    <video id="videoRemoto" autoplay playsinline></video>
+    <div class="video-wrapper">
+      <video id="remoteVideo" autoplay playsinline></video>
 
       <!-- 📺 Vídeo local em PiP -->
       <div class="pip-local-wrapper">
@@ -223,25 +224,6 @@
     }
 
   </script>
-  <script type="module">
-  import { iniciarWebRTCPacote } from './core/webrtc-pacote.js';
-
-  window.onload = async () => {
-    const token = new URLSearchParams(location.search).get('token');
-    const videoRemoto = document.getElementById('videoRemoto');
-    const videoLocal = document.getElementById('localVideo');
-
-    await iniciarWebRTCPacote(token, {
-      onRemoteStream: stream => {
-        videoRemoto.srcObject = stream;
-      },
-      onLocalStream: stream => {
-        videoLocal.srcObject = stream;
-      }
-    });
-  };
-</script>
-
 
   <script type="module" src="./js/commons/language-utils.js"></script>
   <script type="module" src="./js/caller/caller-ui.js"></script>
