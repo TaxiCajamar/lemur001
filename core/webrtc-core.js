@@ -48,16 +48,14 @@ class WebRTCCore {
     }
 
     this.peer.ontrack = event => {
-      const remoteStream = event.streams[0];
-      console.log('📹 Stream remota recebida no caller:', remoteStream);
-      console.log('📹 Tracks da stream remota:', remoteStream?.getTracks());
-
-      if (!remoteStream || remoteStream.getTracks().length === 0) {
-        console.warn('⚠️ Stream remota está vazia ou inválida no caller');
-      }
-
-      if (this.remoteStreamCallback) {
-        this.remoteStreamCallback(remoteStream);
+      const remoteStream = event.streams?.[0];
+      if (remoteStream && remoteStream.getVideoTracks().length > 0) {
+        console.log('✅ Stream remoto válido recebido no caller:', remoteStream);
+        if (this.remoteStreamCallback) {
+          this.remoteStreamCallback(remoteStream);
+        }
+      } else {
+        console.warn('⚠️ Stream remoto inválido ou sem vídeo no caller:', event.streams);
       }
     };
 
@@ -99,22 +97,19 @@ class WebRTCCore {
       }
     }
 
-    this.peer.ontrack = (event) => {
-      console.log('🎯 Evento ontrack disparado!', event.streams);
-      const remoteStream = event.streams[0];
-      console.log('📹 Stream remota recebida no receiver:', remoteStream);
-      console.log('📹 Tracks da stream remota:', remoteStream?.getTracks());
-
-      if (!remoteStream || remoteStream.getTracks().length === 0) {
-        console.warn('⚠️ Stream remota está vazia ou inválida no receiver');
-      }
-
-      if (callback) {
-        callback(remoteStream);
+    this.peer.ontrack = event => {
+      const remoteStream = event.streams?.[0];
+      if (remoteStream && remoteStream.getVideoTracks().length > 0) {
+        console.log('✅ Stream remoto válido recebido no receiver:', remoteStream);
+        if (callback) {
+          callback(remoteStream);
+        }
+      } else {
+        console.warn('⚠️ Stream remoto inválido ou sem vídeo no receiver:', event.streams);
       }
     };
 
-    this.peer.ondatachannel = (event) => {
+    this.peer.ondatachannel = event => {
       this.dataChannel = event.channel;
       this.setupDataChannelHandlers();
     };
@@ -172,14 +167,14 @@ class WebRTCCore {
       console.log('DataChannel connected');
     };
 
-    this.dataChannel.onmessage = (event) => {
+    this.dataChannel.onmessage = event => {
       console.log('Message received:', event.data);
       if (this.onDataChannelMessage) {
         this.onDataChannelMessage(event.data);
       }
     };
 
-    this.dataChannel.onerror = (error) => {
+    this.dataChannel.onerror = error => {
       console.error('DataChannel error:', error);
     };
   }
