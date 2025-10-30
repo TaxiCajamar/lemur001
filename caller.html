@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur EchoMe P2P Caller</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
   <style>
     /* ===== ESTILOS GERAIS ===== */
     html {
@@ -51,7 +52,7 @@
     .video-remoto::before {
       content: '';
       display: block;
-      padding-bottom: 177.78%; /* 16/9 = 1.7778 = 177.78% */
+      padding-bottom: 177.78%;
     }
 
     .video-remoto video {
@@ -62,6 +63,7 @@
       height: 100%;
       object-fit: cover;
       z-index: 10;
+      background: #2c3e50;
     }
 
     .pip-local {
@@ -80,7 +82,7 @@
     .pip-local::before {
       content: '';
       display: block;
-      padding-bottom: 177.78%; /* 16/9 = 1.7778 = 177.78% */
+      padding-bottom: 177.78%;
     }
 
     .pip-local video {
@@ -91,20 +93,202 @@
       height: 100%;
       object-fit: cover;
       z-index: 20;
+      background: #34495e;
+    }
+
+    .status {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      z-index: 15;
+    }
+
+    .id-display {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 1rem;
+      z-index: 15;
+    }
+
+    .connect-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      z-index: 100;
+      text-align: center;
+    }
+
+    .connect-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 25px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    .connect-btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
     }
   </style>
 </head>
 <body>
   <div class="box-principal">
+    <div class="status" id="status">🔴 Desconectado</div>
+    <div class="id-display" id="idDisplay">Conectando...</div>
+    
+    <div class="connect-container" id="connectContainer">
+      <h3>Conectar com Receiver</h3>
+      <p id="targetId">ID do Receiver: Carregando...</p>
+      <button class="connect-btn" id="connectBtn" disabled>Conectar</button>
+    </div>
+
     <!-- 🎥 Vídeo remoto -->
-    <div class="video-remoto">  <!-- ✅ CORRIGIDO -->
+    <div class="video-remoto">
       <video id="remoteVideo" autoplay playsinline></video>
     </div>
 
     <!-- 📺 Vídeo local em PiP -->
-    <div class="pip-local">  <!-- ✅ CORRIGIDO -->
+    <div class="pip-local">
       <video id="localVideo" autoplay muted playsinline></video>
     </div>
   </div>
+
+  <script>
+    class CallerConnection {
+      constructor() {
+        this.peer = null;
+        this.localStream = null;
+        this.remoteStream = null;
+        this.myId = this.generateId();
+        this.targetId = this.getTargetIdFromURL();
+        
+        this.initialize();
+      }
+
+      generateId() {
+        return Math.floor(10000000 + Math.random() * 90000000).toString();
+      }
+
+      getTargetIdFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id');
+      }
+
+      async initialize() {
+        try {
+          // Atualizar UI
+          document.getElementById('idDisplay').textContent = `Meu ID: ${this.myId}`;
+          document.getElementById('targetId').textContent = `ID do Receiver: ${this.targetId || 'Não encontrado'}`;
+          document.getElementById('status').textContent = '🟡 Iniciando...';
+          
+          // Pedir permissão da câmera
+          this.localStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { width: 1280, height: 720 },
+            audio: false 
+          });
+          
+          // Mostrar vídeo local
+          const localVideo = document.getElementById('localVideo');
+          localVideo.srcObject = this.localStream;
+          
+          // Habilitar botão de conectar se temos targetId
+          if (this.targetId) {
+            document.getElementById('connectBtn').disabled = false;
+            document.getElementById('status').textContent = '🟡 Pronto para conectar';
+          } else {
+            document.getElementById('status').textContent = '🔴 ID não encontrado na URL';
+          }
+          
+        } catch (error) {
+          console.error('Erro ao acessar câmera:', error);
+          document.getElementById('status').textContent = '🔴 Erro na câmera';
+        }
+      }
+
+      connectToReceiver() {
+        if (!this.targetId) {
+          alert('ID do Receiver não encontrado!');
+          return;
+        }
+
+        document.getElementById('status').textContent = '🟡 Conectando...';
+        document.getElementById('connectBtn').disabled = true;
+
+        this.peer = new SimplePeer({
+          initiator: true,
+          stream: this.localStream,
+          trickle: false,
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:global.stun.twilio.com:3478' }
+            ]
+          }
+        });
+
+        this.peer.on('signal', (data) => {
+          // Em uma implementação real, enviaríamos este data para o receiver via signaling
+          console.log('Offer signal data:', data);
+          
+          // SIMULAÇÃO: Em uma implementação real, aqui enviaríamos o offer para o receiver
+          // Por enquanto, mostramos que está tentando conectar
+          document.getElementById('status').textContent = '🟡 Enviando oferta...';
+        });
+
+        this.peer.on('connect', () => {
+          document.getElementById('status').textContent = '🟢 Conectado!';
+          document.getElementById('connectContainer').style.display = 'none';
+        });
+
+        this.peer.on('stream', (stream) => {
+          this.remoteStream = stream;
+          const remoteVideo = document.getElementById('remoteVideo');
+          remoteVideo.srcObject = stream;
+          document.getElementById('status').textContent = '🟢 Vídeo conectado!';
+        });
+
+        this.peer.on('error', (err) => {
+          console.error('Peer error:', err);
+          document.getElementById('status').textContent = '🔴 Erro de conexão';
+          document.getElementById('connectBtn').disabled = false;
+        });
+
+        // SIMULAÇÃO: Em uma implementação real, precisaríamos do signaling server
+        // para trocar os offers/answers entre caller e receiver
+        setTimeout(() => {
+          document.getElementById('status').textContent = '🔴 Aguardando signaling server';
+        }, 3000);
+      }
+    }
+
+    // Inicializar quando a página carregar
+    document.addEventListener('DOMContentLoaded', () => {
+      window.caller = new CallerConnection();
+      
+      // Configurar botão de conectar
+      document.getElementById('connectBtn').addEventListener('click', () => {
+        window.caller.connectToReceiver();
+      });
+    });
+  </script>
 </body>
 </html>
