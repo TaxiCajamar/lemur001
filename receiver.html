@@ -5,16 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur EchoMe P2P Receiver</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐒</text></svg>">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- ✅ SUA BIBLIOTECA QR CODE QUE JÁ FUNCIONA -->
+  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
-    /* SEU CSS ORIGINAL (mantenha igual) */
+    /* ===== ESTILOS GERAIS ===== */
     html {
       height: 100%;
       font-size: clamp(14px, 2.5vw, 18px);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
+      transition: background-color 0.5s;
     }
 
     body {
@@ -183,11 +185,11 @@
           const urlParams = new URLSearchParams(window.location.search);
           this.token = urlParams.get('token');
           
-          console.log('📋 Token da URL:', this.token);
+          console.log('📋 Token da URL:', this.token ? '✅ Encontrado' : '❌ Não encontrado');
           
           // 2. VERIFICAR SE TOKEN EXISTE
           if (!this.token) {
-            throw new Error('Token não encontrado na URL');
+            throw new Error('Token não encontrado na URL. Acesse através do Notificador.');
           }
           
           // 3. GERAR ID FIXO (ÚLTIMOS 8 DÍGITOS)
@@ -223,7 +225,6 @@
         } catch (error) {
           console.error('❌ Erro no receiver:', error);
           document.getElementById('status').textContent = '🔴 Erro: ' + error.message;
-          alert('Erro: ' + error.message + '\n\nToken na URL: ' + window.location.search);
         }
       }
 
@@ -262,13 +263,15 @@
       createQRCode() {
         console.log('📟 Criando QR Code...');
         
-        // QR CODE COM ID FIXO + TOKEN
+        // ✅ URL COMPLETA COM TOKEN (como você sempre usou)
         const callerUrl = `https://lemur-interface-traducao.pages.dev/caller.html?id=${this.myId}&token=${this.token}`;
         
         console.log('🔗 URL do QR Code:', callerUrl);
         
+        // ✅ LIMPAR CONTAINER ANTES
         document.getElementById('qrcode').innerHTML = '';
         
+        // ✅ USAR SUA BIBLIOTECA QUE JÁ FUNCIONA
         new QRCode(document.getElementById('qrcode'), {
           text: callerUrl,
           width: 200,
