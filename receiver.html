@@ -59,8 +59,8 @@
     <script>
         // PEGA OS 8 DÍGITOS ENVIADOS PELA TELA ANTERIOR
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        const idReceiver = urlParams.get('id'); // ← ESTE É O ID DE 8 DÍGITOS
+const token = urlParams.get('token');
+const idReceiver = urlParams.get('id'); // ← OS 8 DÍGITOS
         
         // MOSTRA O ID NA TELA
         document.getElementById('myId').textContent = `ID: ${idReceiver}`;
