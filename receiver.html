@@ -14,44 +14,34 @@
       pointer-events: none !important;
     }
     
-    /* 🆕 ESTILOS PARA BOTÕES DE COMPARTILHAMENTO NO QR CODE */
+    /* 🎯 BOTÕES SIMPLIFICADOS */
     .social-buttons {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin: 15px 0;
-      flex-wrap: wrap;
-    }
+  display: flex;
+  gap: 6px;           /* ⬅️ Menor gap entre botões */
+  justify-content: center;
+  margin: 5px 0;      /* ⬅️ Margem bem reduzida */
+  flex-wrap: wrap;
+}
 
-    .social-btn {
-      width: 35px;
-      height: 35px;
-      border: none;
-      border-radius: 5px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s;
-    }
+.social-btn {
+  width: 40px;        /* ⬅️ Botões um pouco menores */
+  height: 40px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+}
 
-    .social-btn:hover {
-      transform: scale(1.1);
-    }
-
-    .facebook { background: #3b5998; }
-    .twitter { background: #1da1f2; }
-    .linkedin { background: #0077b5; }
-    .whatsapp { background: #25d366; }
-    .telegram { background: #0088cc; }
-
-    /* 🆕 ESTILOS PARA LINKS FIXOS DE REDES SOCIAIS */
+.social-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 2px;       /* ⬅️ Padding reduzido */
+}
+    
     .social-links-fixed {
       position: absolute;
-      top: 22%; /* Logo abaixo do subtítulo de 15% */
+      top: 15%;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -64,23 +54,20 @@
     }
 
     .social-btn-fixed {
-      width: 35px;
-      height: 35px;
+      width: 30px;
+      height: 30px;
       border: none;
       border-radius: 5px;
-      color: white;
-      font-weight: bold;
+      background: transparent;
       cursor: pointer;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s;
       text-decoration: none;
     }
 
-    .social-btn-fixed:hover {
-      transform: scale(1.1);
+    .social-btn-fixed img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 2px;
     }
   </style>
 </head>
@@ -172,14 +159,27 @@
       Real-time translation.
     </div>
 
-    <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS - SEMPRE VISÍVEIS -->
-    <div class="social-links-fixed">
-      <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed linkedin">in</a>
-      <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed instagram">ig</a>
-      <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed facebook">f</a>
-      <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed website">🌐</a>
-      <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed whatsapp">w</a>
-    </div>
+   <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS - SIMPLIFICADO -->
+<div class="social-links-fixed">
+  <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/linke.png" alt="LinkedIn">
+  </a>
+  <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/insta.png" alt="Instagram">
+  </a>
+  <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/face.png" alt="Facebook">
+  </a>
+  <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/redeX.png" alt="Website">
+  </a>
+  <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/wattsap.png" alt="WhatsApp">
+  </a>
+  <a href="https://t.me/lemurinnovation" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/telegran.png" alt="Telegram">
+  </a>
+</div>
 
     <!-- ============================================= -->
     <!-- INDICADORES DE IDIOMA E BANDEIRAS -->
@@ -215,14 +215,24 @@
         You can ask to scan, share or print on your business card.
       </p>
 
-      <!-- 🆕 BOTÕES DE COMPARTILHAMENTO NO QR CODE -->
-      <div class="social-buttons">
-        <button class="social-btn facebook" onclick="compartilharSocial('facebook')">f</button>
-        <button class="social-btn twitter" onclick="compartilharSocial('twitter')">t</button>
-        <button class="social-btn linkedin" onclick="compartilharSocial('linkedin')">in</button>
-        <button class="social-btn whatsapp" onclick="compartilharSocial('whatsapp')">w</button>
-        <button class="social-btn telegram" onclick="compartilharSocial('telegram')">tg</button>
-      </div>
+     <!-- 🆕 BOTÕES DE COMPARTILHAMENTO - SIMPLIFICADO -->
+<div class="social-buttons">
+  <button class="social-btn" onclick="compartilharSocial('facebook')">
+    <img src="assets/images/face.png" alt="Facebook">
+  </button>
+  <button class="social-btn" onclick="compartilharSocial('twitter')">
+    <img src="assets/images/redeX.png" alt="Twitter/X">
+  </button>
+  <button class="social-btn" onclick="compartilharSocial('linkedin')">
+    <img src="assets/images/linke.png" alt="LinkedIn">
+  </button>
+  <button class="social-btn" onclick="compartilharSocial('whatsapp')">
+    <img src="assets/images/wattsap.png" alt="WhatsApp">
+  </button>
+  <button class="social-btn" onclick="compartilharSocial('telegram')">
+    <img src="assets/images/telegran.png" alt="Telegram">
+  </button>
+</div>
 
       <!-- 🆕 BOTÃO COPIAR SIMPLES E UNIVERSAL -->
       <button id="copiarLink" class="btn-copiar-simples">🔗</button>
@@ -261,11 +271,6 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- ============================================= -->
-  <!-- IMPORTAÇÃO DE BIBLIOTECAS EXTERNAS -->
-  <!-- ============================================= -->
-
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <!-- ============================================= -->
   <!-- SCRIPTS DE INICIALIZAÇÃO E CONFIGURAÇÃO -->
   <!-- ============================================= -->
@@ -316,8 +321,12 @@
   <!-- IMPORTAÇÃO DOS SCRIPTS DA APLICAÇÃO -->
   <!-- ============================================= -->
   
+  <!-- 📦 Scripts do receptor -->
+  
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
   <script src="./js/receiver/receiver-trz.js"></script>
+
   
 </body>
 </html>
