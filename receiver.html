@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur EchoMe P2P Receiver</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
   <style>
     /* ===== ESTILOS GERAIS ===== */
     html {
@@ -51,7 +53,7 @@
     .video-remoto::before {
       content: '';
       display: block;
-      padding-bottom: 177.78%; /* 16/9 = 1.7778 = 177.78% */
+      padding-bottom: 177.78%;
     }
 
     .video-remoto video {
@@ -62,6 +64,7 @@
       height: 100%;
       object-fit: cover;
       z-index: 10;
+      background: #2c3e50;
     }
 
     .pip-local {
@@ -80,7 +83,7 @@
     .pip-local::before {
       content: '';
       display: block;
-      padding-bottom: 177.78%; /* 16/9 = 1.7778 = 177.78% */
+      padding-bottom: 177.78%;
     }
 
     .pip-local video {
@@ -91,11 +94,58 @@
       height: 100%;
       object-fit: cover;
       z-index: 20;
+      background: #34495e;
+    }
+
+    .qr-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      z-index: 100;
+    }
+
+    .status {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      z-index: 15;
+    }
+
+    .id-display {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      z-index: 15;
     }
   </style>
 </head>
 <body>
   <div class="box-principal">
+    <div class="status" id="status">🔴 Desconectado</div>
+    <div class="id-display" id="idDisplay">ID: --------</div>
+    
+    <div class="qr-container" id="qrContainer">
+      <h3>Escaneie para conectar</h3>
+      <div id="qrcode"></div>
+      <p id="qrInstructions">Aguardando conexão...</p>
+    </div>
+
     <!-- 🎥 Vídeo remoto -->
     <div class="video-remoto">
       <video id="remoteVideo" autoplay playsinline></video>
@@ -106,5 +156,114 @@
       <video id="localVideo" autoplay muted playsinline></video>
     </div>
   </div>
+
+  <script>
+    class ReceiverConnection {
+      constructor() {
+        this.peer = null;
+        this.localStream = null;
+        this.remoteStream = null;
+        this.myId = this.generateId();
+        
+        this.initialize();
+      }
+
+      generateId() {
+        return Math.floor(10000000 + Math.random() * 90000000).toString();
+      }
+
+      async initialize() {
+        try {
+          // Atualizar UI
+          document.getElementById('idDisplay').textContent = `ID: ${this.myId}`;
+          document.getElementById('status').textContent = '🟡 Iniciando...';
+          
+          // Pedir permissão da câmera
+          this.localStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { width: 1280, height: 720 },
+            audio: false 
+          });
+          
+          // Mostrar vídeo local
+          const localVideo = document.getElementById('localVideo');
+          localVideo.srcObject = this.localStream;
+          
+          // Criar QR Code
+          this.createQRCode();
+          
+          document.getElementById('status').textContent = '🟢 Online - Aguardando';
+          
+        } catch (error) {
+          console.error('Erro ao acessar câmera:', error);
+          document.getElementById('status').textContent = '🔴 Erro na câmera';
+        }
+      }
+
+      createQRCode() {
+        const callerUrl = `https://lemur-interface-traducao.pages.dev/caller.html?id=${this.myId}`;
+        
+        // Criar QR Code
+        new QRCode(document.getElementById('qrcode'), {
+          text: callerUrl,
+          width: 200,
+          height: 200,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+        
+        document.getElementById('qrInstructions').innerHTML = 
+          `ID: <strong>${this.myId}</strong><br>Escaneie o QR Code para conectar`;
+      }
+
+      // Este método será chamado quando o caller se conectar
+      startPeerConnection(offer) {
+        document.getElementById('status').textContent = '🟡 Conectando...';
+        
+        this.peer = new SimplePeer({
+          initiator: false,
+          trickle: false,
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:global.stun.twilio.com:3478' }
+            ]
+          }
+        });
+
+        this.peer.on('signal', (data) => {
+          // Enviar resposta para o caller (em uma implementação real)
+          console.log('Signal data:', data);
+        });
+
+        this.peer.on('connect', () => {
+          document.getElementById('status').textContent = '🟢 Conectado!';
+          document.getElementById('qrContainer').style.display = 'none';
+        });
+
+        this.peer.on('stream', (stream) => {
+          this.remoteStream = stream;
+          const remoteVideo = document.getElementById('remoteVideo');
+          remoteVideo.srcObject = stream;
+        });
+
+        this.peer.on('error', (err) => {
+          console.error('Peer error:', err);
+          document.getElementById('status').textContent = '🔴 Erro de conexão';
+        });
+
+        // Em uma implementação real, você receberia o offer do caller via signaling
+        // Por enquanto, simulamos que o offer já está disponível
+        if (offer) {
+          this.peer.signal(offer);
+        }
+      }
+    }
+
+    // Inicializar quando a página carregar
+    document.addEventListener('DOMContentLoaded', () => {
+      window.receiver = new ReceiverConnection();
+    });
+  </script>
 </body>
 </html>
