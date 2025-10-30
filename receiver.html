@@ -4,17 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur EchoMe P2P Receiver</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐒</text></svg>">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
-    /* ===== ESTILOS GERAIS ===== */
+    /* SEU CSS ORIGINAL AQUI (mantenha igual) */
     html {
       height: 100%;
       font-size: clamp(14px, 2.5vw, 18px);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
-      transition: background-color 0.5s;
     }
 
     body {
@@ -137,19 +137,6 @@
     .hidden {
       display: none !important;
     }
-
-    .auto-connect-message {
-      position: absolute;
-      top: 60%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(76, 175, 80, 0.9);
-      color: white;
-      padding: 20px;
-      border-radius: 15px;
-      z-index: 90;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -161,11 +148,6 @@
       <h3>Escaneie para conectar</h3>
       <div id="qrcode"></div>
       <p id="qrInstructions">Aguardando conexão...</p>
-    </div>
-
-    <div class="auto-connect-message hidden" id="autoConnectMessage">
-      <h3>🎯 Conectando Automaticamente!</h3>
-      <p>Alguém está te chamando...</p>
     </div>
 
     <!-- 🎥 Vídeo remoto -->
@@ -189,76 +171,54 @@
         this.myId = null;
         this.token = null;
         this.isConnected = false;
-        this.wasCalled = false;
         
         this.initialize();
       }
 
+      generateFallbackId() {
+        // Gera ID aleatório se não tiver token
+        return Math.floor(10000000 + Math.random() * 90000000).toString();
+      }
+
       async initialize() {
         try {
-          // 1. Extrair token e gerar ID fixo dos últimos 8 dígitos
+          // 1. Tentar extrair token da URL
           const urlParams = new URLSearchParams(window.location.search);
           this.token = urlParams.get('token');
           
-          if (!this.token) {
-            throw new Error('Token não encontrado na URL');
+          // 2. Gerar ID (com token ou fallback)
+          if (this.token) {
+            this.myId = this.token.slice(-8); // Últimos 8 dígitos
+          } else {
+            this.myId = this.generateFallbackId();
+            console.log('⚠️ Token não encontrado, usando ID aleatório');
           }
           
-          this.myId = this.token.slice(-8); // Últimos 8 dígitos como ID fixo
-          
-          // Atualizar UI
+          // 3. Atualizar UI
           document.getElementById('idDisplay').textContent = `ID: ${this.myId}`;
-          document.getElementById('status').textContent = '🟡 Verificando chamadas...';
+          document.getElementById('status').textContent = '🟡 Iniciando...';
           
-          // 2. VERIFICAR SE ESTÁ SENDO PROCURADO (LÓGICA PRINCIPAL)
-          await this.checkIfBeingCalled();
-          
-          // 3. Conectar ao servidor signaling
+          // 4. Conectar ao servidor signaling
           this.connectToSignalingServer();
           
-          // 4. Pedir permissão da câmera
+          // 5. Pedir permissão da câmera
           this.localStream = await navigator.mediaDevices.getUserMedia({ 
             video: { width: 1280, height: 720 },
             audio: false 
           });
           
-          // 5. Mostrar vídeo local
+          // 6. Mostrar vídeo local
           const localVideo = document.getElementById('localVideo');
           localVideo.srcObject = this.localStream;
+          
+          // 7. Criar QR Code
+          this.createQRCode();
+          
+          document.getElementById('status').textContent = '🟢 Online - Aguardando';
           
         } catch (error) {
           console.error('Erro:', error);
           document.getElementById('status').textContent = '🔴 Erro: ' + error.message;
-        }
-      }
-
-      async checkIfBeingCalled() {
-        try {
-          const response = await fetch(`https://lemur-signal.onrender.com/checkCall/${this.myId}`);
-          const data = await response.json();
-          
-          console.log('🔍 Verificação de chamadas:', data);
-          
-          if (data.isBeingCalled) {
-            // CASO 1: FOI CHAMADO - Conectar automaticamente
-            this.wasCalled = true;
-            document.getElementById('status').textContent = '🎯 Conectando...';
-            document.getElementById('autoConnectMessage').classList.remove('hidden');
-            document.getElementById('qrContainer').classList.add('hidden');
-            
-            console.log('✅ Receiver foi chamado, conectando automaticamente');
-          } else {
-            // CASO 2: NÃO FOI CHAMADO - Mostrar QR Code
-            this.wasCalled = false;
-            document.getElementById('status').textContent = '🟢 Online - Aguardando';
-            this.createQRCode();
-            
-            console.log('📟 Ninguém chamando, mostrando QR Code');
-          }
-        } catch (error) {
-          console.error('Erro ao verificar chamadas:', error);
-          // Em caso de erro, assume que não foi chamado
-          this.createQRCode();
         }
       }
 
@@ -280,13 +240,10 @@
           console.log('✅ Registrado no servidor:', data);
         });
 
-        // RECEBER CHAMADA (caso alguém chame depois que já está online)
+        // RECEBER CHAMADA
         this.socket.on('incomingCall', (data) => {
           console.log('📞 Chamada recebida de:', data.from);
-          
-          if (!this.isConnected) {
-            this.handleIncomingCall(data);
-          }
+          this.handleIncomingCall(data);
         });
 
         this.socket.on('disconnect', () => {
@@ -296,7 +253,7 @@
       }
 
       createQRCode() {
-        const callerUrl = `https://lemur-interface-traducao.pages.dev/caller.html?id=${this.myId}&token=${this.token}`;
+        const callerUrl = `https://lemur-interface-traducao.pages.dev/caller.html?id=${this.myId}${this.token ? `&token=${this.token}` : ''}`;
         
         // Limpar QR Code anterior se existir
         document.getElementById('qrcode').innerHTML = '';
@@ -310,13 +267,15 @@
           correctLevel: QRCode.CorrectLevel.H
         });
         
-        document.getElementById('qrInstructions').innerHTML = 
-          `ID: <strong>${this.myId}</strong><br>Escaneie para conectar`;
+        const instructions = this.token 
+          ? `ID: <strong>${this.myId}</strong><br>Escaneie para conectar`
+          : `ID: <strong>${this.myId}</strong><br>(Sem token - ID temporário)`;
+        
+        document.getElementById('qrInstructions').innerHTML = instructions;
       }
 
       handleIncomingCall(data) {
         document.getElementById('status').textContent = '🟡 Conectando...';
-        document.getElementById('autoConnectMessage').classList.remove('hidden');
         document.getElementById('qrContainer').classList.add('hidden');
         
         // Criar peer como receptor
@@ -338,18 +297,12 @@
             callerId: data.from,
             signal: signalData
           });
-          
-          // Limpar chamada pendente no servidor
-          fetch(`https://lemur-signal.onrender.com/clearCall/${this.myId}`, {
-            method: 'DELETE'
-          });
         });
 
         this.peer.on('connect', () => {
           console.log('✅ Conexão P2P estabelecida!');
           this.isConnected = true;
           document.getElementById('status').textContent = '🟢 Conectado!';
-          document.getElementById('autoConnectMessage').classList.add('hidden');
         });
 
         this.peer.on('stream', (stream) => {
@@ -362,7 +315,6 @@
         this.peer.on('error', (err) => {
           console.error('❌ Erro WebRTC:', err);
           document.getElementById('status').textContent = '🔴 Erro de conexão';
-          document.getElementById('autoConnectMessage').classList.add('hidden');
         });
 
         // Processar oferta do caller
