@@ -9,7 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
-    /* SEU CSS ORIGINAL AQUI (mantenha igual) */
+    /* SEU CSS ORIGINAL (mantenha igual) */
     html {
       height: 100%;
       font-size: clamp(14px, 2.5vw, 18px);
@@ -137,20 +137,6 @@
     .hidden {
       display: none !important;
     }
-
-    .error-message {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #f8d7da;
-      color: #721c24;
-      padding: 30px;
-      border-radius: 15px;
-      text-align: center;
-      z-index: 100;
-      max-width: 80%;
-    }
   </style>
 </head>
 <body>
@@ -162,17 +148,6 @@
       <h3>Escaneie para conectar</h3>
       <div id="qrcode"></div>
       <p id="qrInstructions">Aguardando conexão...</p>
-    </div>
-
-    <div class="error-message hidden" id="errorMessage">
-      <h3>❌ Token Não Encontrado</h3>
-      <p>Este receiver precisa ser acessado através do Notificador com um token válido.</p>
-      <p><strong>Como usar:</strong></p>
-      <ol style="text-align: left; display: inline-block;">
-        <li>Abra o Notificador primeiro</li>
-        <li>Selecione iPhone ou Android</li>
-        <li>O token será passado automaticamente</li>
-      </ol>
     </div>
 
     <!-- 🎥 Vídeo remoto -->
@@ -202,30 +177,38 @@
 
       async initialize() {
         try {
-          // 1. EXTRAIR TOKEN DA URL (OBRIGATÓRIO)
+          console.log('🚀 Iniciando receiver...');
+          
+          // 1. EXTRAIR TOKEN DA URL
           const urlParams = new URLSearchParams(window.location.search);
           this.token = urlParams.get('token');
           
+          console.log('📋 Token da URL:', this.token);
+          
           // 2. VERIFICAR SE TOKEN EXISTE
           if (!this.token) {
-            throw new Error('Token não encontrado. Acesse através do Notificador.');
+            throw new Error('Token não encontrado na URL');
           }
           
-          // 3. GERAR ID FIXO (ÚLTIMOS 8 DÍGITOS DO TOKEN)
+          // 3. GERAR ID FIXO (ÚLTIMOS 8 DÍGITOS)
           this.myId = this.token.slice(-8);
+          console.log('🆔 ID gerado:', this.myId);
           
           // 4. ATUALIZAR UI
           document.getElementById('idDisplay').textContent = `ID: ${this.myId}`;
-          document.getElementById('status').textContent = '🟡 Iniciando...';
+          document.getElementById('status').textContent = '🟡 Conectando...';
           
           // 5. CONECTAR AO SERVIDOR SIGNALING
           this.connectToSignalingServer();
           
           // 6. PEDIR PERMISSÃO DA CÂMERA
+          console.log('📷 Solicitando permissão da câmera...');
           this.localStream = await navigator.mediaDevices.getUserMedia({ 
             video: { width: 1280, height: 720 },
             audio: false 
           });
+          
+          console.log('✅ Câmera autorizada');
           
           // 7. MOSTRAR VÍDEO LOCAL
           const localVideo = document.getElementById('localVideo');
@@ -235,20 +218,18 @@
           this.createQRCode();
           
           document.getElementById('status').textContent = '🟢 Online - Aguardando';
+          console.log('✅ Receiver pronto e online');
           
         } catch (error) {
-          console.error('Erro:', error);
-          this.showError(error.message);
+          console.error('❌ Erro no receiver:', error);
+          document.getElementById('status').textContent = '🔴 Erro: ' + error.message;
+          alert('Erro: ' + error.message + '\n\nToken na URL: ' + window.location.search);
         }
       }
 
-      showError(message) {
-        document.getElementById('status').textContent = '🔴 Erro';
-        document.getElementById('errorMessage').classList.remove('hidden');
-        document.getElementById('errorMessage').querySelector('p').textContent = message;
-      }
-
       connectToSignalingServer() {
+        console.log('📡 Conectando ao servidor signaling...');
+        
         // Conectar ao servidor
         this.socket = io('https://lemur-signal.onrender.com');
         
@@ -279,8 +260,12 @@
       }
 
       createQRCode() {
+        console.log('📟 Criando QR Code...');
+        
         // QR CODE COM ID FIXO + TOKEN
         const callerUrl = `https://lemur-interface-traducao.pages.dev/caller.html?id=${this.myId}&token=${this.token}`;
+        
+        console.log('🔗 URL do QR Code:', callerUrl);
         
         document.getElementById('qrcode').innerHTML = '';
         
@@ -297,9 +282,12 @@
           `ID: <strong>${this.myId}</strong><br>Escaneie para conectar`;
           
         document.getElementById('qrContainer').classList.remove('hidden');
+        
+        console.log('✅ QR Code criado com sucesso');
       }
 
       handleIncomingCall(data) {
+        console.log('🟡 Iniciando conexão...');
         document.getElementById('status').textContent = '🟡 Conectando...';
         document.getElementById('qrContainer').classList.add('hidden');
         
@@ -317,6 +305,7 @@
         });
 
         this.peer.on('signal', (signalData) => {
+          console.log('📤 Enviando resposta para caller...');
           this.socket.emit('acceptCall', {
             callerId: data.from,
             signal: signalData
@@ -341,12 +330,14 @@
           document.getElementById('status').textContent = '🔴 Erro de conexão';
         });
 
+        console.log('🔄 Processando oferta do caller...');
         this.peer.signal(data.signal);
       }
     }
 
     // Inicializar quando a página carregar
     document.addEventListener('DOMContentLoaded', () => {
+      console.log('📄 DOM carregado, iniciando receiver...');
       window.receiver = new ReceiverConnection();
     });
   </script>
