@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur EchoMe P2P Caller</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
     /* ===== ESTILOS GERAIS ===== */
     html {
@@ -48,7 +49,6 @@
       background: transparent;
     }
 
-    /* Proporção 9:16 para vídeo remoto (CELULAR) */
     .video-remoto::before {
       content: '';
       display: block;
@@ -78,7 +78,6 @@
       z-index: 10;
     }
 
-    /* Proporção 9:16 para vídeo local (CELULAR) */
     .pip-local::before {
       content: '';
       display: block;
@@ -142,11 +141,34 @@
       font-size: 1.2rem;
       cursor: pointer;
       margin-top: 15px;
+      transition: all 0.3s;
+    }
+
+    .connect-btn:hover {
+      background: #45a049;
+      transform: scale(1.05);
     }
 
     .connect-btn:disabled {
       background: #cccccc;
       cursor: not-allowed;
+      transform: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .success-message {
+      color: #4CAF50;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .error-message {
+      color: #f44336;
+      font-weight: bold;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -158,6 +180,7 @@
     <div class="connect-container" id="connectContainer">
       <h3>Conectar com Receiver</h3>
       <p id="targetId">ID do Receiver: Carregando...</p>
+      <div id="connectionStatus"></div>
       <button class="connect-btn" id="connectBtn" disabled>Conectar</button>
     </div>
 
@@ -175,11 +198,13 @@
   <script>
     class CallerConnection {
       constructor() {
+        this.socket = null;
         this.peer = null;
         this.localStream = null;
         this.remoteStream = null;
         this.myId = this.generateId();
         this.targetId = this.getTargetIdFromURL();
+        this.isConnected = false;
         
         this.initialize();
       }
@@ -200,28 +225,77 @@
           document.getElementById('targetId').textContent = `ID do Receiver: ${this.targetId || 'Não encontrado'}`;
           document.getElementById('status').textContent = '🟡 Iniciando...';
           
-          // Pedir permissão da câmera
+          // 1. Conectar ao servidor signaling
+          this.connectToSignalingServer();
+          
+          // 2. Pedir permissão da câmera
           this.localStream = await navigator.mediaDevices.getUserMedia({ 
             video: { width: 1280, height: 720 },
             audio: false 
           });
           
-          // Mostrar vídeo local
+          // 3. Mostrar vídeo local
           const localVideo = document.getElementById('localVideo');
           localVideo.srcObject = this.localStream;
           
-          // Habilitar botão de conectar se temos targetId
+          // 4. Habilitar botão se temos targetId
           if (this.targetId) {
             document.getElementById('connectBtn').disabled = false;
             document.getElementById('status').textContent = '🟡 Pronto para conectar';
+            document.getElementById('connectionStatus').innerHTML = 
+              '<p class="success-message">✅ Receiver ID encontrado na URL</p>';
           } else {
-            document.getElementById('status').textContent = '🔴 ID não encontrado na URL';
+            document.getElementById('status').textContent = '🔴 ID não encontrado';
+            document.getElementById('connectionStatus').innerHTML = 
+              '<p class="error-message">❌ Nenhum ID encontrado na URL</p>';
           }
           
         } catch (error) {
           console.error('Erro ao acessar câmera:', error);
           document.getElementById('status').textContent = '🔴 Erro na câmera';
+          document.getElementById('connectionStatus').innerHTML = 
+            '<p class="error-message">❌ Erro ao acessar câmera</p>';
         }
+      }
+
+      connectToSignalingServer() {
+        // Conectar ao SEU servidor
+        this.socket = io('https://lemur-signal.onrender.com');
+        
+        this.socket.on('connect', () => {
+          console.log('✅ Conectado ao servidor signaling');
+          document.getElementById('status').textContent = '🟡 Conectado ao servidor';
+          
+          // Registrar no servidor
+          this.socket.emit('register', {
+            userId: this.myId,
+            userType: 'caller'
+          });
+        });
+
+        this.socket.on('registered', (data) => {
+          console.log('✅ Registrado no servidor:', data);
+          document.getElementById('status').textContent = '🟢 Registrado - Pronto';
+        });
+
+        // RESPOSTA DA CHAMADA
+        this.socket.on('callAccepted', (data) => {
+          console.log('✅ Chamada aceita por:', data.from);
+          this.handleCallAccepted(data);
+        });
+
+        this.socket.on('callFailed', (data) => {
+          console.log('❌ Chamada falhou:', data.error);
+          document.getElementById('status').textContent = '🔴 Chamada falhou';
+          document.getElementById('connectionStatus').innerHTML = 
+            `<p class="error-message">❌ ${data.error}</p>`;
+          document.getElementById('connectBtn').disabled = false;
+        });
+
+        this.socket.on('disconnect', () => {
+          console.log('❌ Desconectado do servidor');
+          document.getElementById('status').textContent = '🔴 Servidor offline';
+        });
       }
 
       connectToReceiver() {
@@ -232,7 +306,10 @@
 
         document.getElementById('status').textContent = '🟡 Conectando...';
         document.getElementById('connectBtn').disabled = true;
+        document.getElementById('connectionStatus').innerHTML = 
+          '<p>🟡 Conectando com receiver...</p>';
 
+        // Criar peer como iniciador
         this.peer = new SimplePeer({
           initiator: true,
           stream: this.localStream,
@@ -245,21 +322,29 @@
           }
         });
 
-        this.peer.on('signal', (data) => {
-          // Em uma implementação real, enviaríamos este data para o receiver via signaling
-          console.log('Offer signal data:', data);
+        this.peer.on('signal', (signalData) => {
+          console.log('📞 Enviando oferta para:', this.targetId);
           
-          // SIMULAÇÃO: Em uma implementação real, aqui enviaríamos o offer para o receiver
-          // Por enquanto, mostramos que está tentando conectar
-          document.getElementById('status').textContent = '🟡 Enviando oferta...';
+          // Enviar oferta via signaling server
+          this.socket.emit('callUser', {
+            targetUserId: this.targetId,
+            callerId: this.myId,
+            signal: signalData
+          });
+          
+          document.getElementById('connectionStatus').innerHTML = 
+            '<p>🟡 Enviando oferta de conexão...</p>';
         });
 
         this.peer.on('connect', () => {
+          console.log('✅ Conexão P2P estabelecida!');
+          this.isConnected = true;
           document.getElementById('status').textContent = '🟢 Conectado!';
-          document.getElementById('connectContainer').style.display = 'none';
+          document.getElementById('connectContainer').classList.add('hidden');
         });
 
         this.peer.on('stream', (stream) => {
+          console.log('🎥 Stream remota recebida');
           this.remoteStream = stream;
           const remoteVideo = document.getElementById('remoteVideo');
           remoteVideo.srcObject = stream;
@@ -267,16 +352,22 @@
         });
 
         this.peer.on('error', (err) => {
-          console.error('Peer error:', err);
+          console.error('❌ Erro WebRTC:', err);
           document.getElementById('status').textContent = '🔴 Erro de conexão';
+          document.getElementById('connectionStatus').innerHTML = 
+            '<p class="error-message">❌ Erro na conexão WebRTC</p>';
           document.getElementById('connectBtn').disabled = false;
         });
+      }
 
-        // SIMULAÇÃO: Em uma implementação real, precisaríamos do signaling server
-        // para trocar os offers/answers entre caller e receiver
-        setTimeout(() => {
-          document.getElementById('status').textContent = '🔴 Aguardando signaling server';
-        }, 3000);
+      handleCallAccepted(data) {
+        console.log('✅ Processando aceitação da chamada');
+        
+        // Processar resposta do receiver
+        this.peer.signal(data.signal);
+        
+        document.getElementById('connectionStatus').innerHTML = 
+          '<p class="success-message">✅ Receiver aceitou a chamada!</p>';
       }
     }
 
