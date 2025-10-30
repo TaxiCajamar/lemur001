@@ -109,22 +109,20 @@
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
       
-      // PEGA OS ÚLTIMOS 8 DÍGITOS DO TOKEN
+      // PEGA OS ÚLTIMOS 8 DÍGITOS DO TOKEN (NOS BASTIDORES)
       let idReceiver = '';
       if (token && token.length >= 8) {
         idReceiver = token.slice(-8);
       } else {
-        // Fallback se não tiver token válido
         idReceiver = Math.floor(10000000 + Math.random() * 90000000).toString();
       }
       
-      // ENVIA para receiver.html com token E id
+      // ENVIA para receiver.html: token COMPLETO + os 8 dígitos como ID
       const destino = `receiver.html?token=${encodeURIComponent(token || '')}&id=${idReceiver}`;
       
+      // MANTÉM OS MESMOS LINKS DE ANTES, MAS AGORA COM ID ADICIONAL
       document.getElementById('iphoneBtn').href = destino;
       document.getElementById('androidBtn').href = destino;
-      
-      console.log('ID Receiver (últimos 8 dígitos):', idReceiver);
     });
   </script>
 </body>
