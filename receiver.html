@@ -137,6 +137,20 @@
     .hidden {
       display: none !important;
     }
+
+    .error-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #f8d7da;
+      color: #721c24;
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      z-index: 100;
+      max-width: 80%;
+    }
   </style>
 </head>
 <body>
@@ -144,10 +158,21 @@
     <div class="status" id="status">🔴 Iniciando...</div>
     <div class="id-display" id="idDisplay">ID: --------</div>
     
-    <div class="qr-container" id="qrContainer">
+    <div class="qr-container hidden" id="qrContainer">
       <h3>Escaneie para conectar</h3>
       <div id="qrcode"></div>
       <p id="qrInstructions">Aguardando conexão...</p>
+    </div>
+
+    <div class="error-message hidden" id="errorMessage">
+      <h3>❌ Token Não Encontrado</h3>
+      <p>Este receiver precisa ser acessado através do Notificador com um token válido.</p>
+      <p><strong>Como usar:</strong></p>
+      <ol style="text-align: left; display: inline-block;">
+        <li>Abra o Notificador primeiro</li>
+        <li>Selecione iPhone ou Android</li>
+        <li>O token será passado automaticamente</li>
+      </ol>
     </div>
 
     <!-- 🎥 Vídeo remoto -->
@@ -175,51 +200,52 @@
         this.initialize();
       }
 
-      generateFallbackId() {
-        // Gera ID aleatório se não tiver token
-        return Math.floor(10000000 + Math.random() * 90000000).toString();
-      }
-
       async initialize() {
         try {
-          // 1. Tentar extrair token da URL
+          // 1. EXTRAIR TOKEN DA URL (OBRIGATÓRIO)
           const urlParams = new URLSearchParams(window.location.search);
           this.token = urlParams.get('token');
           
-          // 2. Gerar ID (com token ou fallback)
-          if (this.token) {
-            this.myId = this.token.slice(-8); // Últimos 8 dígitos
-          } else {
-            this.myId = this.generateFallbackId();
-            console.log('⚠️ Token não encontrado, usando ID aleatório');
+          // 2. VERIFICAR SE TOKEN EXISTE
+          if (!this.token) {
+            throw new Error('Token não encontrado. Acesse através do Notificador.');
           }
           
-          // 3. Atualizar UI
+          // 3. GERAR ID FIXO (ÚLTIMOS 8 DÍGITOS DO TOKEN)
+          this.myId = this.token.slice(-8);
+          
+          // 4. ATUALIZAR UI
           document.getElementById('idDisplay').textContent = `ID: ${this.myId}`;
           document.getElementById('status').textContent = '🟡 Iniciando...';
           
-          // 4. Conectar ao servidor signaling
+          // 5. CONECTAR AO SERVIDOR SIGNALING
           this.connectToSignalingServer();
           
-          // 5. Pedir permissão da câmera
+          // 6. PEDIR PERMISSÃO DA CÂMERA
           this.localStream = await navigator.mediaDevices.getUserMedia({ 
             video: { width: 1280, height: 720 },
             audio: false 
           });
           
-          // 6. Mostrar vídeo local
+          // 7. MOSTRAR VÍDEO LOCAL
           const localVideo = document.getElementById('localVideo');
           localVideo.srcObject = this.localStream;
           
-          // 7. Criar QR Code
+          // 8. CRIAR QR CODE
           this.createQRCode();
           
           document.getElementById('status').textContent = '🟢 Online - Aguardando';
           
         } catch (error) {
           console.error('Erro:', error);
-          document.getElementById('status').textContent = '🔴 Erro: ' + error.message;
+          this.showError(error.message);
         }
+      }
+
+      showError(message) {
+        document.getElementById('status').textContent = '🔴 Erro';
+        document.getElementById('errorMessage').classList.remove('hidden');
+        document.getElementById('errorMessage').querySelector('p').textContent = message;
       }
 
       connectToSignalingServer() {
@@ -253,9 +279,9 @@
       }
 
       createQRCode() {
-        const callerUrl = `https://lemur-interface-traducao.pages.dev/caller.html?id=${this.myId}${this.token ? `&token=${this.token}` : ''}`;
+        // QR CODE COM ID FIXO + TOKEN
+        const callerUrl = `https://lemur-interface-traducao.pages.dev/caller.html?id=${this.myId}&token=${this.token}`;
         
-        // Limpar QR Code anterior se existir
         document.getElementById('qrcode').innerHTML = '';
         
         new QRCode(document.getElementById('qrcode'), {
@@ -267,11 +293,10 @@
           correctLevel: QRCode.CorrectLevel.H
         });
         
-        const instructions = this.token 
-          ? `ID: <strong>${this.myId}</strong><br>Escaneie para conectar`
-          : `ID: <strong>${this.myId}</strong><br>(Sem token - ID temporário)`;
-        
-        document.getElementById('qrInstructions').innerHTML = instructions;
+        document.getElementById('qrInstructions').innerHTML = 
+          `ID: <strong>${this.myId}</strong><br>Escaneie para conectar`;
+          
+        document.getElementById('qrContainer').classList.remove('hidden');
       }
 
       handleIncomingCall(data) {
@@ -292,7 +317,6 @@
         });
 
         this.peer.on('signal', (signalData) => {
-          // Enviar resposta para o caller
           this.socket.emit('acceptCall', {
             callerId: data.from,
             signal: signalData
@@ -317,7 +341,6 @@
           document.getElementById('status').textContent = '🔴 Erro de conexão';
         });
 
-        // Processar oferta do caller
         this.peer.signal(data.signal);
       }
     }
