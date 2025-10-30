@@ -1,343 +1,188 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lemur EchoMe P2P Receiver</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐒</text></svg>">
-  <!-- ✅ SUA BIBLIOTECA QUE JÁ FUNCIONA -->
-  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <style>
-    /* SEU CSS ORIGINAL (mantenha igual) */
-    html {
-      height: 100%;
-      font-size: clamp(14px, 2.5vw, 18px);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-    }
-
-    body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      font-size: 1em;
-    }
-
-    .box-principal {
-      width: 100%;
-      max-width: 600px;
-      height: 100%;
-      margin: 0 auto;
-      padding: 2vh 2vw;
-      box-sizing: border-box;
-      background-color: #aee2ff;
-      position: relative;
-      overflow-y: auto;
-    }
-
-    .video-remoto {
-      position: absolute;
-      bottom: 45%;
-      right: 50%;
-      width: 36%;
-      transform: translateX(-17%);
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-      border: 0.3vw solid #4CAF50;
-      z-index: 5;
-      background: transparent;
-    }
-
-    .video-remoto::before {
-      content: '';
-      display: block;
-      padding-bottom: 177.78%;
-    }
-
-    .video-remoto video {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: 10;
-      background: #2c3e50;
-    }
-
-    .pip-local {
-      position: absolute;
-      bottom: 47%;
-      right: 59%;
-      width: 10%;
-      border: 0.3vw solid #2196F3;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
-      z-index: 10;
-    }
-
-    .pip-local::before {
-      content: '';
-      display: block;
-      padding-bottom: 177.78%;
-    }
-
-    .pip-local video {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: 20;
-      background: #34495e;
-    }
-
-    .qr-container {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      z-index: 100;
-      text-align: center;
-    }
-
-    .status {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 10px 15px;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      z-index: 15;
-    }
-
-    .id-display {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 10px 15px;
-      border-radius: 20px;
-      font-size: 1.2rem;
-      font-weight: bold;
-      z-index: 15;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-  </style>
-</head>
-<body>
-  <div class="box-principal">
-    <div class="status" id="status">🔴 Iniciando...</div>
-    <div class="id-display" id="idDisplay">ID: --------</div>
+<script>
+class ReceiverConnection {
+  constructor() {
+    this.socket = null;
+    this.peer = null;
+    this.localStream = null;
+    this.remoteStream = null;
+    this.myId = null;
+    this.token = null;
+    this.isConnected = false;
     
-    <div class="qr-container hidden" id="qrContainer">
-      <h3>Escaneie para conectar</h3>
-      <div id="qrcode"></div>
-      <p id="qrInstructions">Aguardando conexão...</p>
-    </div>
+    this.initialize();
+  }
 
-    <!-- 🎥 Vídeo remoto -->
-    <div class="video-remoto">
-      <video id="remoteVideo" autoplay playsinline></video>
-    </div>
-
-    <!-- 📺 Vídeo local em PiP -->
-    <div class="pip-local">
-      <video id="localVideo" autoplay muted playsinline></video>
-    </div>
-  </div>
-
-  <script type="module">
-    // ✅ IMPORTANDO SEU QRCodeGenerator QUE JÁ FUNCIONA
-    import { QRCodeGenerator } from './js/qrcode/qr-code-utils.js';
-
-    class ReceiverConnection {
-      constructor() {
-        this.socket = null;
-        this.peer = null;
-        this.localStream = null;
-        this.remoteStream = null;
-        this.myId = null;
-        this.token = null;
-        this.isConnected = false;
-        
-        this.initialize();
+  async initialize() {
+    try {
+      console.log('🚀 Iniciando receiver...');
+      
+      // 1. EXTRAIR TOKEN DA URL
+      const urlParams = new URLSearchParams(window.location.search);
+      this.token = urlParams.get('token');
+      
+      console.log('📋 Token da URL:', this.token);
+      
+      if (!this.token) {
+        throw new Error('Token não encontrado na URL');
       }
-
-      async initialize() {
-        try {
-          console.log('🚀 Iniciando receiver...');
-          
-          // 1. EXTRAIR TOKEN DA URL
-          const urlParams = new URLSearchParams(window.location.search);
-          this.token = urlParams.get('token');
-          
-          console.log('📋 Token da URL:', this.token ? '✅ Encontrado' : '❌ Não encontrado');
-          
-          // 2. VERIFICAR SE TOKEN EXISTE
-          if (!this.token) {
-            throw new Error('Token não encontrado na URL. Acesse através do Notificador.');
-          }
-          
-          // 3. GERAR ID FIXO (ÚLTIMOS 8 DÍGITOS)
-          this.myId = this.token.slice(-8);
-          console.log('🆔 ID gerado:', this.myId);
-          
-          // 4. ATUALIZAR UI
-          document.getElementById('idDisplay').textContent = `ID: ${this.myId}`;
-          document.getElementById('status').textContent = '🟡 Conectando...';
-          
-          // 5. CONECTAR AO SERVIDOR SIGNALING
-          this.connectToSignalingServer();
-          
-          // 6. PEDIR PERMISSÃO DA CÂMERA
-          console.log('📷 Solicitando permissão da câmera...');
-          this.localStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { width: 1280, height: 720 },
-            audio: false 
-          });
-          
-          console.log('✅ Câmera autorizada');
-          
-          // 7. MOSTRAR VÍDEO LOCAL
-          const localVideo = document.getElementById('localVideo');
-          localVideo.srcObject = this.localStream;
-          
-          // 8. CRIAR QR CODE COM SEU GERADOR QUE JÁ FUNCIONA
-          this.createQRCode();
-          
-          document.getElementById('status').textContent = '🟢 Online - Aguardando';
-          console.log('✅ Receiver pronto e online');
-          
-        } catch (error) {
-          console.error('❌ Erro no receiver:', error);
-          document.getElementById('status').textContent = '🔴 Erro: ' + error.message;
-        }
-      }
-
-      connectToSignalingServer() {
-        console.log('📡 Conectando ao servidor signaling...');
-        
-        this.socket = io('https://lemur-signal.onrender.com');
-        
-        this.socket.on('connect', () => {
-          console.log('✅ Conectado ao servidor signaling');
-          
-          this.socket.emit('register', {
-            userId: this.myId,
-            userType: 'receiver'
-          });
-        });
-
-        this.socket.on('registered', (data) => {
-          console.log('✅ Registrado no servidor:', data);
-        });
-
-        this.socket.on('incomingCall', (data) => {
-          console.log('📞 Chamada recebida de:', data.from);
-          this.handleIncomingCall(data);
-        });
-
-        this.socket.on('disconnect', () => {
-          console.log('❌ Desconectado do servidor');
-          document.getElementById('status').textContent = '🔴 Servidor offline';
-        });
-      }
-
-      createQRCode() {
-        console.log('📟 Criando QR Code com QRCodeGenerator...');
-        
-        // ✅ URL COMPLETA COM TOKEN (como sempre funcionou)
-        const callerUrl = `https://lemur-interface-traducao.pages.dev/caller.html?id=${this.myId}&token=${this.token}`;
-        
-        console.log('🔗 URL do QR Code:', callerUrl);
-        console.log('📏 Tamanho da URL:', callerUrl.length, 'caracteres');
-        
-        try {
-          // ✅ USANDO SEU QRCodeGenerator QUE JÁ FUNCIONA
-          QRCodeGenerator.generate('qrcode', callerUrl, 200);
-          
-          document.getElementById('qrInstructions').innerHTML = 
-            `ID: <strong>${this.myId}</strong><br>Escaneie para conectar`;
-            
-          document.getElementById('qrContainer').classList.remove('hidden');
-          
-          console.log('✅ QR Code criado com sucesso usando QRCodeGenerator');
-        } catch (error) {
-          console.error('❌ Erro ao criar QR Code:', error);
-          document.getElementById('qrInstructions').innerHTML = 
-            `ID: <strong>${this.myId}</strong><br>Erro no QR Code: ${error.message}`;
-        }
-      }
-
-      handleIncomingCall(data) {
-        console.log('🟡 Iniciando conexão...');
-        document.getElementById('status').textContent = '🟡 Conectando...';
-        document.getElementById('qrContainer').classList.add('hidden');
-        
-        this.peer = new SimplePeer({
-          initiator: false,
-          stream: this.localStream,
-          trickle: false,
-          config: {
-            iceServers: [
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:global.stun.twilio.com:3478' }
-            ]
-          }
-        });
-
-        this.peer.on('signal', (signalData) => {
-          console.log('📤 Enviando resposta para caller...');
-          this.socket.emit('acceptCall', {
-            callerId: data.from,
-            signal: signalData
-          });
-        });
-
-        this.peer.on('connect', () => {
-          console.log('✅ Conexão P2P estabelecida!');
-          this.isConnected = true;
-          document.getElementById('status').textContent = '🟢 Conectado!';
-        });
-
-        this.peer.on('stream', (stream) => {
-          console.log('🎥 Stream remota recebida');
-          this.remoteStream = stream;
-          const remoteVideo = document.getElementById('remoteVideo');
-          remoteVideo.srcObject = stream;
-        });
-
-        this.peer.on('error', (err) => {
-          console.error('❌ Erro WebRTC:', err);
-          document.getElementById('status').textContent = '🔴 Erro de conexão';
-        });
-
-        console.log('🔄 Processando oferta do caller...');
-        this.peer.signal(data.signal);
-      }
+      
+      // 2. GERAR ID FIXO
+      this.myId = this.token.slice(-8);
+      console.log('🆔 ID gerado:', this.myId);
+      
+      // 3. ATUALIZAR UI
+      document.getElementById('idDisplay').textContent = `ID: ${this.myId}`;
+      document.getElementById('status').textContent = '🟡 Conectando...';
+      
+      // 4. CONECTAR AO SERVIDOR
+      this.connectToSignalingServer();
+      
+      // 5. CÂMERA
+      this.localStream = await navigator.mediaDevices.getUserMedia({ 
+        video: { width: 1280, height: 720 }, audio: false 
+      });
+      
+      const localVideo = document.getElementById('localVideo');
+      localVideo.srcObject = this.localStream;
+      
+      // 6. ✅ TENTAR CRIAR QR CODE (MÚLTIPLAS FORMAS)
+      this.tryAllQRCodeMethods();
+      
+      document.getElementById('status').textContent = '🟢 Online - Aguardando';
+      
+    } catch (error) {
+      console.error('❌ Erro:', error);
+      document.getElementById('status').textContent = '🔴 Erro: ' + error.message;
     }
+  }
 
-    // Inicializar quando a página carregar
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('📄 DOM carregado, iniciando receiver...');
-      window.receiver = new ReceiverConnection();
+  tryAllQRCodeMethods() {
+    console.log('🎯 Tentando criar QR Code...');
+    
+    const callerUrl = `https://lemur-interface-traducao.pages.dev/caller.html?id=${this.myId}&token=${this.token}`;
+    console.log('🔗 URL para QR:', callerUrl);
+    
+    // ✅ MÉTODO 1: Direto com a biblioteca
+    try {
+      console.log('🔄 Tentando Método 1: Biblioteca direta...');
+      document.getElementById('qrcode').innerHTML = '';
+      new QRCode(document.getElementById('qrcode'), {
+        text: callerUrl,
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.L
+      });
+      this.showQRSuccess('Método 1 funcionou!');
+      return;
+    } catch (error) {
+      console.log('❌ Método 1 falhou:', error);
+    }
+    
+    // ✅ MÉTODO 2: URL mais curta (sem token)
+    try {
+      console.log('🔄 Tentando Método 2: URL sem token...');
+      document.getElementById('qrcode').innerHTML = '';
+      const shortUrl = `https://lemur-interface-traducao.pages.dev/caller.html?id=${this.myId}`;
+      new QRCode(document.getElementById('qrcode'), {
+        text: shortUrl,
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff"
+      });
+      this.showQRSuccess('Método 2 funcionou (sem token)');
+      return;
+    } catch (error) {
+      console.log('❌ Método 2 falhou:', error);
+    }
+    
+    // ✅ MÉTODO 3: Apenas texto com ID
+    try {
+      console.log('🔄 Tentando Método 3: Apenas ID...');
+      document.getElementById('qrcode').innerHTML = '';
+      new QRCode(document.getElementById('qrcode'), {
+        text: this.myId, // Apenas o ID
+        width: 200,
+        height: 200,
+        colorDark: "#000000",
+        colorLight: "#ffffff"
+      });
+      this.showQRSuccess('Método 3 funcionou (apenas ID)');
+      return;
+    } catch (error) {
+      console.log('❌ Método 3 falhou:', error);
+    }
+    
+    // ❌ SE TODOS FALHAREM
+    console.error('❌ Todos os métodos de QR Code falharam!');
+    document.getElementById('qrInstructions').innerHTML = 
+      `ID: <strong>${this.myId}</strong><br>❌ Erro ao gerar QR Code`;
+    document.getElementById('qrContainer').classList.remove('hidden');
+  }
+
+  showQRSuccess(method) {
+    console.log('✅ QR Code criado:', method);
+    document.getElementById('qrInstructions').innerHTML = 
+      `ID: <strong>${this.myId}</strong><br>Escaneie para conectar`;
+    document.getElementById('qrContainer').classList.remove('hidden');
+  }
+
+  connectToSignalingServer() {
+    console.log('📡 Conectando ao servidor...');
+    this.socket = io('https://lemur-signal.onrender.com');
+    
+    this.socket.on('connect', () => {
+      console.log('✅ Conectado ao servidor');
+      this.socket.emit('register', { userId: this.myId, userType: 'receiver' });
     });
-  </script>
-</body>
-</html>
+
+    this.socket.on('registered', (data) => {
+      console.log('✅ Registrado:', data);
+    });
+
+    this.socket.on('incomingCall', (data) => {
+      console.log('📞 Chamada recebida:', data.from);
+      this.handleIncomingCall(data);
+    });
+  }
+
+  handleIncomingCall(data) {
+    document.getElementById('status').textContent = '🟡 Conectando...';
+    document.getElementById('qrContainer').classList.add('hidden');
+    
+    this.peer = new SimplePeer({
+      initiator: false,
+      stream: this.localStream,
+      trickle: false,
+      config: { iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:global.stun.twilio.com:3478' }
+      ]}
+    });
+
+    this.peer.on('signal', (signalData) => {
+      this.socket.emit('acceptCall', { callerId: data.from, signal: signalData });
+    });
+
+    this.peer.on('connect', () => {
+      this.isConnected = true;
+      document.getElementById('status').textContent = '🟢 Conectado!';
+    });
+
+    this.peer.on('stream', (stream) => {
+      this.remoteStream = stream;
+      document.getElementById('remoteVideo').srcObject = stream;
+    });
+
+    this.peer.signal(data.signal);
+  }
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('📄 DOM carregado');
+  window.receiver = new ReceiverConnection();
+});
+</script>
