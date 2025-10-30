@@ -6,6 +6,7 @@
   <title>Lemur EchoMe P2P Receiver</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
     /* ===== ESTILOS GERAIS ===== */
     html {
@@ -49,7 +50,6 @@
       background: transparent;
     }
 
-    /* Proporção 9:16 para vídeo remoto (CELULAR) */
     .video-remoto::before {
       content: '';
       display: block;
@@ -79,7 +79,6 @@
       z-index: 10;
     }
 
-    /* Proporção 9:16 para vídeo local (CELULAR) */
     .pip-local::before {
       content: '';
       display: block;
@@ -133,6 +132,10 @@
       font-weight: bold;
       z-index: 15;
     }
+
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -160,10 +163,12 @@
   <script>
     class ReceiverConnection {
       constructor() {
+        this.socket = null;
         this.peer = null;
         this.localStream = null;
         this.remoteStream = null;
         this.myId = this.generateId();
+        this.isConnected = false;
         
         this.initialize();
       }
@@ -178,31 +183,61 @@
           document.getElementById('idDisplay').textContent = `ID: ${this.myId}`;
           document.getElementById('status').textContent = '🟡 Iniciando...';
           
-          // Pedir permissão da câmera
+          // 1. Conectar ao servidor signaling
+          this.connectToSignalingServer();
+          
+          // 2. Pedir permissão da câmera
           this.localStream = await navigator.mediaDevices.getUserMedia({ 
             video: { width: 1280, height: 720 },
             audio: false 
           });
           
-          // Mostrar vídeo local
+          // 3. Mostrar vídeo local
           const localVideo = document.getElementById('localVideo');
           localVideo.srcObject = this.localStream;
-          
-          // Criar QR Code
-          this.createQRCode();
           
           document.getElementById('status').textContent = '🟢 Online - Aguardando';
           
         } catch (error) {
-          console.error('Erro ao acessar câmera:', error);
+          console.error('Erro:', error);
           document.getElementById('status').textContent = '🔴 Erro na câmera';
         }
+      }
+
+      connectToSignalingServer() {
+        // Conectar ao SEU servidor
+        this.socket = io('https://lemur-signal.onrender.com');
+        
+        this.socket.on('connect', () => {
+          console.log('✅ Conectado ao servidor signaling');
+          
+          // Registrar no servidor
+          this.socket.emit('register', {
+            userId: this.myId,
+            userType: 'receiver'
+          });
+        });
+
+        this.socket.on('registered', (data) => {
+          console.log('✅ Registrado no servidor:', data);
+          this.createQRCode();
+        });
+
+        // RECEBER CHAMADA
+        this.socket.on('incomingCall', (data) => {
+          console.log('📞 Chamada recebida de:', data.from);
+          this.handleIncomingCall(data);
+        });
+
+        this.socket.on('disconnect', () => {
+          console.log('❌ Desconectado do servidor');
+          document.getElementById('status').textContent = '🔴 Servidor offline';
+        });
       }
 
       createQRCode() {
         const callerUrl = `https://lemur-interface-traducao.pages.dev/caller.html?id=${this.myId}`;
         
-        // Criar QR Code
         new QRCode(document.getElementById('qrcode'), {
           text: callerUrl,
           width: 200,
@@ -216,12 +251,13 @@
           `ID: <strong>${this.myId}</strong><br>Escaneie o QR Code para conectar`;
       }
 
-      // Este método será chamado quando o caller se conectar
-      startPeerConnection(offer) {
-        document.getElementById('status').textContent = '🟡 Conectando...';
+      handleIncomingCall(data) {
+        document.getElementById('status').textContent = '🟡 Chamada recebida...';
         
+        // Criar peer como receptor
         this.peer = new SimplePeer({
           initiator: false,
+          stream: this.localStream,
           trickle: false,
           config: {
             iceServers: [
@@ -231,32 +267,35 @@
           }
         });
 
-        this.peer.on('signal', (data) => {
-          // Enviar resposta para o caller (em uma implementação real)
-          console.log('Signal data:', data);
+        this.peer.on('signal', (signalData) => {
+          // Enviar resposta para o caller
+          this.socket.emit('acceptCall', {
+            callerId: data.from,
+            signal: signalData
+          });
         });
 
         this.peer.on('connect', () => {
+          console.log('✅ Conexão P2P estabelecida!');
+          this.isConnected = true;
           document.getElementById('status').textContent = '🟢 Conectado!';
-          document.getElementById('qrContainer').style.display = 'none';
+          document.getElementById('qrContainer').classList.add('hidden');
         });
 
         this.peer.on('stream', (stream) => {
+          console.log('🎥 Stream remota recebida');
           this.remoteStream = stream;
           const remoteVideo = document.getElementById('remoteVideo');
           remoteVideo.srcObject = stream;
         });
 
         this.peer.on('error', (err) => {
-          console.error('Peer error:', err);
+          console.error('❌ Erro WebRTC:', err);
           document.getElementById('status').textContent = '🔴 Erro de conexão';
         });
 
-        // Em uma implementação real, você receberia o offer do caller via signaling
-        // Por enquanto, simulamos que o offer já está disponível
-        if (offer) {
-          this.peer.signal(offer);
-        }
+        // Processar oferta do caller
+        this.peer.signal(data.signal);
       }
     }
 
