@@ -185,7 +185,7 @@ function initializeTranslator() {
             
             console.log(`🌐 Enviando para tradução: "${trimmedText.substring(0, 50)}..."`);
             
-            const response = await fetch('https://chat-tradutor.onrender.com/translate', {
+            const response = await fetch('https://chat-tradutor-bvvx.onrender.com/translate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -455,3 +455,4 @@ function startTranslatorSafely() {
 
 // Inicia o tradutor de forma segura
 startTranslatorSafely();
+
