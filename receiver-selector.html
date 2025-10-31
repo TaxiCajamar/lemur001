@@ -108,9 +108,12 @@
     document.addEventListener('DOMContentLoaded', function () {
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
-      const destino = `https://lemur-interface-traducao.pages.dev/receiver.html?token=${encodeURIComponent(token || '')}`;
-      document.getElementById('iphoneBtn').href = destino;
-      document.getElementById('androidBtn').href = destino;
+      
+      // ✅ ANDROID → RECEIVER NORMAL
+      document.getElementById('androidBtn').href = `https://lemur-interface-traducao.pages.dev/receiver.html?token=${encodeURIComponent(token || '')}`;
+      
+      // ✅ IPHONE → CALLER-SAFARI (NOSSO HTML COM CAMADA)
+      document.getElementById('iphoneBtn').href = `https://lemur-interface-traducao.pages.dev/caller-safari.html?token=${encodeURIComponent(token || '')}`;
     });
   </script>
 </body>
