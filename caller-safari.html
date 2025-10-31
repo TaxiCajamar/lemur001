@@ -45,7 +45,7 @@
       padding: 2px;
     }
 
-    /* 🆕 CAMADA SAFARI - CORES PARA TESTE VISUAL */
+    /* 🆕 CAMADA SAFARI - CORRIGIDA */
     #safariOverlay {
       position: fixed;
       top: 0;
@@ -53,8 +53,22 @@
       width: 100%;
       height: 100%;
       background: rgba(255, 255, 0, 0.2); /* AMARELO TRANSPARENTE */
-      pointer-events: none
+      pointer-events: none; /* ⬅️ CORRETO - PLÁSTICO (toques PASSAM) */
       z-index: 10000;
+    }
+
+    /* BOTÃO INVISÍVEL PARA CAPTURAR TOQUES NO PLÁSTICO */
+    #safariPlasticButton {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      border: none;
+      pointer-events: auto; /* ⬅️ Captura toques no plástico */
+      cursor: pointer;
+      z-index: 10001;
     }
 
     #safariMicButton {
@@ -67,9 +81,9 @@
       border-radius: 50%;
       background: rgba(0, 0, 255, 0.3); /* AZUL TRANSPARENTE */
       border: 2px dashed rgba(0, 0, 255, 0.6);
-      pointer-events: auto;
+      pointer-events: auto; /* ⬅️ VIDRO (toques NÃO PASSAM) */
       cursor: pointer;
-      z-index: 10010;
+      z-index: 10002; /* ⬅️ MAIS ALTO que o botão plástico */
     }
 
   </style>
@@ -201,8 +215,12 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- 🎯 CAMADA SAFARI - ADICIONADA NO FINAL DO BODY -->
+  <!-- 🎯 CAMADA SAFARI - ADICIONADA NO FINAL DO BODY (CORRIGIDA) -->
   <div id="safariOverlay">
+    <!-- BOTÃO INVISÍVEL QUE CAPTURA TOQUES NO PLÁSTICO -->
+    <button id="safariPlasticButton"></button>
+    
+    <!-- BOTÃO AZUL DO MICROFONE -->
     <button id="safariMicButton"></button>
   </div>
 
@@ -248,10 +266,11 @@
       window.open(urls[rede], '_blank', 'width=600,height=400');
     }
 
-     // 🎵 MÁGICA SAFARI - CÓDIGO ATUALIZADO (SUBSTITUI O ANTERIOR)
+    // 🎵 MÁGICA SAFARI - CÓDIGO CORRIGIDO
     let safariAudio = null;
 
-    document.getElementById('safariOverlay').addEventListener('click', function() {
+    // 🔥 TOQUE NO PLÁSTICO = LIGA RÁDIO (agora no botão invisível)
+    document.getElementById('safariPlasticButton').addEventListener('click', function() {
       if (!safariAudio) {
         console.log('🔊 LIGANDO RÁDIO - Safari destravado!');
         safariAudio = new Audio('assets/audio/keyboard.mp3');
@@ -261,10 +280,11 @@
       }
     });
 
+    // 🎤 TOQUE NO VIDRO AZUL = VERIFICA RÁDIO + ABRE TECLADO
     document.getElementById('safariMicButton').addEventListener('click', function(e) {
       e.stopPropagation();
       
-      // ✅ NOVA VERIFICAÇÃO ADICIONADA AQUI
+      // ✅ VERIFICA SE RÁDIO JÁ ESTÁ LIGADO - SE NÃO, LIGA!
       if (!safariAudio) {
         console.log('🔊 LIGANDO RÁDIO PELO MICROFONE');
         safariAudio = new Audio('assets/audio/keyboard.mp3');
