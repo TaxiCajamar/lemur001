@@ -45,7 +45,8 @@
       padding: 2px;
     }
 
-    /* 🆕 ESTRATÉGIA NOVA - ATIVAÇÃO ÚNICA */
+    /* 🆕 ESTRATÉGIA CORRIGIDA - ELEMENTOS SEPARADOS */
+    /* 🟡 TELA DE ATIVAÇÃO (some após primeiro toque) */
     #safariActivationOverlay {
       position: fixed;
       top: 0;
@@ -68,9 +69,9 @@
       cursor: pointer;
     }
 
-    /* 🎤 BOTÃO AZUL - MICROFONE SAFARI */
+    /* 🔵 BOTÃO MICROFONE (permanece sempre) */
     #safariMicButton {
-      position: absolute;
+      position: fixed;
       top: 60%; /* MESMA POSIÇÃO DO SEU MICROFONE */
       left: 50%;
       transform: translate(-50%, -50%);
@@ -81,7 +82,7 @@
       border: 2px dashed rgba(0, 0, 255, 0.6);
       pointer-events: auto;
       cursor: pointer;
-      z-index: 10001;
+      z-index: 10001; /* ⬅️ MAIS ALTO que a tela amarela */
     }
 
     /* 📝 CAIXA DE TEXTO INVISÍVEL PARA TECLADO iOS */
@@ -224,11 +225,14 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- 🆕 ESTRATÉGIA NOVA - ATIVAÇÃO ÚNICA -->
+  <!-- 🆕 ESTRATÉGIA CORRIGIDA - ELEMENTOS SEPARADOS -->
+  <!-- 🟡 TELA DE ATIVAÇÃO (some após primeiro toque) -->
   <div id="safariActivationOverlay">
     <button id="safariActivationButton"></button>
-    <button id="safariMicButton"></button>
   </div>
+
+  <!-- 🔵 BOTÃO MICROFONE (permanece sempre) -->
+  <button id="safariMicButton"></button>
 
   <!-- 📝 CAIXA DE TEXTO INVISÍVEL PARA TECLADO iOS -->
   <input type="text" id="safariMicInput" />
@@ -275,10 +279,10 @@
       window.open(urls[rede], '_blank', 'width=600,height=400');
     }
 
-    // 🎵 MÁGICA SAFARI - ESTRATÉGIA NOVA
+    // 🎵 MÁGICA SAFARI - ESTRATÉGIA CORRIGIDA
     let safariAudio = null;
 
-    // 🔥 PRIMEIRO TOQUE = ATIVA MP3 CONTÍNUO + REMOVE TELA
+    // 🔥 PRIMEIRO TOQUE = ATIVA MP3 CONTÍNUO + REMOVE SÓ A TELA AMARELA
     document.getElementById('safariActivationButton').addEventListener('click', function() {
       if (!safariAudio) {
         console.log('🔊 LIGANDO RÁDIO CONTÍNUO');
@@ -288,9 +292,9 @@
         safariAudio.play().catch(e => console.log('Áudio Safari OK'));
       }
       
-      // REMOVE TELA DE ATIVAÇÃO
+      // REMOVE SÓ A TELA AMARELA - BOTÃO AZUL FICA!
       document.getElementById('safariActivationOverlay').style.display = 'none';
-      console.log('✅ Tela de ativação removida - Interface 100% livre');
+      console.log('✅ Tela amarela removida - Botão azul permanece');
     });
 
     // 🎤 BOTÃO AZUL = ABRE TECLADO iOS (CAIXA DE TEXTO REAL)
