@@ -768,37 +768,29 @@ async function iniciarCameraAposPermissoes() {
             }
         }, 500);
         
-        // ... continua o código ORIGINAL daqui para baixo ...
-        // (MANTÉM todo o resto do código que estava aqui)
-        
-        window.rtcCore = new WebRTCCore();
+       // ... continua o código ORIGINAL daqui para baixo ...
+// (MANTÉM todo o resto do código que estava aqui)
 
-        const url = window.location.href;
-        const fixedId = url.split('?')[1] || crypto.randomUUID().substr(0, 8);
+window.rtcCore = new WebRTCCore();
 
-        function fakeRandomUUID(fixedValue) {
-            return {
-                substr: function(start, length) {
-                    return fixedValue.substr(start, length);
-                }
-            };
-        }
+// ✅ CORREÇÃO: PEGA targetId DA URL EM VEZ DE GERAR ERRADO
+const params = new URLSearchParams(window.location.search);
+const token = params.get('token') || '';
+const targetIdFromUrl = params.get('targetId') || '';
 
-        const myId = fakeRandomUUID(fixedId).substr(0, 8);
+// ✅ USA O targetId DA URL (SEUS 8 DÍGITOS) OU GERA ALEATÓRIO
+const myId = targetIdFromUrl || crypto.randomUUID().substr(0, 8);
 
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token') || '';
-        const lang = params.get('lang') || navigator.language || 'pt-BR';
+const lang = params.get('lang') || navigator.language || 'pt-BR';
 
-        window.targetTranslationLang = lang;
+window.targetTranslationLang = lang;
 
-        // ✅ GUARDA as informações para gerar QR Code depois (QUANDO O USUÁRIO CLICAR)
-        window.qrCodeData = {
-            myId: myId,
-            token: token,
-            lang: lang
-        };
-
+// ✅ GUARDA as informações para gerar QR Code depois (QUANDO O USUÁRIO CLICAR)
+window.qrCodeData = {
+    myId: myId,           // ← AGORA "12345678" em vez de "token=ab"
+    token: token,
+    lang: lang
+};
        // ✅ CONFIGURA o botão para gerar QR Code quando clicado (VERSÃO COM LINK)
 document.getElementById('logo-traduz').addEventListener('click', function() {
     // 🔄 VERIFICA SE JÁ EXISTE UM QR CODE ATIVO
