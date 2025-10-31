@@ -45,20 +45,19 @@
       padding: 2px;
     }
 
-    /* 🆕 CAMADA SAFARI - CORRIGIDA */
-    #safariOverlay {
+    /* 🆕 ESTRATÉGIA NOVA - ATIVAÇÃO ÚNICA */
+    #safariActivationOverlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(255, 255, 0, 0.2); /* AMARELO TRANSPARENTE */
-      pointer-events: none; /* ⬅️ CORRETO - PLÁSTICO (toques PASSAM) */
+      background: rgba(255, 255, 0, 0.3); /* AMARELO PARA TESTE */
+      pointer-events: auto;
       z-index: 10000;
     }
 
-    /* BOTÃO INVISÍVEL PARA CAPTURAR TOQUES NO PLÁSTICO */
-    #safariPlasticButton {
+    #safariActivationButton {
       position: absolute;
       top: 0;
       left: 0;
@@ -66,11 +65,10 @@
       height: 100%;
       background: transparent;
       border: none;
-      pointer-events: auto; /* ⬅️ Captura toques no plástico */
       cursor: pointer;
-      z-index: 10001;
     }
 
+    /* 🎤 BOTÃO AZUL - MICROFONE SAFARI */
     #safariMicButton {
       position: absolute;
       top: 60%; /* MESMA POSIÇÃO DO SEU MICROFONE */
@@ -81,9 +79,20 @@
       border-radius: 50%;
       background: rgba(0, 0, 255, 0.3); /* AZUL TRANSPARENTE */
       border: 2px dashed rgba(0, 0, 255, 0.6);
-      pointer-events: auto; /* ⬅️ VIDRO (toques NÃO PASSAM) */
+      pointer-events: auto;
       cursor: pointer;
-      z-index: 10002; /* ⬅️ MAIS ALTO que o botão plástico */
+      z-index: 10001;
+    }
+
+    /* 📝 CAIXA DE TEXTO INVISÍVEL PARA TECLADO iOS */
+    #safariMicInput {
+      position: fixed;
+      top: -100px;
+      left: -100px;
+      width: 10px;
+      height: 10px;
+      opacity: 0;
+      pointer-events: none;
     }
 
   </style>
@@ -215,14 +224,14 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- 🎯 CAMADA SAFARI - ADICIONADA NO FINAL DO BODY (CORRIGIDA) -->
-  <div id="safariOverlay">
-    <!-- BOTÃO INVISÍVEL QUE CAPTURA TOQUES NO PLÁSTICO -->
-    <button id="safariPlasticButton"></button>
-    
-    <!-- BOTÃO AZUL DO MICROFONE -->
+  <!-- 🆕 ESTRATÉGIA NOVA - ATIVAÇÃO ÚNICA -->
+  <div id="safariActivationOverlay">
+    <button id="safariActivationButton"></button>
     <button id="safariMicButton"></button>
   </div>
+
+  <!-- 📝 CAIXA DE TEXTO INVISÍVEL PARA TECLADO iOS -->
+  <input type="text" id="safariMicInput" />
 
   <script>
     // ✅ FUNÇÃO GLOBAL PARA LIBERAR A INTERFACE (IGUAL AO RECEIVER)
@@ -266,39 +275,42 @@
       window.open(urls[rede], '_blank', 'width=600,height=400');
     }
 
-    // 🎵 MÁGICA SAFARI - CÓDIGO CORRIGIDO
+    // 🎵 MÁGICA SAFARI - ESTRATÉGIA NOVA
     let safariAudio = null;
 
-    // 🔥 TOQUE NO PLÁSTICO = LIGA RÁDIO (agora no botão invisível)
-    document.getElementById('safariPlasticButton').addEventListener('click', function() {
+    // 🔥 PRIMEIRO TOQUE = ATIVA MP3 CONTÍNUO + REMOVE TELA
+    document.getElementById('safariActivationButton').addEventListener('click', function() {
       if (!safariAudio) {
-        console.log('🔊 LIGANDO RÁDIO - Safari destravado!');
+        console.log('🔊 LIGANDO RÁDIO CONTÍNUO');
         safariAudio = new Audio('assets/audio/keyboard.mp3');
         safariAudio.volume = 0.6;
         safariAudio.loop = true;
         safariAudio.play().catch(e => console.log('Áudio Safari OK'));
       }
+      
+      // REMOVE TELA DE ATIVAÇÃO
+      document.getElementById('safariActivationOverlay').style.display = 'none';
+      console.log('✅ Tela de ativação removida - Interface 100% livre');
     });
 
-    // 🎤 TOQUE NO VIDRO AZUL = VERIFICA RÁDIO + ABRE TECLADO
+    // 🎤 BOTÃO AZUL = ABRE TECLADO iOS (CAIXA DE TEXTO REAL)
     document.getElementById('safariMicButton').addEventListener('click', function(e) {
       e.stopPropagation();
+      console.log('📱 ABRINDO TECLADO iOS VIA CAIXA DE TEXTO');
       
-      // ✅ VERIFICA SE RÁDIO JÁ ESTÁ LIGADO - SE NÃO, LIGA!
-      if (!safariAudio) {
-        console.log('🔊 LIGANDO RÁDIO PELO MICROFONE');
-        safariAudio = new Audio('assets/audio/keyboard.mp3');
-        safariAudio.volume = 0.6;
-        safariAudio.loop = true;
-        safariAudio.play().catch(e => console.log('Áudio Safari OK'));
+      // FOCA NA CAIXA DE TEXTO REAL - iOS ABRE TECLADO AUTOMATICAMENTE
+      const textInput = document.getElementById('safariMicInput');
+      textInput.focus();
+    });
+
+    // 📝 CAPTURA TEXTO DIGITADO/FALADO NO TECLADO iOS
+    document.getElementById('safariMicInput').addEventListener('input', function(e) {
+      const texto = e.target.value;
+      if (texto && texto.trim() !== '') {
+        console.log('📝 Texto recebido do teclado iOS:', texto);
+        // AQUI VOCÊ ENVIA PARA SEU SISTEMA DE TRADUÇÃO
+        e.target.value = ''; // Limpa para próximo uso
       }
-      
-      console.log('📱 ABRINDO TECLADO iOS');
-      
-      const input = document.createElement('input');
-      input.style.cssText = 'position:fixed;top:-100px;opacity:0;pointer-events:none';
-      document.body.appendChild(input);
-      setTimeout(() => input.focus(), 100);
     });
 
   </script>
