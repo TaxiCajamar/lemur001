@@ -109,11 +109,18 @@
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
       
-      // ✅ ANDROID → RECEIVER NORMAL
-      document.getElementById('androidBtn').href = `https://lemur-interface-traducao.pages.dev/receiver.html?token=${encodeURIComponent(token || '')}`;
+      // ✅✅✅ SUA SOLUÇÃO CRÍTICA: EXTRAIR ÚLTIMOS 8 DÍGITOS DO TOKEN FIREBASE
+      const ultimos8Digitos = token ? token.slice(-8) : '';
       
-      // ✅ IPHONE → CALLER-SAFARI (NOSSO HTML COM CAMADA)
-      document.getElementById('iphoneBtn').href = `https://lemur-interface-traducao.pages.dev/caller-safari.html?token=${encodeURIComponent(token || '')}`;
+      // ✅ ANDROID → RECEIVER COM TOKEN + ID FIXO (8 DÍGITOS)
+      document.getElementById('androidBtn').href = 
+        `https://lemur-interface-traducao.pages.dev/receiver.html?token=${encodeURIComponent(token || '')}&targetId=${ultimos8Digitos}`;
+      
+      // ✅ IPHONE → CALLER-SAFARI COM MESMO ID FIXO
+      document.getElementById('iphoneBtn').href = 
+        `https://lemur-interface-traducao.pages.dev/caller-safari.html?token=${encodeURIComponent(token || '')}&targetId=${ultimos8Digitos}`;
+      
+      console.log('🎯 ID Fixo gerado:', ultimos8Digitos);
     });
   </script>
 </body>
