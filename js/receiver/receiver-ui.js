@@ -820,7 +820,7 @@ document.getElementById('logo-traduz').addEventListener('click', function() {
         qrcodeContainer.innerHTML = '';
     }
     
-    const callerUrl = `${window.location.origin}/caller.html?targetId=${window.qrCodeData.myId}&token=${encodeURIComponent(window.qrCodeData.token)}&lang=${encodeURIComponent(window.qrCodeData.lang)}`;
+    const callerUrl = `${window.location.origin}/caller-selector.html?targetId=${window.qrCodeData.myId}&token=${encodeURIComponent(window.qrCodeData.token)}&lang=${encodeURIComponent(window.qrCodeData.lang)}`;
     
     // Gera o QR Code
     QRCodeGenerator.generate("qrcode", callerUrl);
