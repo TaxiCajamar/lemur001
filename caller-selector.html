@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -109,19 +108,23 @@
     document.addEventListener('DOMContentLoaded', function () {
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
+      const targetId = urlParams.get('targetId'); // ✅ RECEBE targetId PRONTO
+      const lang = navigator.language || 'pt-BR'; // ✅ RECEBE IDIOMA DO NAVEGADOR
       
-      // ✅✅✅ SUA SOLUÇÃO CRÍTICA: EXTRAIR ÚLTIMOS 8 DÍGITOS DO TOKEN FIREBASE
-      const ultimos8Digitos = token ? token.slice(-8) : '';
+      // ✅✅✅ BYPASS DIRETO: REPASSA OS 3 VALORES SEM MODIFICAÇÃO
+      const tokenCodificado = encodeURIComponent(token || '');
+      const targetIdCodificado = encodeURIComponent(targetId || '');
+      const langCodificado = encodeURIComponent(lang);
       
-      // ✅ ANDROID → RECEIVER COM TOKEN + ID FIXO (8 DÍGITOS)
+      // ✅ ANDROID → RECEIVER COM OS 3 VALORES ORIGINAIS
       document.getElementById('androidBtn').href = 
-        `https://lemur-interface-traducao.pages.dev/receiver.html?token=${encodeURIComponent(token || '')}&targetId=${ultimos8Digitos}`;
+        `https://lemur-interface-traducao.pages.dev/receiver.html?token=${tokenCodificado}&targetId=${targetIdCodificado}&lang=${langCodificado}`;
       
-      // ✅ IPHONE → CALLER-SAFARI COM MESMO ID FIXO
+      // ✅ IPHONE → CALLER-SAFARI COM OS 3 VALORES ORIGINAIS
       document.getElementById('iphoneBtn').href = 
-        `https://lemur-interface-traducao.pages.dev/receiver-safari.html?token=${encodeURIComponent(token || '')}&targetId=${ultimos8Digitos}`;
+        `https://lemur-interface-traducao.pages.dev/receiver-safari.html?token=${tokenCodificado}&targetId=${targetIdCodificado}&lang=${langCodificado}`;
       
-      console.log('🎯 ID Fixo gerado:', ultimos8Digitos);
+      console.log('🎯 BYPASS - Dados repassados:', { token, targetId, lang });
     });
   </script>
 </body>
