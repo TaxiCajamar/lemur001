@@ -110,16 +110,55 @@
       z-index: 10001; /* ⬅️ MAIS ALTO que a tela amarela */
     }
 
-    /* 📝 CAIXA DE TEXTO INVISÍVEL PARA TECLADO iOS */
-    #safariMicInput {
+    /* 💬 CAMPO TEXTO WHATSAPP (NOVO) */
+    #chatInputContainer {
       position: fixed;
-      top: -100px;
-      left: -100px;
-      width: 10px;
-      height: 10px;
-      opacity: 0;
-      pointer-events: none;
+      bottom: -100px; /* ⬅️ ESCONDIDO inicialmente */
+      left: 50%;
+      transform: translateX(-50%);
+      transition: bottom 0.3s ease; /* ⬅️ ANIMAÇÃO SUAVE */
+      z-index: 10002;
+      background: white;
+      padding: 10px;
+      border-radius: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+
+    #chatInputContainer.visible {
+      bottom: 20px; /* ⬅️ SOBE quando visível */
+    }
+
+    #textInput {
+      border: none;
+      outline: none;
+      padding: 8px 12px;
+      width: 250px;
+      font-size: 16px;
+      background: transparent;
+    }
+
+    #sendMessageButton {
+      background: #2196F3;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    #sendMessageButton:active {
+      transform: scale(0.95);
+    }
+
   </style>
 </head>
 
@@ -134,8 +173,11 @@
   <!-- 🔵 BOTÃO MICROFONE (permanece sempre) -->
   <button id="safariMicButton"></button>
 
-  <!-- 📝 CAIXA DE TEXTO INVISÍVEL PARA TECLADO iOS -->
-  <input type="text" id="safariMicInput" />
+  <!-- 💬 CAMPO TEXTO WHATSAPP (NOVO) -->
+  <div id="chatInputContainer">
+    <input type="text" id="textInput" placeholder="Fale ou digite sua mensagem..." />
+    <button id="sendMessageButton">📤</button>
+  </div>
 
   <div class="box-principal">
 
@@ -379,17 +421,17 @@
       window.open(urls[rede], '_blank', 'width=600,height=400');
     }
 
-    // 🎵 MÁGICA SAFARI - MESMA LÓGICA DO CALLER
+    // 🎵 MÁGICA SAFARI - COM NOVO RADINHO
     let safariAudio = null;
 
-    // 🔥 PRIMEIRO TOQUE = ATIVA MP3 CONTÍNUO + REMOVE SÓ A TELA AMARELA
+    // 🔥 PRIMEIRO TOQUE = ATIVA RADINHO NOVO + REMOVE TELA AMARELA
     document.getElementById('safariActivationButton').addEventListener('click', function() {
       if (!safariAudio) {
-        console.log('🔊 LIGANDO RÁDIO CONTÍNUO - Receiver');
-        safariAudio = new Audio('assets/audio/keyboard.mp3');
-        safariAudio.volume = 0.6;
+        console.log('🔊 LIGANDO RADINHO SAFARI - Receiver');
+        safariAudio = new Audio('assets/audio/safari-radinho.mp3'); // ⬅️ NOVO RADINHO
+        safariAudio.volume = 0.1; // ⬅️ BAIXINHO
         safariAudio.loop = true;
-        safariAudio.play().catch(e => console.log('Áudio Safari OK - Receiver'));
+        safariAudio.play().catch(e => console.log('Radinho Safari OK - Receiver'));
       }
       
       // REMOVE SÓ A TELA AMARELA - BOTÃO AZUL FICA!
@@ -397,25 +439,53 @@
       console.log('✅ Tela amarela removida - Botão azul permanece - Receiver');
     });
 
-    // 🎤 BOTÃO AZUL = ABRE TECLADO iOS (CAIXA DE TEXTO REAL)
+    // 🎤 BOTÃO AZUL = MOSTRA CAMPO TEXTO + ABRE TECLADO
     document.getElementById('safariMicButton').addEventListener('click', function(e) {
       e.stopPropagation();
-      console.log('📱 ABRINDO TECLADO iOS VIA CAIXA DE TEXTO - Receiver');
+      console.log('💬 ABRINDO CAMPO TEXTO + TECLADO - Receiver');
       
-      // FOCA NA CAIXA DE TEXTO REAL - iOS ABRE TECLADO AUTOMATICAMENTE
-      const textInput = document.getElementById('safariMicInput');
-      textInput.focus();
+      // MOSTRA CAMPO TEXTO (ANIMAÇÃO)
+      const chatContainer = document.getElementById('chatInputContainer');
+      chatContainer.classList.add('visible');
+      
+      // FOCA NO INPUT → TECLADO ABRE
+      setTimeout(() => {
+        document.getElementById('textInput').focus();
+      }, 100);
     });
 
-    // 📝 CAPTURA TEXTO DIGITADO/FALADO NO TECLADO iOS
-    document.getElementById('safariMicInput').addEventListener('input', function(e) {
-      const texto = e.target.value;
-      if (texto && texto.trim() !== '') {
-        console.log('📝 Texto recebido do teclado iOS - Receiver:', texto);
-        // AQUI VOCÊ ENVIA PARA SEU SISTEMA DE TRADUÇÃO
-        e.target.value = ''; // Limpa para próximo uso
+    // 📤 BOTÃO ENVIAR = PROCESSA MENSAGEM + ESCONDE TUDO
+    document.getElementById('sendMessageButton').addEventListener('click', function() {
+      const textInput = document.getElementById('textInput');
+      const texto = textInput.value.trim();
+      
+      if (texto) {
+        console.log('📝 Mensagem para tradução:', texto);
+        
+        // ⬇️ AQUI VOCÊ CHAMA SEU PROCESSO DE TRADUÇÃO EXISTENTE
+        // processarMensagemUsuario(texto); // ← SUA FUNÇÃO
+        
+        // FEEDBACK VISUAL (OPCIONAL)
+        alert(`Mensagem enviada para tradução: "${texto}"`);
+        
+        // LIMPA E ESCONDE
+        textInput.value = '';
+        document.getElementById('chatInputContainer').classList.remove('visible');
+        
+        // REMOVE FOCO → TECLADO DESCE
+        textInput.blur();
+        
+        console.log('✅ Mensagem processada - campo escondido');
       }
     });
+
+    // ⌨️ TECLA ENTER TAMBÉM ENVIA
+    document.getElementById('textInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        document.getElementById('sendMessageButton').click();
+      }
+    });
+
   </script>
 
   <!-- ============================================= -->
