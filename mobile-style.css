@@ -68,44 +68,60 @@ body {
   z-index: 10;
 }
 
-.social-btn-fixed {
-  width: 25px;    /* ⬅️ MENOR (era 35px) */
-  height: 25px;   /* ⬅️ MENOR (era 35px) */
+  .social-buttons {
+  display: flex;
+  gap: 6px;           /* ⬅️ Menor gap entre botões */
+  justify-content: center;
+  margin: 5px 0;      /* ⬅️ Margem bem reduzida */
+  flex-wrap: wrap;
+}
+
+.social-btn {
+  width: 40px;        /* ⬅️ Botões um pouco menores */
+  height: 40px;
   border: none;
   border-radius: 5px;
-  color: white;
-  font-weight: bold;
+  background: transparent;
   cursor: pointer;
-  font-size: 11px; /* ⬅️ TEXTO MENOR */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s;
-  text-decoration: none;
 }
 
-.social-btn-fixed.website { background: #4CAF50; }  /* 🆕 ADICIONE ESTA LINHA */
-.social-btn-fixed.instagram { background: #E4405F; }  /* 🆕 ADICIONE ESTA LINHA */
-
-.social-btn-fixed:hover {
-  transform: scale(1.1);
+.social-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 2px;       /* ⬅️ Padding reduzido */
 }
+    
+    .social-links-fixed {
+      position: absolute;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 10px 0;
+      flex-wrap: wrap;
+      width: 80%;
+      z-index: 10;
+    }
 
-/* ===== CORES DAS REDES SOCIAIS ===== */
-.instagram { 
-  background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D, #F56040, #F77737, #FCAF45, #FFDC80); 
-}
+    .social-btn-fixed {
+      width: 30px;
+      height: 30px;
+      border: none;
+      border-radius: 5px;
+      background: transparent;
+      cursor: pointer;
+      text-decoration: none;
+    }
 
-.website { 
-  background: #6c5ce7; 
-}
-
-.facebook { background: #3b5998; }
-.twitter { background: #1da1f2; }
-.linkedin { background: #0077b5; }
-.whatsapp { background: #25d366; }
-.telegram { background: #0088cc; }
-
+    .social-btn-fixed img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 2px;
+    }
 /* =============================================
    BOTÕES DE COMPARTILHAMENTO NO QR CODE (MANTÉM ORIGINAL)
    ============================================= */
@@ -856,56 +872,3 @@ receiver.html #texto-recebido {
     font-size: 1em;
   }
 }
-/* ... todo o seu CSS anterior ... */
-
-/* ============================================= */
-/* 🎯 SOLUÇÃO DEFINITIVA - REDES SOCIAIS FIXAS  */
-/* ============================================= */
-
-.social-links-fixed {
-  position: absolute !important;
-  top: 17% !important; /* ⬅️ TESTE: 15%, 18%, 20%, 22% */
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  display: flex !important;
-  gap: 6px !important;
-  justify-content: center !important;
-  margin: 0 !important;
-  flex-wrap: wrap !important;
-  width: 80% !important;
-  z-index: 100 !important;
-}
-
-.social-btn-fixed {
-  width: 26px !important;
-  height: 26px !important;
-  border: none !important;
-  border-radius: 4px !important;
-  color: white !important;
-  font-weight: bold !important;
-  cursor: pointer !important;
-  font-size: 10px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  transition: transform 0.2s !important;
-  text-decoration: none !important;
-}
-
-.social-btn-fixed:hover {
-  transform: scale(1.1) !important;
-}
-
-.social-btn-fixed.instagram { 
-  background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D, #F56040, #F77737, #FCAF45, #FFDC80) !important; 
-}
-
-.social-btn-fixed.website { 
-  background: #6c5ce7 !important; 
-}
-
-.social-btn-fixed.facebook { background: #3b5998 !important; }
-.social-btn-fixed.twitter { background: #1da1f2 !important; }
-.social-btn-fixed.linkedin { background: #0077b5 !important; }
-.social-btn-fixed.whatsapp { background: #25d366 !important; }
-.social-btn-fixed.telegram { background: #0088cc !important; }
