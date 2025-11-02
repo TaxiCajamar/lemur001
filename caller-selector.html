@@ -109,7 +109,7 @@
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
       const targetId = urlParams.get('targetId'); // ✅ RECEBE targetId PRONTO
-      const lang = navigator.language || 'pt-BR'; // ✅ RECEBE IDIOMA DO NAVEGADOR
+      const lang = urlParams.get('lang') || navigator.language || 'pt-BR'; // ✅✅✅ CORREÇÃO CRÍTICA: AGORA RECEBE lang DA URL
       
       // ✅✅✅ BYPASS DIRETO: REPASSA OS 3 VALORES SEM MODIFICAÇÃO
       const tokenCodificado = encodeURIComponent(token || '');
