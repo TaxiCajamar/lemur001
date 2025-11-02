@@ -255,20 +255,43 @@
       }, 100);
     });
 
- document.getElementById('sendMessageButton').addEventListener('click', function() {
+document.getElementById('sendMessageButton').addEventListener('click', function() {
   const textInput = document.getElementById('textInput');
   const texto = textInput.value.trim();
   
   if (texto) {
-    console.log('💬 Receiver - Texto para sistema original:', texto);
+    console.log('💬 Receiver - Texto para tradução:', texto);
     
-    // ✅ NO RECEIVER, ENVIA DIRETO PARA O CALLER
-    if (window.rtcCore && window.rtcCore.dataChannel && 
-        window.rtcCore.dataChannel.readyState === 'open') {
-      window.rtcCore.dataChannel.send(texto);
-      console.log('✅ Receiver - Mensagem enviada para Caller');
+    // ✅ USA O SISTEMA DE TRADUÇÃO DO RECEIVER
+    if (typeof window.translateText === 'function') {
+      window.translateText(texto).then(traduzido => {
+        if (traduzido && traduzido.trim() !== "") {
+          console.log(`🌐 Receiver - Traduzido: "${texto}" → "${traduzido}"`);
+          
+          // ✅ ENVIA O TEXTO TRADUZIDO
+          if (window.rtcCore && window.rtcCore.dataChannel && 
+              window.rtcCore.dataChannel.readyState === 'open') {
+            window.rtcCore.dataChannel.send(traduzido);
+            console.log('✅ Receiver - Mensagem TRADUZIDA enviada para Caller');
+          } else {
+            console.log('⏳ Receiver - Canal WebRTC não disponível');
+          }
+        }
+      }).catch(error => {
+        console.error('❌ Erro na tradução:', error);
+        // Fallback: envia texto original se tradução falhar
+        if (window.rtcCore && window.rtcCore.dataChannel && 
+            window.rtcCore.dataChannel.readyState === 'open') {
+          window.rtcCore.dataChannel.send(texto);
+        }
+      });
     } else {
-      console.log('⏳ Receiver - Canal WebRTC não disponível');
+      console.log('❌ Sistema de tradução não disponível');
+      // Fallback: envia texto original
+      if (window.rtcCore && window.rtcCore.dataChannel && 
+          window.rtcCore.dataChannel.readyState === 'open') {
+        window.rtcCore.dataChannel.send(texto);
+      }
     }
     
     // Limpa e esconde
