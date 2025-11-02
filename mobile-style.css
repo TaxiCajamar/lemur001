@@ -59,10 +59,9 @@ body {
 
 /* 🔵 BOTÃO MICROFONE SAFARI */
 #safariMicButton {
-  position: fixed;
-  top: 60%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+   position: absolute;
+    top: 46%;
+    left: 78%;
   width: 70px;
   height: 70px;
   border-radius: 50%;
