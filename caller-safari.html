@@ -146,23 +146,7 @@
   </div>
 
   <script>
-    // ✅ FUNÇÕES GLOBAIS
-    window.liberarInterface = function () {
-      console.log('✅ Interface já está visível');
-    };
-
-    window.mostrarErroCarregamento = function (mensagem) {
-      alert('Erro: ' + mensagem);
-    };
-
-    // ✅ INICIALIZAÇÃO
-    document.addEventListener('DOMContentLoaded', function () {
-      const overlay = document.querySelector('.info-overlay');
-      if (overlay) {
-        overlay.classList.add('hidden');
-      }
-    });
-
+    
     // 🆕 FUNÇÃO PARA COMPARTILHAR NAS REDES SOCIAIS
     function compartilharSocial(rede) {
       const myId = window.qrCodeData?.myId || '';
