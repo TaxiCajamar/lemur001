@@ -189,7 +189,7 @@ function initializeTranslator() {
                             console.log('⏰ Usuário parou de digitar - enviando...');
                             enviarMensagem();
                         }
-                    }, 3000);
+                    }, 2000);
                 });
             }
             
