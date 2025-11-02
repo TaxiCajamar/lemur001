@@ -255,45 +255,28 @@
       }, 100);
     });
 
-    // 📤 BOTÃO ENVIAR - SISTEMA DE TEXTO PARA RECEIVER
-    document.getElementById('sendMessageButton').addEventListener('click', function() {
-      const textInput = document.getElementById('textInput');
-      const texto = textInput.value.trim();
-      
-      if (texto) {
-        console.log('💬 Receiver - Texto para tradução:', texto);
-        
-        // 🆕 USA SISTEMA DE TRADUÇÃO DO RECEIVER
-        if (typeof window.translateText === 'function') {
-          window.translateText(texto).then(traduzido => {
-            if (traduzido && traduzido.trim() !== "") {
-              console.log(`🌐 Receiver - Traduzido: "${texto}" → "${traduzido}"`);
-              
-              // 🆕 ENVIA VIA WEBRTC SE DISPONÍVEL
-              if (window.rtcCore && window.rtcCore.dataChannel && 
-                  window.rtcCore.dataChannel.readyState === 'open') {
-                window.rtcCore.dataChannel.send(traduzido);
-                console.log('✅ Receiver - Mensagem enviada para Caller');
-              } else {
-                console.log('⏳ Receiver - Canal WebRTC não disponível ainda');
-                alert('Conexão não estabelecida. Aguarde a conexão com o caller.');
-              }
-            }
-          }).catch(error => {
-            console.error('❌ Erro na tradução:', error);
-          });
-        } else {
-          console.log('❌ Função translateText não disponível no receiver');
-          alert('Sistema de tradução não carregado. Recarregue a página.');
-        }
-        
-        // Limpa e esconde
-        textInput.value = '';
-        document.getElementById('chatInputContainer').classList.remove('visible');
-        textInput.blur();
-      }
-    });
-
+ document.getElementById('sendMessageButton').addEventListener('click', function() {
+  const textInput = document.getElementById('textInput');
+  const texto = textInput.value.trim();
+  
+  if (texto) {
+    console.log('💬 Receiver - Texto para sistema original:', texto);
+    
+    // ✅ NO RECEIVER, ENVIA DIRETO PARA O CALLER
+    if (window.rtcCore && window.rtcCore.dataChannel && 
+        window.rtcCore.dataChannel.readyState === 'open') {
+      window.rtcCore.dataChannel.send(texto);
+      console.log('✅ Receiver - Mensagem enviada para Caller');
+    } else {
+      console.log('⏳ Receiver - Canal WebRTC não disponível');
+    }
+    
+    // Limpa e esconde
+    textInput.value = '';
+    document.getElementById('chatInputContainer').classList.remove('visible');
+    textInput.blur();
+  }
+});
     // ⌨️ TECLA ENTER TAMBÉM ENVIA
     document.getElementById('textInput').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') {
