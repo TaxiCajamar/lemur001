@@ -152,8 +152,10 @@ function initializeTranslator() {
         }
     }
 
-    // 🎮 EVENTOS DE BOTÃO - TECLADO NATIVO
+     // 🎮 EVENTOS DE BOTÃO - TECLADO NATIVO COM DETECTOR DE DIGITAÇÃO
     if (recordButton) {
+        let typingTimer; // ⏰ Timer para detectar parada
+        
         recordButton.addEventListener('click', function(e) {
             e.preventDefault();
             console.log('🔵 Botão azul - Abrindo teclado nativo');
@@ -170,47 +172,57 @@ function initializeTranslator() {
                 `;
                 document.body.appendChild(chatContainer);
                 
-                // Adiciona evento de envio
-                document.getElementById('sendMessageButton').addEventListener('click', function() {
-                    const textInput = document.getElementById('textInput');
-                    const texto = textInput.value.trim();
-                    
-                    if (texto) {
-                        console.log('💬 Texto para tradução:', texto);
-                        
-                        // USA O SISTEMA DE TRADUÇÃO
-                        if (typeof window.translateText === 'function') {
-                            window.translateText(texto).then(traduzido => {
-                                if (traduzido && traduzido.trim() !== "") {
-                                    console.log(`🌐 Traduzido: "${texto}" → "${traduzido}"`);
-                                    
-                                    // ENVIA VIA WEBRTC
-                                    if (window.rtcCore && window.rtcCore.dataChannel && 
-                                        window.rtcCore.dataChannel.readyState === 'open') {
-                                        window.rtcCore.dataChannel.send(traduzido);
-                                        console.log('✅ Texto traduzido enviado via WebRTC');
-                                    }
-                                }
-                            }).catch(error => {
-                                console.error('❌ Erro na tradução:', error);
-                            });
-                        }
-                        
-                        // Limpa e esconde
-                        textInput.value = '';
-                        chatContainer.classList.remove('visible');
-                        textInput.blur();
-                    }
-                });
+                // ✅ BOTÃO MANUAL DE ENVIO
+                document.getElementById('sendMessageButton').addEventListener('click', enviarMensagem);
                 
-                // Tecla Enter também envia
+                // ✅ TECLA ENTER
                 document.getElementById('textInput').addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        document.getElementById('sendMessageButton').click();
-                    }
+                    if (e.key === 'Enter') enviarMensagem();
+                });
+
+                // ✅ DETECTOR DE PARADA DE DIGITAÇÃO (3 SEGUNDOS)
+                document.getElementById('textInput').addEventListener('input', function() {
+                    clearTimeout(typingTimer); // Cancela timer anterior
+                    typingTimer = setTimeout(() => {
+                        const texto = this.value.trim();
+                        if (texto) {
+                            console.log('⏰ Usuário parou de digitar - enviando...');
+                            enviarMensagem();
+                        }
+                    }, 3000);
                 });
             }
             
+            // ✅ FUNÇÃO DE ENVIO (USADA PELO BOTÃO, ENTER E TIMER)
+            function enviarMensagem() {
+                const textInput = document.getElementById('textInput');
+                const texto = textInput.value.trim();
+                
+                if (texto) {
+                    console.log('💬 Texto para tradução:', texto);
+                    
+                    if (typeof window.translateText === 'function') {
+                        window.translateText(texto).then(traduzido => {
+                            if (traduzido && traduzido.trim() !== "") {
+                                console.log(`🌐 Traduzido: "${texto}" → "${traduzido}"`);
+                                
+                                if (window.rtcCore && window.rtcCore.dataChannel && 
+                                    window.rtcCore.dataChannel.readyState === 'open') {
+                                    window.rtcCore.dataChannel.send(traduzido);
+                                    console.log('✅ Texto traduzido enviado via WebRTC');
+                                }
+                            }
+                        });
+                    }
+                }
+                
+                // ✅ CANCELA TIMER E FECHA TUDO
+                clearTimeout(typingTimer);
+                textInput.value = '';
+                chatContainer.classList.remove('visible');
+                textInput.blur();
+            }
+
             // Mostra e foca no input (abre teclado)
             chatContainer.classList.add('visible');
             setTimeout(() => {
