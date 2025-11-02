@@ -77,8 +77,8 @@ body {
 }
 
 .social-btn {
-  width: 40px;        /* ⬅️ Botões um pouco menores */
-  height: 40px;
+  width: 40px;   important     /* ⬅️ Botões um pouco menores */
+  height: 40px; important  
   border: none;
   border-radius: 5px;
   background: transparent;
