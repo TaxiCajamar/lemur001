@@ -1,6 +1,6 @@
-// ===== TRADUTOR COM TECLADO NATIVO - CALLER =====
+// ===== TRADUTOR OTIMIZADO COM TECLADO NATIVO - CALLER =====
 
-// ===== FUNÇÃO DE TRADUÇÃO =====
+// ===== FUNÇÃO DE TRADUÇÃO ATUALIZADA =====
 async function translateText(text) {
     try {
         const response = await fetch('https://chat-tradutor-7umw.onrender.com/translate', {
@@ -14,7 +14,8 @@ async function translateText(text) {
         });
 
         const result = await response.json();
-        return result.translatedText || text;
+        const translatedText = result.translatedText || text;
+        return translatedText;
         
     } catch (error) {
         console.error('❌ Erro na tradução:', error);
@@ -26,16 +27,31 @@ async function translateText(text) {
 function initializeTranslator() {
     console.log('🎯 Iniciando tradutor caller com teclado nativo...');
 
-    // ===== VERIFICAÇÃO DE DEPENDÊNCIAS =====
+    // ===== VERIFICAÇÃO DE DEPENDÊNCIAS CRÍTICAS =====
+    console.log('🔍 Verificando dependências do caller-ui.js...');
+    
+    // ✅ VERIFICA SE CALLER-UI.JS JÁ CONFIGUROU TUDO
     if (!window.meuIdiomaLocal || !window.meuIdiomaRemoto) {
+        console.log('⏳ Aguardando caller-ui.js configurar idiomas...');
         setTimeout(initializeTranslator, 500);
         return;
     }
     
+    // ✅ VERIFICA SE WEBRTC ESTÁ PRONTO
     if (!window.rtcCore) {
+        console.log('⏳ Aguardando WebRTC inicializar...');
         setTimeout(initializeTranslator, 500);
         return;
     }
+
+    // 🎯 CONFIGURAÇÃO DE IDIOMAS SINCRONIZADA
+    const IDIOMA_DESTINO = window.meuIdiomaRemoto || 'en';
+    const IDIOMA_FALA = window.meuIdiomaRemoto || 'en-US';
+    
+    console.log('🔤 Idiomas configurados:', { 
+        destino: IDIOMA_DESTINO,
+        fala: IDIOMA_FALA 
+    });
 
     // 🎤 ELEMENTOS VISUAIS
     const recordButton = document.getElementById('recordButton');
@@ -43,26 +59,34 @@ function initializeTranslator() {
     const textoRecebido = document.getElementById('texto-recebido');
     
     if (!recordButton || !textoRecebido) {
+        console.log('⏳ Aguardando elementos do tradutor...');
         setTimeout(initializeTranslator, 300);
         return;
     }
 
-    // 🔊 CONFIGURAÇÃO DE SÍNTESE DE VOZ
+    // 🔊 CONFIGURAÇÃO DE SÍNTESE DE VOZ (APENAS PARA FALAR)
     const SpeechSynthesis = window.speechSynthesis;
     
     if (!SpeechSynthesis && speakerButton) {
+        console.log('❌ SpeechSynthesis não suportado');
         speakerButton.style.display = 'none';
     }
 
-    // ⏱️ VARIÁVEIS DE ESTADO
+    // ⏱️ VARIÁVEIS DE ESTADO (APENAS AS NECESSÁRIAS)
+    let isTranslating = false;
     let isSpeechPlaying = false;
+    let lastTranslationTime = 0;
 
     // 🔊 SISTEMA DE VOZ PARA FALAR TEXTOS RECEBIDOS
     function speakText(text) {
-        if (!SpeechSynthesis || !text) return;
+        if (!SpeechSynthesis || !text) {
+            console.log('❌ SpeechSynthesis não disponível ou texto vazio');
+            return;
+        }
         
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
+        
         utterance.lang = window.meuIdiomaRemoto || 'en-US';
         utterance.rate = 0.9;
         utterance.volume = 0.8;
@@ -70,26 +94,46 @@ function initializeTranslator() {
         utterance.onstart = function() {
             isSpeechPlaying = true;
             if (speakerButton) speakerButton.textContent = '⏹';
+            console.log('🔊 Iniciando fala do texto');
         };
         
         utterance.onend = function() {
             isSpeechPlaying = false;
             if (speakerButton) speakerButton.textContent = '🔊';
+            console.log('🔊 Fala terminada');
+        };
+        
+        utterance.onerror = function(event) {
+            isSpeechPlaying = false;
+            if (speakerButton) speakerButton.textContent = '🔊';
+            console.error('❌ Erro na fala:', event.error);
         };
         
         window.speechSynthesis.speak(utterance);
     }
 
     function toggleSpeech() {
-        if (!SpeechSynthesis) return;
+        if (!SpeechSynthesis) {
+            console.log('❌ SpeechSynthesis não suportado');
+            return;
+        }
         
         if (isSpeechPlaying) {
             window.speechSynthesis.cancel();
             isSpeechPlaying = false;
             if (speakerButton) speakerButton.textContent = '🔊';
+            console.log('⏹ Fala cancelada');
         } else {
-            if (textoRecebido && textoRecebido.textContent.trim() !== "") {
-                speakText(textoRecebido.textContent.trim());
+            if (textoRecebido && textoRecebido.textContent) {
+                const textToSpeak = textoRecebido.textContent.trim();
+                if (textToSpeak !== "") {
+                    console.log(`🔊 Falando texto: "${textToSpeak.substring(0, 50)}..."`);
+                    speakText(textToSpeak);
+                } else {
+                    console.log('⚠️ Nenhum texto para falar');
+                }
+            } else {
+                console.log('⚠️ Elemento texto-recebido não encontrado');
             }
         }
     }
@@ -99,15 +143,16 @@ function initializeTranslator() {
         if (window.rtcCore && window.rtcCore.dataChannel && 
             window.rtcCore.dataChannel.readyState === 'open') {
             window.rtcCore.dataChannel.send(texto);
-            console.log('✅ Texto enviado via WebRTC:', texto);
+            console.log('✅ Texto enviado via WebRTC Core:', texto);
             return true;
         } else {
+            console.log('⏳ Canal WebRTC não disponível');
             setTimeout(() => enviarParaOutroCelular(texto), 1000);
             return false;
         }
     }
 
-    // 🎮 EVENTOS DE BOTÃO - TECLADO NATIVO COM DETECTOR DE DIGITAÇÃO
+     // 🎮 EVENTOS DE BOTÃO - TECLADO NATIVO COM DETECTOR DE DIGITAÇÃO
     if (recordButton) {
         let typingTimer; // ⏰ Timer para detectar parada
         
@@ -135,9 +180,9 @@ function initializeTranslator() {
                     if (e.key === 'Enter') enviarMensagem();
                 });
 
-                // ✅ DETECTOR DE PARADA DE DIGITAÇÃO (7 SEGUNDOS)
+                // ✅ DETECTOR DE PARADA DE DIGITAÇÃO (2 SEGUNDOS)
                 document.getElementById('textInput').addEventListener('input', function() {
-                    clearTimeout(typingTimer);
+                    clearTimeout(typingTimer); // Cancela timer anterior
                     typingTimer = setTimeout(() => {
                         const texto = this.value.trim();
                         if (texto) {
@@ -156,12 +201,19 @@ function initializeTranslator() {
                 if (texto) {
                     console.log('💬 Texto para tradução:', texto);
                     
-                    translateText(texto).then(traduzido => {
-                        if (traduzido && traduzido.trim() !== "") {
-                            console.log(`🌐 Traduzido: "${texto}" → "${traduzido}"`);
-                            enviarParaOutroCelular(traduzido);
-                        }
-                    });
+                    if (typeof window.translateText === 'function') {
+                        window.translateText(texto).then(traduzido => {
+                            if (traduzido && traduzido.trim() !== "") {
+                                console.log(`🌐 Traduzido: "${texto}" → "${trazido}"`);
+                                
+                                if (window.rtcCore && window.rtcCore.dataChannel && 
+                                    window.rtcCore.dataChannel.readyState === 'open') {
+                                    window.rtcCore.dataChannel.send(traduzido);
+                                    console.log('✅ Texto traduzido enviado via WebRTC');
+                                }
+                            }
+                        });
+                    }
                 }
                 
                 // ✅ CANCELA TIMER E FECHA TUDO
@@ -188,11 +240,18 @@ function initializeTranslator() {
     }
 
     // ✅ CONFIGURAÇÃO FINAL
-    console.log(`🎯 Tradutor caller com teclado nativo pronto!`);
+    console.log(`🎯 Tradutor caller com teclado nativo pronto: ${window.meuIdiomaLocal} → ${window.meuIdiomaRemoto}`);
+    console.log('🔍 Estado final:', {
+        recordButton: !!recordButton,
+        speakerButton: !!speakerButton,
+        textoRecebido: !!textoRecebido,
+        rtcCore: !!window.rtcCore
+    });
+    
     recordButton.disabled = false;
 }
 
-// ✅ INICIALIZAÇÃO
+// ✅ INICIALIZAÇÃO SEGURA
 function startTranslatorSafely() {
     console.log('🚀 Iniciando tradutor caller...');
     
