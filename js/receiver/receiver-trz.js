@@ -8,6 +8,7 @@ async function translateText(text) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 text: text,
+                sourceLang: window.meuIdiomaLocal,          // ✅ ADICIONAR ESTA LINHA
                 targetLang: window.meuIdiomaRemoto || 'en' // ✅ USA IDIOMA GUARDADO
             })
         });
