@@ -16,28 +16,28 @@
     
     /* 🎯 BOTÕES SIMPLIFICADOS */
     .social-buttons {
-  display: flex;
-  gap: 6px;           /* ⬅️ Menor gap entre botões */
-  justify-content: center;
-  margin: 5px 0;      /* ⬅️ Margem bem reduzida */
-  flex-wrap: wrap;
-}
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin: 5px 0;
+      flex-wrap: wrap;
+    }
 
-.social-btn {
-  width: 40px;        /* ⬅️ Botões um pouco menores */
-  height: 40px;
-  border: none;
-  border-radius: 5px;
-  background: transparent;
-  cursor: pointer;
-}
+    .social-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 5px;
+      background: transparent;
+      cursor: pointer;
+    }
 
-.social-btn img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 2px;       /* ⬅️ Padding reduzido */
-}
+    .social-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 2px;
+    }
     
     .social-links-fixed {
       position: absolute;
@@ -71,14 +71,13 @@
     }
 
     /* 🆕 MÁSCARA SAFARI - IGUAL AO CALLER */
-    /* 🟡 TELA DE ATIVAÇÃO (some após primeiro toque) */
     #safariActivationOverlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(255, 255, 0, 0.3); /* AMARELO PARA TESTE */
+      background: rgba(255, 255, 0, 0.3);
       pointer-events: auto;
       z-index: 10000;
     }
@@ -94,29 +93,29 @@
       cursor: pointer;
     }
 
-    /* 🔵 BOTÃO MICROFONE (permanece sempre) */
+    /* 🔵 BOTÃO MICROFONE */
     #safariMicButton {
       position: fixed;
-      top: 60%; /* MESMA POSIÇÃO DO MICROFONE ORIGINAL */
+      top: 60%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 70px;
       height: 70px;
       border-radius: 50%;
-      background: rgba(0, 0, 255, 0.3); /* AZUL TRANSPARENTE */
+      background: rgba(0, 0, 255, 0.3);
       border: 2px dashed rgba(0, 0, 255, 0.6);
       pointer-events: auto;
       cursor: pointer;
-      z-index: 10001; /* ⬅️ MAIS ALTO que a tela amarela */
+      z-index: 10001;
     }
 
-    /* 💬 CAMPO TEXTO WHATSAPP (NOVO) */
+    /* 💬 CAMPO TEXTO WHATSAPP */
     #chatInputContainer {
       position: fixed;
-      bottom: -100px; /* ⬅️ ESCONDIDO inicialmente */
+      bottom: -100px;
       left: 50%;
       transform: translateX(-50%);
-      transition: bottom 0.3s ease; /* ⬅️ ANIMAÇÃO SUAVE */
+      transition: bottom 0.3s ease;
       z-index: 10002;
       background: white;
       padding: 10px;
@@ -129,7 +128,7 @@
     }
 
     #chatInputContainer.visible {
-      bottom: 20px; /* ⬅️ SOBE quando visível */
+      bottom: 20px;
     }
 
     #textInput {
@@ -158,22 +157,20 @@
     #sendMessageButton:active {
       transform: scale(0.95);
     }
-
   </style>
 </head>
 
 <body>
 
-  <!-- 🆕 MÁSCARA SAFARI - ADICIONADA NO INÍCIO DO BODY -->
-  <!-- 🟡 TELA DE ATIVAÇÃO (some após primeiro toque) -->
+  <!-- 🆕 MÁSCARA SAFARI -->
   <div id="safariActivationOverlay">
     <button id="safariActivationButton"></button>
   </div>
 
-  <!-- 🔵 BOTÃO MICROFONE (permanece sempre) -->
+  <!-- 🔵 BOTÃO MICROFONE -->
   <button id="safariMicButton"></button>
 
-  <!-- 💬 CAMPO TEXTO WHATSAPP (NOVO) -->
+  <!-- 💬 CAMPO TEXTO WHATSAPP -->
   <div id="chatInputContainer">
     <input type="text" id="textInput" placeholder="Fale ou digite sua mensagem..." />
     <button id="sendMessageButton">📤</button>
@@ -181,26 +178,17 @@
 
   <div class="box-principal">
 
-    <!-- ============================================= -->
     <!-- ELEMENTOS DE MARCA E IDENTIDADE VISUAL -->
-    <!-- ============================================= -->
-
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
     <img id="click" src="assets/images/click.png" alt="Click" />
     
-    <!-- ============================================= -->
-    <!-- SISTEMA DE LOADING E INDICADORES -->
-    <!-- ============================================= -->
-
+    <!-- SISTEMA DE LOADING -->
     <div id="mobileLoading" class="mobile-loader">
       <div class="loader-circle"></div>
     </div>
 
-    <!-- ============================================= -->
-    <!-- COMPONENTE DE INSTRUÇÕES INTERATIVAS -->
-    <!-- ============================================= -->
-
+    <!-- COMPONENTE DE INSTRUÇÕES -->
     <div class="instruction-box expandido" id="instructionBox">
       <button class="instruction-toggle" id="instructionToggle"></button>
       <div class="instruction-content">
@@ -243,10 +231,7 @@
       </div>
     </div>
 
-    <!-- ============================================= -->
-    <!-- BOTÕES DE CONTROLE PRINCIPAIS -->
-    <!-- ============================================= -->
-
+    <!-- BOTÕES DE CONTROLE -->
     <button id="logo-traduz" class="botao-key">
       <img src="assets/images/key.png" alt="Gerar QR Code" />
     </button>
@@ -255,49 +240,39 @@
       <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
     </button>
 
-    <!-- ============================================= -->
-    <!-- ELEMENTOS DE TEXTO, LABELS E REDES SOCIAIS FIXAS -->
-    <!-- ============================================= -->
-
-    <!-- 🏷️ Subtítulo de tradução -->
+    <!-- ELEMENTOS DE TEXTO E LABELS -->
     <div class="translator-label" id="translator-label">
       Real-time translation.
     </div>
 
-   <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS - SIMPLIFICADO -->
-<div class="social-links-fixed">
-  <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/linke.png" alt="LinkedIn">
-  </a>
-  <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/insta.png" alt="Instagram">
-  </a>
-  <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/face.png" alt="Facebook">
-  </a>
-  <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/redeX.png" alt="Website">
-  </a>
-  <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/wattsap.png" alt="WhatsApp">
-  </a>
-  <a href="https://t.me/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/telegran.png" alt="Telegram">
-  </a>
-</div>
+    <!-- LINKS DE REDES SOCIAIS FIXOS -->
+    <div class="social-links-fixed">
+      <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/linke.png" alt="LinkedIn">
+      </a>
+      <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/insta.png" alt="Instagram">
+      </a>
+      <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/face.png" alt="Facebook">
+      </a>
+      <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/redeX.png" alt="Website">
+      </a>
+      <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/wattsap.png" alt="WhatsApp">
+      </a>
+      <a href="https://t.me/lemurinnovation" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/telegran.png" alt="Telegram">
+      </a>
+    </div>
 
-    <!-- ============================================= -->
-    <!-- INDICADORES DE IDIOMA E BANDEIRAS -->
-    <!-- ============================================= -->
-
+    <!-- INDICADORES DE IDIOMA -->
     <div class="remoter-Lang">🏳️</div>
     <div class="local-Lang">🏳️</div>
     <div class="local-mic-Lang">🏳️</div>
 
-    <!-- ============================================= -->
-    <!-- SISTEMA DE VÍDEO E STREAMING -->
-    <!-- ============================================= -->
-
+    <!-- SISTEMA DE VÍDEO -->
     <div class="video-wrapper">
       <video id="remoteVideo" autoplay playsinline></video>
       <div class="pip-local-wrapper">
@@ -305,10 +280,7 @@
       </div>
     </div>
    
-    <!-- ============================================= -->
-    <!-- OVERLAY DE QR CODE (INICIALMENTE OCULTO) -->
-    <!-- ============================================= -->
-
+    <!-- OVERLAY DE QR CODE -->
     <div class="info-overlay hidden">
       <h2 id="qr-modal-title">This is your online key</h2>
 
@@ -320,53 +292,41 @@
         You can ask to scan, share or print on your business card.
       </p>
 
-     <!-- 🆕 BOTÕES DE COMPARTILHAR - SIMPLIFICADO -->
-<div class="social-buttons">
-  <button class="social-btn" onclick="compartilharSocial('facebook')">
-    <img src="assets/images/face.png" alt="Facebook">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('twitter')">
-    <img src="assets/images/redeX.png" alt="Twitter/X">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('linkedin')">
-    <img src="assets/images/linke.png" alt="LinkedIn">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('whatsapp')">
-    <img src="assets/images/wattsap.png" alt="WhatsApp">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('telegram')">
-    <img src="assets/images/telegran.png" alt="Telegram">
-  </button>
-</div>
+      <!-- BOTÕES DE COMPARTILHAR -->
+      <div class="social-buttons">
+        <button class="social-btn" onclick="compartilharSocial('facebook')">
+          <img src="assets/images/face.png" alt="Facebook">
+        </button>
+        <button class="social-btn" onclick="compartilharSocial('twitter')">
+          <img src="assets/images/redeX.png" alt="Twitter/X">
+        </button>
+        <button class="social-btn" onclick="compartilharSocial('linkedin')">
+          <img src="assets/images/linke.png" alt="LinkedIn">
+        </button>
+        <button class="social-btn" onclick="compartilharSocial('whatsapp')">
+          <img src="assets/images/wattsap.png" alt="WhatsApp">
+        </button>
+        <button class="social-btn" onclick="compartilharSocial('telegram')">
+          <img src="assets/images/telegran.png" alt="Telegram">
+        </button>
+      </div>
 
-      <!-- 🆕 BOTÃO COPIAR SIMPLES E UNIVERSAL -->
+      <!-- BOTÃO COPIAR -->
       <button id="copiarLink" class="btn-copiar-simples">🔗</button>
     </div>
 
-    <!-- ============================================= -->
-    <!-- ÁREA DE EXIBIÇÃO DE TEXTO TRADUZIDO -->
-    <!-- ============================================= -->
-
+    <!-- ÁREA DE TEXTO TRADUZIDO -->
     <div id="texto-recebido"></div>
 
-    <!-- ============================================= -->
-    <!-- INDICADORES DE IDIOMA ATUAL -->
-    <!-- ============================================= -->
-
+    <!-- INDICADORES DE IDIOMA -->
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
 
-    <!-- ============================================= -->
-    <!-- BOTÕES DE CONTROLE DE ÁUDIO -->
-    <!-- ============================================= -->
-
+    <!-- BOTÕES DE ÁUDIO -->
     <button class="record-btn" id="recordButton" disabled>🎤</button>
 
-  </div> <!-- Fim do .box-principal -->
+  </div>
 
-  <!-- ============================================= -->
-  <!-- MODAL DE GRAVAÇÃO (FORA DO CONTAINER PRINCIPAL) -->
-  <!-- ============================================= -->
-
+  <!-- MODAL DE GRAVAÇÃO -->
   <div class="recording-modal hidden-until-ready" id="recordingModal">
     <div class="recording-indicator">
       <div class="recording-dot"></div>
@@ -376,12 +336,8 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- ============================================= -->
-  <!-- SCRIPTS DE INICIALIZAÇÃO E CONFIGURAÇÃO -->
-  <!-- ============================================= -->
-
   <script>
-    // ===== FUNÇÕES GLOBAIS DE CONTROLE DE INTERFACE =====
+    // ===== FUNÇÕES GLOBAIS =====
     
     window.liberarInterface = function () {
       console.log('✅ Interface já está visível');
@@ -398,7 +354,7 @@
       }
     });
 
-    // 🆕 FUNÇÃO PARA COMPARTILHAR NAS REDES SOCIAIS (QR CODE)
+    // 🆕 FUNÇÃO PARA COMPARTILHAR NAS REDES SOCIAIS
     function compartilharSocial(rede) {
       const myId = window.qrCodeData?.myId || '';
       const token = window.qrCodeData?.token || '';
@@ -418,66 +374,106 @@
         telegram: `https://t.me/share/url?url=${urlEncoded}&text=${textoEncoded}`
       };
       
-      window.open(urls[rede], '_blank', 'width=600,height=400');
+      if (urls[rede]) {
+        window.open(urls[rede], '_blank', 'width=600,height=400');
+      }
     }
 
-    // 🎵 MÁGICA SAFARI - COM NOVO RADINHO
+    // 🎵 MÁGICA SAFARI
     let safariAudio = null;
 
-    // 🔥 PRIMEIRO TOQUE = ATIVA RADINHO NOVO + REMOVE TELA AMARELA
     document.getElementById('safariActivationButton').addEventListener('click', function() {
       if (!safariAudio) {
         console.log('🔊 LIGANDO RADINHO SAFARI - Receiver');
-        safariAudio = new Audio('assets/audio/safari-radinho.mp3'); // ⬅️ NOVO RADINHO
-        safariAudio.volume = 0.1; // ⬅️ BAIXINHO
+        safariAudio = new Audio('assets/audio/safari-radinho.mp3');
+        safariAudio.volume = 0.1;
         safariAudio.loop = true;
         safariAudio.play().catch(e => console.log('Radinho Safari OK - Receiver'));
       }
       
-      // REMOVE SÓ A TELA AMARELA - BOTÃO AZUL FICA!
       document.getElementById('safariActivationOverlay').style.display = 'none';
       console.log('✅ Tela amarela removida - Botão azul permanece - Receiver');
     });
 
-    // 🎤 BOTÃO AZUL = MOSTRA CAMPO TEXTO + ABRE TECLADO
     document.getElementById('safariMicButton').addEventListener('click', function(e) {
       e.stopPropagation();
       console.log('💬 ABRINDO CAMPO TEXTO + TECLADO - Receiver');
       
-      // MOSTRA CAMPO TEXTO (ANIMAÇÃO)
       const chatContainer = document.getElementById('chatInputContainer');
       chatContainer.classList.add('visible');
       
-      // FOCA NO INPUT → TECLADO ABRE
       setTimeout(() => {
         document.getElementById('textInput').focus();
       }, 100);
     });
 
-    // 📤 BOTÃO ENVIAR = PROCESSA MENSAGEM + ESCONDE TUDO
+    // 📤 BOTÃO ENVIAR - SISTEMA DE TEXTO PARA RECEIVER
     document.getElementById('sendMessageButton').addEventListener('click', function() {
       const textInput = document.getElementById('textInput');
       const texto = textInput.value.trim();
       
       if (texto) {
-        console.log('📝 Mensagem para tradução:', texto);
+        console.log('💬 Receiver - Texto para tradução:', texto);
         
-        // ⬇️ AQUI VOCÊ CHAMA SEU PROCESSO DE TRADUÇÃO EXISTENTE
-        // processarMensagemUsuario(texto); // ← SUA FUNÇÃO
+        // 🆕 USA SISTEMA DE TRADUÇÃO DO RECEIVER
+        if (typeof window.translateText === 'function') {
+          window.translateText(texto).then(traduzido => {
+            if (traduzido && traduzido.trim() !== "") {
+              console.log(`🌐 Receiver - Traduzido: "${texto}" → "${traduzido}"`);
+              
+              // 🆕 ENVIA VIA WEBRTC SE DISPONÍVEL
+              if (window.rtcCore && window.rtcCore.dataChannel && 
+                  window.rtcCore.dataChannel.readyState === 'open') {
+                window.rtcCore.dataChannel.send(traduzido);
+                console.log('✅ Receiver - Mensagem enviada para Caller');
+              } else {
+                console.log('⏳ Receiver - Canal WebRTC não disponível ainda');
+                alert('Conexão não estabelecida. Aguarde a conexão com o caller.');
+              }
+            }
+          }).catch(error => {
+            console.error('❌ Erro na tradução:', error);
+          });
+        } else {
+          console.log('❌ Função translateText não disponível no receiver');
+          alert('Sistema de tradução não carregado. Recarregue a página.');
+        }
         
-        // FEEDBACK VISUAL (OPCIONAL)
-        alert(`Mensagem enviada para tradução: "${texto}"`);
-        
-        // LIMPA E ESCONDE
+        // Limpa e esconde
         textInput.value = '';
         document.getElementById('chatInputContainer').classList.remove('visible');
-        
-        // REMOVE FOCO → TECLADO DESCE
         textInput.blur();
-        
-        console.log('✅ Mensagem processada - campo escondido');
       }
     });
+
+    // 🆕 SISTEMA DE RECEBIMENTO PARA RECEIVER
+    function configurarRecepcaoReceiver() {
+      if (window.rtcCore && typeof window.rtcCore.setDataChannelCallback === 'function') {
+        window.rtcCore.setDataChannelCallback(async (mensagem) => {
+          console.log('📩 Receiver - Mensagem recebida do Caller:', mensagem);
+          
+          // 🆕 USA SISTEMA TTS DO RECEIVER
+          if (typeof window.falarTextoSistemaHibrido === 'function') {
+            const elemento = document.getElementById('texto-recebido');
+            const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
+            
+            await window.falarTextoSistemaHibrido(mensagem, elemento, null, idiomaExato);
+            console.log('🔊 Receiver - Mensagem falada via TTS');
+          } else {
+            console.log('❌ Receiver - Sistema TTS não disponível');
+            // Fallback: mostra mensagem
+            const elemento = document.getElementById('texto-recebido');
+            if (elemento) {
+              elemento.textContent = `Caller: ${mensagem}`;
+            }
+          }
+        });
+        console.log('✅ Receiver - Sistema de recepção configurado');
+      } else {
+        console.log('⏳ Receiver - RTC Core não carregado, tentando novamente...');
+        setTimeout(configurarRecepcaoReceiver, 1000);
+      }
+    }
 
     // ⌨️ TECLA ENTER TAMBÉM ENVIA
     document.getElementById('textInput').addEventListener('keypress', function(e) {
@@ -486,18 +482,18 @@
       }
     });
 
+    // 🆕 INICIALIZA RECEPÇÃO
+    setTimeout(configurarRecepcaoReceiver, 2000);
+
   </script>
 
   <!-- ============================================= -->
-  <!-- IMPORTAÇÃO DOS SCRIPTS DA APLICAÇÃO -->
+  <!-- IMPORTAÇÃO DOS SCRIPTS (APENAS UMA VEZ!) -->
   <!-- ============================================= -->
-  
-  <!-- 📦 Scripts do receptor -->
   
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
   <script src="./js/receiver/receiver-trz.js"></script>
 
-  
 </body>
 </html>
