@@ -55,7 +55,8 @@ let primeiraFraseTTS = true;
 let navegadorTTSPreparado = false;
 let ultimoIdiomaTTS = 'pt-BR';
 
-// [Sistema de espera do lêmure removido]
+// ⏰ VARIÁVEIS PARA TECLADO NATIVO
+let typingTimer;
 
 // 🎵 CARREGAR SOM DE DIGITAÇÃO
 function carregarSomDigitacao() {
@@ -710,6 +711,78 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
     }
 }
 
+// 🆕 🆕 🆕 SISTEMA DE TECLADO NATIVO 🆕 🆕 🆕
+
+// 🎯 ABRIR TECLADO NATIVO
+function abrirTecladoNativo() {
+    const chatContainer = document.getElementById('chatInputContainer');
+    const textInput = document.getElementById('textInput');
+    
+    if (!chatContainer || !textInput) {
+        console.log('❌ Elementos do teclado nativo não encontrados');
+        return;
+    }
+    
+    console.log('💬 Abrindo teclado nativo...');
+    
+    // Mostra o container do input
+    chatContainer.classList.add('visible');
+    
+    // Foca no input para abrir teclado (com pequeno delay)
+    setTimeout(() => {
+        textInput.focus();
+        console.log('⌨️ Teclado nativo aberto');
+    }, 100);
+    
+    // Configura timer de envio automático (3 segundos)
+    textInput.addEventListener('input', function() {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(enviarMensagemReceiver, 3000);
+    });
+}
+
+// 🎯 ENVIAR MENSAGEM VIA TECLADO NATIVO
+function enviarMensagemReceiver() {
+    const textInput = document.getElementById('textInput');
+    const texto = textInput.value.trim();
+    
+    if (!texto) {
+        console.log('💬 Nenhum texto para enviar');
+        return;
+    }
+    
+    console.log('💬 Receiver - Texto para tradução:', texto);
+    
+    // USA SEU SISTEMA DE TRADUÇÃO EXISTENTE
+    if (typeof window.translateText === 'function') {
+        window.translateText(texto).then(traduzido => {
+            if (traduzido && window.rtcCore?.dataChannel) {
+                window.rtcCore.dataChannel.send(traduzido);
+                console.log('✅ Receiver - Mensagem traduzida enviada via teclado nativo');
+            }
+        }).catch(error => {
+            console.error('❌ Erro na tradução:', error);
+            // Fallback: envia texto original se tradução falhar
+            if (window.rtcCore?.dataChannel) {
+                window.rtcCore.dataChannel.send(texto);
+            }
+        });
+    } else {
+        console.log('❌ Sistema de tradução não disponível');
+        // Fallback: envia texto original
+        if (window.rtcCore?.dataChannel) {
+            window.rtcCore.dataChannel.send(texto);
+        }
+    }
+    
+    // Limpa e fecha (como seu projeto atual)
+    textInput.value = '';
+    document.getElementById('chatInputContainer').classList.remove('visible');
+    textInput.blur();
+    
+    console.log('💬 Input limpo e fechado');
+}
+
 // ✅ NOVO BLOCO - CÂMERA RESILIENTE
 async function iniciarCameraAposPermissoes() {
     try {
@@ -741,10 +814,10 @@ async function iniciarCameraAposPermissoes() {
             
             console.log('✅ Câmera iniciada com sucesso');
             
-// 🆕 🆕 🆕 ADICIONAR ESTAS 2 LINHAS AQUI 🆕 🆕 🆕
-    window.cameraVigilante = new CameraVigilante();
-    window.cameraVigilante.iniciarMonitoramento();
-    // 🆕 🆕 🆕 FIM DAS 2 LINHAS 🆕 🆕 🆕
+            // 🆕 🆕 🆕 ADICIONAR ESTAS 2 LINHAS AQUI 🆕 🆕 🆕
+            window.cameraVigilante = new CameraVigilante();
+            window.cameraVigilante.iniciarMonitoramento();
+            // 🆕 🆕 🆕 FIM DAS 2 LINHAS 🆕 🆕 🆕
             
         } else {
             // ✅ SE CÂMERA FALHOU: Apenas avisa, mas continua
@@ -768,102 +841,101 @@ async function iniciarCameraAposPermissoes() {
             }
         }, 500);
         
-       // ... continua o código ORIGINAL daqui para baixo ...
-// (MANTÉM todo o resto do código que estava aqui)
+        // ... continua o código ORIGINAL daqui para baixo ...
 
-window.rtcCore = new WebRTCCore();
+        window.rtcCore = new WebRTCCore();
 
-// ✅ CORREÇÃO: PEGA targetId DA URL EM VEZ DE GERAR ERRADO
-const params = new URLSearchParams(window.location.search);
-const token = params.get('token') || '';
-const targetIdFromUrl = params.get('targetId') || '';
+        // ✅ CORREÇÃO: PEGA targetId DA URL EM VEZ DE GERAR ERRADO
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token') || '';
+        const targetIdFromUrl = params.get('targetId') || '';
 
-// ✅ USA O targetId DA URL (SEUS 8 DÍGITOS) OU GERA ALEATÓRIO
-const myId = targetIdFromUrl || crypto.randomUUID().substr(0, 8);
+        // ✅ USA O targetId DA URL (SEUS 8 DÍGITOS) OU GERA ALEATÓRIO
+        const myId = targetIdFromUrl || crypto.randomUUID().substr(0, 8);
 
-const lang = params.get('lang') || navigator.language || 'pt-BR';
+        const lang = params.get('lang') || navigator.language || 'pt-BR';
 
-window.targetTranslationLang = lang;
+        window.targetTranslationLang = lang;
 
-// ✅ GUARDA as informações para gerar QR Code depois (QUANDO O USUÁRIO CLICAR)
-window.qrCodeData = {
-    myId: myId,           // ← AGORA "12345678" em vez de "token=ab"
-    token: token,
-    lang: lang
-};
-       // ✅ CONFIGURA o botão para gerar QR Code quando clicado (VERSÃO COM LINK)
-document.getElementById('logo-traduz').addEventListener('click', function() {
-    // 🔄 VERIFICA SE JÁ EXISTE UM QR CODE ATIVO
-    const overlay = document.querySelector('.info-overlay');
-    const qrcodeContainer = document.getElementById('qrcode');
-    
-    // Se o overlay já está visível, apenas oculta (toggle)
-    if (overlay && !overlay.classList.contains('hidden')) {
-        overlay.classList.add('hidden');
-        console.log('📱 QR Code fechado pelo usuário');
-        return;
-    }
-    
-    // 🔄 VERIFICA CONEXÃO WEBRTC DE FORMA MAIS INTELIGENTE
-    const remoteVideo = document.getElementById('remoteVideo');
-    const isConnected = remoteVideo && remoteVideo.srcObject;
-    
-    if (isConnected) {
-        console.log('❌ WebRTC já conectado - QR Code não pode ser reaberto');
-        return; // ⬅️ Apenas retorna silenciosamente
-    }
-    
-    console.log('🗝️ Gerando/Reabrindo QR Code e Link...');
-    
-    // 🔄 LIMPA QR CODE ANTERIOR SE EXISTIR
-    if (qrcodeContainer) {
-        qrcodeContainer.innerHTML = '';
-    }
-    
-    const callerUrl = `${window.location.origin}/caller-selector.html?targetId=${window.qrCodeData.myId}&token=${encodeURIComponent(window.qrCodeData.token)}&lang=${encodeURIComponent(window.qrCodeData.lang)}`;
-    
-    // Gera o QR Code
-    QRCodeGenerator.generate("qrcode", callerUrl);
-    
-        // 🆕 🆕 🆕 CONFIGURA BOTÃO COPIAR SIMPLES
-    const btnCopiar = document.getElementById('copiarLink');
-    if (btnCopiar) {
-        btnCopiar.onclick = function() {
-            navigator.clipboard.writeText(callerUrl).then(() => {
-                btnCopiar.textContent = '✅';
-                btnCopiar.classList.add('copiado');
-                console.log('🔗 Link copiado para área de transferência');
-                
-                setTimeout(() => {
-                    btnCopiar.textContent = '🔗';
-                    btnCopiar.classList.remove('copiado');
-                }, 2000);
-            }).catch(err => {
-                console.log('❌ Erro ao copiar link:', err);
-                // Fallback para dispositivos sem clipboard API
-                const textArea = document.createElement('textarea');
-                textArea.value = callerUrl;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                
-                btnCopiar.textContent = '✅';
-                setTimeout(() => {
-                    btnCopiar.textContent = '🔗';
-                }, 2000);
-            });
+        // ✅ GUARDA as informações para gerar QR Code depois (QUANDO O USUÁRIO CLICAR)
+        window.qrCodeData = {
+            myId: myId,           // ← AGORA "12345678" em vez de "token=ab"
+            token: token,
+            lang: lang
         };
-    }
-    
-    // Mostra o overlay do QR Code
-    if (overlay) {
-        overlay.classList.remove('hidden');
-    }
-    
-    console.log('✅ QR Code e Link gerados/reativados!');
-});
-        // [Event listener do lêmure removido]
+
+        // ✅ CONFIGURA o botão para gerar QR Code quando clicado (VERSÃO COM LINK)
+        document.getElementById('logo-traduz').addEventListener('click', function() {
+            // 🔄 VERIFICA SE JÁ EXISTE UM QR CODE ATIVO
+            const overlay = document.querySelector('.info-overlay');
+            const qrcodeContainer = document.getElementById('qrcode');
+            
+            // Se o overlay já está visível, apenas oculta (toggle)
+            if (overlay && !overlay.classList.contains('hidden')) {
+                overlay.classList.add('hidden');
+                console.log('📱 QR Code fechado pelo usuário');
+                return;
+            }
+            
+            // 🔄 VERIFICA CONEXÃO WEBRTC DE FORMA MAIS INTELIGENTE
+            const remoteVideo = document.getElementById('remoteVideo');
+            const isConnected = remoteVideo && remoteVideo.srcObject;
+            
+            if (isConnected) {
+                console.log('❌ WebRTC já conectado - QR Code não pode ser reaberto');
+                return; // ⬅️ Apenas retorna silenciosamente
+            }
+            
+            console.log('🗝️ Gerando/Reabrindo QR Code e Link...');
+            
+            // 🔄 LIMPA QR CODE ANTERIOR SE EXISTIR
+            if (qrcodeContainer) {
+                qrcodeContainer.innerHTML = '';
+            }
+            
+            const callerUrl = `${window.location.origin}/caller-selector.html?targetId=${window.qrCodeData.myId}&token=${encodeURIComponent(window.qrCodeData.token)}&lang=${encodeURIComponent(window.qrCodeData.lang)}`;
+            
+            // Gera o QR Code
+            QRCodeGenerator.generate("qrcode", callerUrl);
+            
+            // 🆕 🆕 🆕 CONFIGURA BOTÃO COPIAR SIMPLES
+            const btnCopiar = document.getElementById('copiarLink');
+            if (btnCopiar) {
+                btnCopiar.onclick = function() {
+                    navigator.clipboard.writeText(callerUrl).then(() => {
+                        btnCopiar.textContent = '✅';
+                        btnCopiar.classList.add('copiado');
+                        console.log('🔗 Link copiado para área de transferência');
+                        
+                        setTimeout(() => {
+                            btnCopiar.textContent = '🔗';
+                            btnCopiar.classList.remove('copiado');
+                        }, 2000);
+                    }).catch(err => {
+                        console.log('❌ Erro ao copiar link:', err);
+                        // Fallback para dispositivos sem clipboard API
+                        const textArea = document.createElement('textarea');
+                        textArea.value = callerUrl;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        
+                        btnCopiar.textContent = '✅';
+                        setTimeout(() => {
+                            btnCopiar.textContent = '🔗';
+                        }, 2000);
+                    });
+                };
+            }
+            
+            // Mostra o overlay do QR Code
+            if (overlay) {
+                overlay.classList.remove('hidden');
+            }
+            
+            console.log('✅ QR Code e Link gerados/reativados!');
+        });
 
         // Fechar QR Code ao clicar fora
         document.querySelector('.info-overlay').addEventListener('click', function(e) {
@@ -982,6 +1054,21 @@ document.getElementById('logo-traduz').addEventListener('click', function() {
 
         // ✅ INICIA O OBSERVADOR PARA ESCONDER O CLICK QUANDO CONECTAR
         esconderClickQuandoConectar();
+
+        // 🆕 🆕 🆕 CONFIGURA BOTÃO DE MICROFONE PARA ABRIR TECLADO NATIVO 🆕 🆕 🆕
+        const recordButton = document.getElementById('recordButton');
+        if (recordButton) {
+            // ✅ REMOVE event listeners antigos de gravação
+            recordButton.replaceWith(recordButton.cloneNode(true));
+            
+            // ✅ NOVO: Configura para abrir teclado nativo
+            const newRecordButton = document.getElementById('recordButton');
+            newRecordButton.addEventListener('click', function() {
+                abrirTecladoNativo();
+            });
+            
+            console.log('✅ Botão de microfone configurado para teclado nativo');
+        }
 
     } catch (error) {
         // ✅✅✅ EM CASO DE ERRO: Remove loading E continua
