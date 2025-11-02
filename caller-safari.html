@@ -224,46 +224,47 @@
       }, 100);
     });
 
-    // 📤 BOTÃO ENVIAR - SISTEMA DE TEXTO
-    document.getElementById('sendMessageButton').addEventListener('click', function() {
-      const textInput = document.getElementById('textInput');
-      const texto = textInput.value.trim();
-      
-      if (texto) {
-        console.log('💬 Caller - Texto para tradução:', texto);
-        
-        // 🆕 VERIFICA SE A FUNÇÃO DE TRADUÇÃO EXISTE
-        if (typeof window.translateText === 'function') {
-          window.translateText(texto).then(traduzido => {
-            if (traduzido && traduzido.trim() !== "") {
-              console.log(`🌐 Caller - Traduzido: "${texto}" → "${traduzido}"`);
-              
-              // 🆕 ENVIA VIA WEBRTC SE DISPONÍVEL
-              if (window.rtcCore && window.rtcCore.dataChannel && 
-                  window.rtcCore.dataChannel.readyState === 'open') {
-                window.rtcCore.dataChannel.send(traduzido);
-                console.log('✅ Caller - Mensagem enviada para Receiver');
-              } else {
-                console.log('⏳ Caller - Canal WebRTC não disponível ainda');
-                // Fallback: mostra mensagem de erro
-                alert('Conexão não estabelecida. Aguarde a conexão com o receiver.');
-              }
-            }
-          }).catch(error => {
-            console.error('❌ Erro na tradução:', error);
-          });
-        } else {
-          console.log('❌ Função translateText não disponível');
-          alert('Sistema de tradução não carregado. Recarregue a página.');
+   // 📤 BOTÃO ENVIAR - SISTEMA DE TEXTO
+document.getElementById('sendMessageButton').addEventListener('click', function() {
+  const textInput = document.getElementById('textInput');
+  const texto = textInput.value.trim();
+  
+  if (texto) {
+    console.log('💬 Caller - Texto para tradução:', texto);
+    
+    // ✅ USA SEU SISTEMA ORIGINAL DE TRADUÇÃO
+    if (typeof enviarParaOutroCelular === 'function') {
+      enviarParaOutroCelular(texto);
+      console.log('✅ Caller - Texto enviado via sistema original');
+    } else if (typeof window.translateText === 'function') {
+      // Fallback se sistema original não carregou
+      window.translateText(texto).then(traduzido => {
+        if (traduzido && traduzido.trim() !== "") {
+          console.log(`🌐 Caller - Traduzido: "${texto}" → "${traduzido}"`);
+          
+          if (window.rtcCore && window.rtcCore.dataChannel && 
+              window.rtcCore.dataChannel.readyState === 'open') {
+            window.rtcCore.dataChannel.send(traduzido);
+            console.log('✅ Caller - Mensagem enviada para Receiver');
+          } else {
+            console.log('⏳ Caller - Canal WebRTC não disponível ainda');
+            alert('Conexão não estabelecida. Aguarde a conexão com o receiver.');
+          }
         }
-        
-        // Limpa e esconde
-        textInput.value = '';
-        document.getElementById('chatInputContainer').classList.remove('visible');
-        textInput.blur();
-      }
-    });
-
+      }).catch(error => {
+        console.error('❌ Erro na tradução:', error);
+      });
+    } else {
+      console.log('❌ Nenhum sistema de tradução disponível');
+      alert('Sistema de tradução não carregado. Recarregue a página.');
+    }
+    
+    // Limpa e esconde
+    textInput.value = '';
+    document.getElementById('chatInputContainer').classList.remove('visible');
+    textInput.blur();
+  }
+});
     // 🆕 SISTEMA DE RECEBIMENTO PARA CALLER
     function configurarRecepcaoCaller() {
       if (window.rtcCore && typeof window.rtcCore.setDataChannelCallback === 'function') {
