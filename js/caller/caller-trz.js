@@ -1,3 +1,4 @@
+
 // ✅ SOLUÇÃO OTIMIZADA E SINCRONIZADA - USANDO IDIOMAS GUARDADOS
 function initializeTranslator() {
     // ===== VERIFICAÇÃO DE DEPENDÊNCIAS CRÍTICAS =====
@@ -190,7 +191,6 @@ function initializeTranslator() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     text: trimmedText, 
-                    sourceLang: window.meuIdiomaLocal,    // ✅ NOVO
                     targetLang: window.meuIdiomaRemoto // ✅ USA O GUARDADO
                 })
             });
@@ -456,4 +456,3 @@ function startTranslatorSafely() {
 
 // Inicia o tradutor de forma segura
 startTranslatorSafely();
-
