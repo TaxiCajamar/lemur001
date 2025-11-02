@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur-EchoMeP2P-Caller</title>
   <link rel="stylesheet" href="mobile-style.css" />
- 
 </head>
 <body>
 
@@ -139,13 +138,13 @@
 
   <button id="safariMicButton"></button>
 
-  <!-- 💬 CAMPO TEXTO -->
-<div id="chatInputContainer">
-  <input type="text" id="textInput" 
-         placeholder="Fale ou digite sua mensagem..." 
-         x-webkit-speech /> <!-- ✅ CORRETO - DENTRO DA TAG input -->
-  <button id="sendMessageButton">📤</button>
-</div>
+  <!-- 💬 CAMPO TEXTO CORRETO -->
+  <div id="chatInputContainer">
+    <input type="text" id="textInput" 
+           placeholder="Fale ou digite sua mensagem..." 
+           x-webkit-speech />
+    <button id="sendMessageButton">📤</button>
+  </div>
   
   <script>
     // 🎯 CAPTURA PARÂMETROS DA URL - CÓDIGO CRÍTICO ADICIONADO
@@ -224,76 +223,37 @@
       }, 100);
     });
 
-   // 📤 BOTÃO ENVIAR - SISTEMA DE TEXTO
-document.getElementById('sendMessageButton').addEventListener('click', function() {
-  const textInput = document.getElementById('textInput');
-  const texto = textInput.value.trim();
-  
-  if (texto) {
-    console.log('💬 Caller - Texto para tradução:', texto);
-    
-    // ✅ USA SEU SISTEMA ORIGINAL DE TRADUÇÃO
-    if (typeof enviarParaOutroCelular === 'function') {
-      enviarParaOutroCelular(texto);
-      console.log('✅ Caller - Texto enviado via sistema original');
-    } else if (typeof window.translateText === 'function') {
-      // Fallback se sistema original não carregou
-      window.translateText(texto).then(traduzido => {
-        if (traduzido && traduzido.trim() !== "") {
-          console.log(`🌐 Caller - Traduzido: "${texto}" → "${traduzido}"`);
-          
+    // 📤 BOTÃO ENVIAR - USA SISTEMA ORIGINAL AUTOMÁTICO
+    document.getElementById('sendMessageButton').addEventListener('click', function() {
+      const textInput = document.getElementById('textInput');
+      const texto = textInput.value.trim();
+      
+      if (texto) {
+        console.log('💬 Caller - Texto para sistema original:', texto);
+        
+        // ✅ CHAMA FUNÇÃO ORIGINAL DO SEU SISTEMA
+        if (typeof window.enviarTextoParaTraducao === 'function') {
+          window.enviarTextoParaTraducao(texto);
+          console.log('✅ Caller - Texto enviado via sistema original');
+        } else {
+          console.log('❌ Função original não carregada - usando fallback WebRTC');
+          // Fallback: envia direto via WebRTC
           if (window.rtcCore && window.rtcCore.dataChannel && 
               window.rtcCore.dataChannel.readyState === 'open') {
-            window.rtcCore.dataChannel.send(traduzido);
-            console.log('✅ Caller - Mensagem enviada para Receiver');
+            window.rtcCore.dataChannel.send(texto);
+            console.log('✅ Caller - Mensagem enviada via WebRTC');
           } else {
-            console.log('⏳ Caller - Canal WebRTC não disponível ainda');
+            console.log('⏳ Caller - Canal WebRTC não disponível');
             alert('Conexão não estabelecida. Aguarde a conexão com o receiver.');
           }
         }
-      }).catch(error => {
-        console.error('❌ Erro na tradução:', error);
-      });
-    } else {
-      console.log('❌ Nenhum sistema de tradução disponível');
-      alert('Sistema de tradução não carregado. Recarregue a página.');
-    }
-    
-    // Limpa e esconde
-    textInput.value = '';
-    document.getElementById('chatInputContainer').classList.remove('visible');
-    textInput.blur();
-  }
-});
-    // 🆕 SISTEMA DE RECEBIMENTO PARA CALLER
-    function configurarRecepcaoCaller() {
-      if (window.rtcCore && typeof window.rtcCore.setDataChannelCallback === 'function') {
-        window.rtcCore.setDataChannelCallback(async (mensagem) => {
-          console.log('📩 Caller - Mensagem recebida do Receiver:', mensagem);
-          
-          // 🆕 USA SISTEMA TTS SE DISPONÍVEL
-          if (typeof window.falarTextoSistemaHibrido === 'function') {
-            const elemento = document.getElementById('texto-recebido');
-            const imagemImpaciente = document.getElementById('lemurWaiting');
-            const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
-            
-            await window.falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
-            console.log('🔊 Caller - Mensagem falada via TTS');
-          } else {
-            console.log('❌ Caller - Sistema TTS não disponível');
-            // Fallback: mostra mensagem
-            const elemento = document.getElementById('texto-recebido');
-            if (elemento) {
-              elemento.textContent = `Receiver: ${mensagem}`;
-            }
-          }
-        });
-        console.log('✅ Caller - Sistema de recepção configurado');
-      } else {
-        console.log('⏳ Caller - RTC Core não carregado, tentando novamente...');
-        setTimeout(configurarRecepcaoCaller, 1000);
+        
+        // Limpa e esconde
+        textInput.value = '';
+        document.getElementById('chatInputContainer').classList.remove('visible');
+        textInput.blur();
       }
-    }
+    });
 
     // ⌨️ TECLA ENTER TAMBÉM ENVIA
     document.getElementById('textInput').addEventListener('keypress', function(e) {
@@ -301,10 +261,6 @@ document.getElementById('sendMessageButton').addEventListener('click', function(
         document.getElementById('sendMessageButton').click();
       }
     });
-
-    // 🆕 INICIALIZA RECEPÇÃO APÓS CARREGAMENTO
-    setTimeout(configurarRecepcaoCaller, 2000);
-
   </script>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
