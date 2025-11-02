@@ -136,24 +136,7 @@
   </div>
 
   <script>
-    // ✅ FUNÇÃO GLOBAL PARA LIBERAR A INTERFACE (IGUAL AO RECEIVER)
-    window.liberarInterface = function () {
-      console.log('✅ Interface já está visível');
-    };
-
-    // ✅ EXIBE ERRO DE CARREGAMENTO (IGUAL AO RECEIVER)
-    window.mostrarErroCarregamento = function (mensagem) {
-      alert('Erro: ' + mensagem);
-    };
-
-    // ✅ OCULTA OVERLAY AO CARREGAR (IGUAL AO RECEIVER)
-    document.addEventListener('DOMContentLoaded', function () {
-      const overlay = document.querySelector('.info-overlay');
-      if (overlay) {
-        overlay.classList.add('hidden');
-      }
-    });
-
+    
 // 🆕 FUNÇÃO PARA COMPARTILHAR NAS REDES SOCIAIS
     
     function compartilharSocial(rede) {
