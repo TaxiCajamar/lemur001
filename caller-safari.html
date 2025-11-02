@@ -140,11 +140,13 @@
   <button id="safariMicButton"></button>
 
   <!-- 💬 CAMPO TEXTO -->
-  <div id="chatInputContainer">
-    <input type="text" id="textInput" placeholder="Fale ou digite sua mensagem..." />
-    <button id="sendMessageButton">📤</button>
-  </div>
-
+<div id="chatInputContainer">
+  <input type="text" id="textInput" 
+         placeholder="Fale ou digite sua mensagem..." 
+         x-webkit-speech /> <!-- ✅ CORRETO - DENTRO DA TAG input -->
+  <button id="sendMessageButton">📤</button>
+</div>
+  
   <script>
     // 🎯 CAPTURA PARÂMETROS DA URL - CÓDIGO CRÍTICO ADICIONADO
     document.addEventListener('DOMContentLoaded', function() {
