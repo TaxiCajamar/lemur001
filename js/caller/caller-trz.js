@@ -190,6 +190,7 @@ function initializeTranslator() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     text: trimmedText, 
+                    sourceLang: window.meuIdiomaLocal,    // ✅ NOVO
                     targetLang: window.meuIdiomaRemoto // ✅ USA O GUARDADO
                 })
             });
