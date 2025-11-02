@@ -146,9 +146,31 @@
   </div>
 
   <script>
-    
+    // 🎯 CAPTURA PARÂMETROS DA URL - CÓDIGO CRÍTICO ADICIONADO
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || '';
+        const targetId = urlParams.get('targetId') || '';
+        const lang = urlParams.get('lang') || navigator.language || 'pt-BR';
+        
+        // ✅ ARMAZENA OS DADOS PARA USO POSTERIOR
+        window.qrCodeData = {
+            token: token,
+            myId: targetId, // ⚠️ ATENÇÃO: targetId vira myId
+            lang: lang
+        };
+        
+        console.log('📥 Caller-safari - Dados recebidos:', { token, targetId, lang });
+        
+        // ✅ INICIALIZA SISTEMA COM OS DADOS RECEBIDOS
+        if (typeof window.inicializarCaller === 'function') {
+            window.inicializarCaller(token, targetId, lang);
+        }
+    });
+
     // 🆕 FUNÇÃO PARA COMPARTILHAR NAS REDES SOCIAIS
     function compartilharSocial(rede) {
+      // ✅ AGORA USA window.qrCodeData QUE SERÁ PREENCHIDO
       const myId = window.qrCodeData?.myId || '';
       const token = window.qrCodeData?.token || '';
       const lang = window.qrCodeData?.lang || 'pt-BR';
