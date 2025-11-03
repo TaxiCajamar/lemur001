@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -9,9 +10,28 @@
 </head>
 <body>
 
-   <!-- 🆕 ELEMENTOS SAFARI - ADICIONADOS EXCLUSIVAMENTE -->
-  <div id="safariActivationOverlay">
-    <button id="safariActivationButton"></button>
+  <!-- 🟡 TELA AMARELA SAFARI - CLICÁVEL EM QUALQUER LUGAR -->
+  <div id="safariActivationOverlay" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: yellow;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+    cursor: pointer;
+  ">
+    <h2 style="color: #000; margin-bottom: 20px; text-align: center;">
+      🔇 Toque em QUALQUER LUGAR para ativar o áudio
+    </h2>
+    <p style="color: #000; text-align: center; font-size: 16px;">
+      Toque em qualquer ponto desta tela
+    </p>
   </div>
 
   <!-- 🧩 Container principal -->
@@ -171,22 +191,22 @@
       window.open(urls[rede], '_blank', 'width=600,height=400');
     }
 
-// 🎵 MÁGICA SAFARI - TELA INTEIRA CLICÁVEL
-let safariAudio = null;
+    // 🎵 MÁGICA SAFARI - TELA INTEIRA CLICÁVEL
+    let safariAudio = null;
 
-document.getElementById('safariActivationOverlay').addEventListener('click', function() {
-  if (!safariAudio) {
-    console.log('🔊 LIGANDO RADINHO SAFARI - Caller');
-    safariAudio = new Audio('assets/audio/safari-radinho.mp3');
-    safariAudio.volume = 0.1;
-    safariAudio.loop = true;
-    safariAudio.play().catch(e => console.log('Radinho Safari OK - Caller'));
-  }
-  
-  this.style.display = 'none';
-  console.log('✅ Tela amarela removida - Caller');
-});
-    
+    document.getElementById('safariActivationOverlay').addEventListener('click', function() {
+      if (!safariAudio) {
+        console.log('🔊 LIGANDO RADINHO SAFARI - Caller');
+        safariAudio = new Audio('assets/audio/safari-radinho.mp3');
+        safariAudio.volume = 0.1;
+        safariAudio.loop = true;
+        safariAudio.play().catch(e => console.log('Radinho Safari OK - Caller'));
+      }
+      
+      this.style.display = 'none';
+      console.log('✅ Tela amarela removida - Áudio ativado para Safari/iPhone');
+    });
+
   </script>
 
    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
