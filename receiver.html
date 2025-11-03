@@ -259,22 +259,22 @@
       window.open(urls[rede], '_blank', 'width=600,height=400');
     }
 
-    // 🎵 MÁGICA SAFARI - APENAS TELA AMARELA + RADINHO
-    let safariAudio = null;
+   // 🎵 MÁGICA SAFARI - TELA INTEIRA CLICÁVEL
+let safariAudio = null;
 
-    document.getElementById('safariActivationButton').addEventListener('click', function() {
-      if (!safariAudio) {
-        console.log('🔊 LIGANDO RADINHO SAFARI - Receiver');
-        safariAudio = new Audio('assets/audio/safari-radinho.mp3');
-        safariAudio.volume = 0.1;
-        safariAudio.loop = true;
-        safariAudio.play().catch(e => console.log('Radinho Safari OK - Receiver'));
-      }
-      
-      document.getElementById('safariActivationOverlay').style.display = 'none';
-      console.log('✅ Tela amarela removida - Receiver');
-    });
-
+document.getElementById('safariActivationOverlay').addEventListener('click', function() {
+  if (!safariAudio) {
+    console.log('🔊 LIGANDO RADINHO SAFARI - Receiver');
+    safariAudio = new Audio('assets/audio/safari-radinho.mp3');
+    safariAudio.volume = 0.1;
+    safariAudio.loop = true;
+    safariAudio.play().catch(e => console.log('Radinho Safari OK - Receiver'));
+  }
+  
+  this.style.display = 'none';
+  console.log('✅ Tela amarela removida - Receiver');
+});
+    
   </script>
 
   <!-- ============================================= -->
