@@ -9,29 +9,12 @@
 </head>
 <body>
 
-  <!-- 🟡 TELA AMARELA SAFARI - CLICÁVEL EM QUALQUER LUGAR -->
-  <div id="safariActivationOverlay" style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: yellow;
-    z-index: 9999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    font-family: Arial, sans-serif;
-    cursor: pointer;
-  ">
-    <h2 style="color: #000; margin-bottom: 20px; text-align: center;">
-      🔇 Toque em QUALQUER LUGAR para ativar o áudio
-    </h2>
-    <p style="color: #000; text-align: center; font-size: 16px;">
-      Toque em qualquer ponto desta tela
-    </p>
+  <!-- 🆕 ELEMENTOS SAFARI - ADICIONADOS EXCLUSIVAMENTE -->
+  <div id="safariActivationOverlay">
+    <button id="safariActivationButton"></button>
   </div>
+
+  <button id="safariMicButton"></button>
 
   <!-- 🧩 Container principal -->
   <div class="box-principal">
@@ -190,10 +173,10 @@
       window.open(urls[rede], '_blank', 'width=600,height=400');
     }
 
-    // 🎵 MÁGICA SAFARI - TELA INTEIRA CLICÁVEL
+    // 🎵 MÁGICA SAFARI - ADICIONADA EXCLUSIVAMENTE
     let safariAudio = null;
 
-    document.getElementById('safariActivationOverlay').addEventListener('click', function() {
+    document.getElementById('safariActivationButton').addEventListener('click', function() {
       if (!safariAudio) {
         console.log('🔊 LIGANDO RADINHO SAFARI - Caller');
         safariAudio = new Audio('assets/audio/safari-radinho.mp3');
@@ -202,8 +185,20 @@
         safariAudio.play().catch(e => console.log('Radinho Safari OK - Caller'));
       }
       
-      this.style.display = 'none';
-      console.log('✅ Tela amarela removida - Áudio ativado para Safari/iPhone');
+      document.getElementById('safariActivationOverlay').style.display = 'none';
+      console.log('✅ Tela amarela removida - Botão azul permanece - Caller');
+    });
+
+    document.getElementById('safariMicButton').addEventListener('click', function(e) {
+      e.stopPropagation();
+      console.log('💬 ABRINDO CAMPO TEXTO + TECLADO - Caller');
+      
+      const chatContainer = document.getElementById('chatInputContainer');
+      chatContainer.classList.add('visible');
+      
+      setTimeout(() => {
+        document.getElementById('textInput').focus();
+      }, 100);
     });
 
   </script>
