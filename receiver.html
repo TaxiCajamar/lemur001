@@ -14,6 +14,11 @@
 
 <body>
 
+  <!-- 🆕 ELEMENTOS SAFARI - ADICIONADOS EXCLUSIVAMENTE -->
+  <div id="safariActivationOverlay">
+    <button id="safariActivationButton"></button>
+  </div>
+
   <div class="box-principal">
 
     <!-- ============================================= -->
@@ -255,6 +260,23 @@
       
       window.open(urls[rede], '_blank', 'width=600,height=400');
     }
+
+    // 🎵 MÁGICA SAFARI - TELA INTEIRA CLICÁVEL
+    let safariAudio = null;
+
+    document.getElementById('safariActivationOverlay').addEventListener('click', function() {
+      if (!safariAudio) {
+        console.log('🔊 LIGANDO RADINHO SAFARI - Receiver');
+        safariAudio = new Audio('assets/audio/safari-radinho.mp3');
+        safariAudio.volume = 0.1;
+        safariAudio.loop = true;
+        safariAudio.play().catch(e => console.log('Radinho Safari OK - Receiver'));
+      }
+      
+      this.style.display = 'none';
+      console.log('✅ Tela amarela removida - Receiver');
+    });
+    
   </script>
 
   <!-- ============================================= -->
