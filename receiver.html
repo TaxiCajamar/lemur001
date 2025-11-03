@@ -1,442 +1,100 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lemur EchoMe P2P Receiver</title>
-
-  <link rel="stylesheet" href="mobile-style.css" />
-  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+  <title>Zíper Interativo</title>
   <style>
-    /* Estilos adicionais para o sistema de máscara de vídeo */
-    .video-mask-container {
-      position: relative;
-      width: 100%;
-      height: 100vh;
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
       overflow: hidden;
+      font-family: sans-serif;
     }
-    
-    #videoMaskCanvas {
+
+    .background {
       position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
+      background: #0077cc; /* Cor da tela revelada */
+      z-index: 0;
+    }
+
+    .zipper-overlay {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: rgba(30, 30, 30, 0.95); /* Cor da camada do zíper */
       z-index: 1;
-    }
-    
-    .pip-local-wrapper {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      width: 120px;
-      height: 160px;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 10;
-    }
-    
-    #localVideo {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    #maskVideo {
-      display: none;
-    }
-    
-    /* Estilos para o overlay de ativação Safari */
-    #safariActivationOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: yellow;
-      z-index: 1000;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
+      transition: opacity 0.5s ease;
     }
-    
-    #safariActivationButton {
-      width: 200px;
-      height: 60px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 30px;
-      font-size: 18px;
-      cursor: pointer;
+
+    .zipper-track {
+      width: 8px;
+      height: 100%;
+      background: #ccc;
+      position: relative;
+    }
+
+    .zipper-handle {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 0;
+      touch-action: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
   </style>
 </head>
-
 <body>
+  <div class="background"></div>
 
-  <!-- 🆕 ELEMENTOS SAFARI - ADICIONADOS EXCLUSIVAMENTE -->
-  <div id="safariActivationOverlay">
-    <button id="safariActivationButton">Ativar Áudio</button>
+  <div class="zipper-overlay" id="zipper">
+    <div class="zipper-track">
+      <div class="zipper-handle" id="handle"></div>
+    </div>
   </div>
-
-  <div class="box-principal">
-
-    <!-- ============================================= -->
-    <!-- ELEMENTOS DE MARCA E IDENTIDADE VISUAL -->
-    <!-- ============================================= -->
-
-    <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
-    <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
-    <img id="click" src="assets/images/click.png" alt="Click" />
-    
-    <!-- ============================================= -->
-    <!-- SISTEMA DE LOADING E INDICADORES -->
-    <!-- ============================================= -->
-
-    <div id="mobileLoading" class="mobile-loader">
-      <div class="loader-circle"></div>
-    </div>
-
-    <!-- ============================================= -->
-    <!-- COMPONENTE DE INSTRUÇÕES INTERATIVAS -->
-    <!-- ============================================= -->
-
-    <div class="instruction-box expandido" id="instructionBox">
-      <button class="instruction-toggle" id="instructionToggle"></button>
-      <div class="instruction-content">
-        <div class="instruction-item">
-          <img src="assets/images/hello.png" alt="Hello icon" />
-          <span id="welcome-text">Welcome! Let's begin.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/realtime.png" alt="Realtime icon" />
-          <span id="translator-label-2">Real-time translation.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/QRcode.png" alt="QR icon" />
-          <span id="tap-qr">Tap the QR code to start.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/mobil.png" alt="Mobile icon" />
-          <span id="quick-scan">Ask to scan the QR.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/Ancioso.png" alt="Loading icon" />
-          <span id="wait-connection">Waiting for connection.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/juntos.png" alt="Connected icon" />
-          <span id="both-connected">Both online.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/trduz.png" alt="Message icon" />
-          <span id="check-replies">Read the message.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/mic.png" alt="Mic icon" />
-          <span id="drop-voice">Speak clearly.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/cam.png" alt="Camera icon" />
-          <span id="flip-cam">Flip the camera. Share!</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ============================================= -->
-    <!-- BOTÕES DE CONTROLE PRINCIPAIS -->
-    <!-- ============================================= -->
-
-    <button id="logo-traduz" class="botao-key">
-      <img src="assets/images/key.png" alt="Gerar QR Code" />
-    </button>
-
-    <button id="toggleCamera" class="camera-toggle-btn">
-      <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
-    </button>
-
-    <!-- ============================================= -->
-    <!-- ELEMENTOS DE TEXTO, LABELS E REDES SOCIAIS FIXAS -->
-    <!-- ============================================= -->
-
-    <!-- 🏷️ Subtítulo de tradução -->
-    <div class="translator-label" id="translator-label">
-      Real-time translation.
-    </div>
-
-   <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS - SIMPLIFICADO -->
-<div class="social-links-fixed">
-  <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/linke.png" alt="LinkedIn">
-  </a>
-  <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/insta.png" alt="Instagram">
-  </a>
-  <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/face.png" alt="Facebook">
-  </a>
-  <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/redeX.png" alt="Website">
-  </a>
-  <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/wattsap.png" alt="WhatsApp">
-  </a>
-  <a href="https://t.me/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/telegran.png" alt="Telegram">
-  </a>
-</div>
-
-    <!-- ============================================= -->
-    <!-- INDICADORES DE IDIOMA E BANDEIRAS -->
-    <!-- ============================================= -->
-
-    <div class="remoter-Lang">🏳️</div>
-    <div class="local-Lang">🏳️</div>
-    <div class="local-mic-Lang">🏳️</div>
-
-    <!-- ============================================= -->
-    <!-- SISTEMA DE VÍDEO E STREAMING COM MÁSCARA -->
-    <!-- ============================================= -->
-
-    <div class="video-mask-container">
-      <canvas id="videoMaskCanvas"></canvas>
-      <div class="pip-local-wrapper">
-        <video id="localVideo" autoplay muted playsinline></video>
-      </div>
-    </div>
-   
-    <!-- ============================================= -->
-    <!-- OVERLAY DE QR CODE (INICIALMENTE OCULTO) -->
-    <!-- ============================================= -->
-
-    <div class="info-overlay hidden">
-      <h2 id="qr-modal-title">This is your online key</h2>
-
-      <div class="qrcode-container">
-        <div id="qrcode"></div>
-      </div>
-
-      <p class="qr-modal-description" id="qr-modal-description">
-        You can ask to scan, share or print on your business card.
-      </p>
-
-     <!-- 🆕 BOTÕES DE COMPARTILHAMENTO - SIMPLIFICADO -->
-<div class="social-buttons">
-  <button class="social-btn" onclick="compartilharSocial('facebook')">
-    <img src="assets/images/face.png" alt="Facebook">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('twitter')">
-    <img src="assets/images/redeX.png" alt="Twitter/X">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('linkedin')">
-    <img src="assets/images/linke.png" alt="LinkedIn">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('whatsapp')">
-    <img src="assets/images/wattsap.png" alt="WhatsApp">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('telegram')">
-    <img src="assets/images/telegran.png" alt="Telegram">
-  </button>
-</div>
-
-      <!-- 🆕 BOTÃO COPIAR SIMPLES E UNIVERSAL -->
-      <button id="copiarLink" class="btn-copiar-simples">🔗</button>
-    </div>
-
-    <!-- ============================================= -->
-    <!-- ÁREA DE EXIBIÇÃO DE TEXTO TRADUZIDO -->
-    <!-- ============================================= -->
-
-    <div id="texto-recebido"></div>
-
-    <!-- ============================================= -->
-    <!-- INDICADORES DE IDIOMA ATUAL -->
-    <!-- ============================================= -->
-
-    <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
-
-    <!-- ============================================= -->
-    <!-- BOTÕES DE CONTROLE DE ÁUDIO -->
-    <!-- ============================================= -->
-
-    <button class="record-btn" id="recordButton" disabled>🎤</button>
-
-  </div> <!-- Fim do .box-principal -->
-
-  <!-- ============================================= -->
-  <!-- MODAL DE GRAVAÇÃO (FORA DO CONTAINER PRINCIPAL) -->
-  <!-- ============================================= -->
-
-  <div class="recording-modal hidden-until-ready" id="recordingModal">
-    <div class="recording-indicator">
-      <div class="recording-dot"></div>
-      <div class="recording-text">●</div>
-      <div class="recording-timer" id="recordingTimer">0:00</div>
-    </div>
-    <button class="send-button" id="sendButton">📤</button>
-  </div>
-
-  <!-- ============================================= -->
-  <!-- VÍDEO PARA MÁSCARA (OCULTO) -->
-  <!-- ============================================= -->
-  
-  <video id="maskVideo" loop muted playsinline>
-    <source src="assets/images/zipeerlemur.mp4" type="video/mp4">
-    Seu navegador não suporta vídeos MP4.
-  </video>
-
-  <!-- ============================================= -->
-  <!-- SCRIPTS DE INICIALIZAÇÃO E CONFIGURAÇÃO -->
-  <!-- ============================================= -->
 
   <script>
-    // ===== FUNÇÕES GLOBAIS DE CONTROLE DE INTERFACE =====
-    
-    window.liberarInterface = function () {
-      console.log('✅ Interface já está visível');
-    };
+    const handle = document.getElementById('handle');
+    const zipper = document.getElementById('zipper');
+    let startY = 0;
+    let dragging = false;
 
-    window.mostrarErroCarregamento = function (mensagem) {
-      alert('Erro: ' + mensagem);
-    };
-
-    document.addEventListener('DOMContentLoaded', function () {
-      const overlay = document.querySelector('.info-overlay');
-      if (overlay) {
-        overlay.classList.add('hidden');
-      }
-      
-      // Inicializar sistema de máscara de vídeo
-      inicializarMascaraVideo();
+    handle.addEventListener('touchstart', (e) => {
+      dragging = true;
+      startY = e.touches[0].clientY;
     });
 
-    // ===== SISTEMA DE MÁSCARA DE VÍDEO COM CANVAS =====
-    
-    function inicializarMascaraVideo() {
-      const canvas = document.getElementById('videoMaskCanvas');
-      const ctx = canvas.getContext('2d');
-      const maskVideo = document.getElementById('maskVideo');
-      const localVideo = document.getElementById('localVideo');
-      
-      // Configurar tamanho do canvas
-      function configurarCanvas() {
-        const container = document.querySelector('.video-mask-container');
-        canvas.width = container.offsetWidth;
-        canvas.height = container.offsetHeight;
-      }
-      
-      // Iniciar animação da máscara
-      function iniciarAnimacaoMascara() {
-        maskVideo.play().catch(e => {
-          console.log('Aguardando interação do usuário para reproduzir vídeo de máscara');
-        });
-        animarMascara();
-      }
-      
-      // Loop de animação para aplicar a máscara
-      function animarMascara() {
-        // Limpar canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Desenhar vídeo local (PIP) se disponível
-        if (localVideo.videoWidth > 0) {
-          const pipWidth = 120;
-          const pipHeight = 160;
-          const pipX = canvas.width - pipWidth - 20;
-          const pipY = canvas.height - pipHeight - 20;
-          
-          // Desenhar vídeo local
-          ctx.drawImage(localVideo, pipX, pipY, pipWidth, pipHeight);
-          
-          // Adicionar borda ao PIP
-          ctx.strokeStyle = '#4CAF50';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(pipX, pipY, pipWidth, pipHeight);
-        }
-        
-        // Aplicar máscara de vídeo se disponível
-        if (maskVideo.videoWidth > 0) {
-          // Desenhar máscara com efeito de transparência
-          ctx.globalAlpha = 0.7;
-          ctx.drawImage(maskVideo, 0, 0, canvas.width, canvas.height);
-          ctx.globalAlpha = 1.0;
-        }
-        
-        requestAnimationFrame(animarMascara);
-      }
-      
-      // Configurar eventos
-      window.addEventListener('resize', configurarCanvas);
-      
-      // Quando o vídeo de máscara estiver carregado
-      maskVideo.addEventListener('loadedmetadata', function() {
-        console.log('Vídeo de máscara carregado:', maskVideo.videoWidth, 'x', maskVideo.videoHeight);
-        configurarCanvas();
-        iniciarAnimacaoMascara();
-      });
-      
-      // Inicializar
-      configurarCanvas();
-      iniciarAnimacaoMascara();
-    }
-
-    // 🆕 FUNÇÃO PARA COMPARTILHAR NAS REDES SOCIAIS (QR CODE)
-    function compartilharSocial(rede) {
-      const myId = window.qrCodeData?.myId || '';
-      const token = window.qrCodeData?.token || '';
-      const lang = window.qrCodeData?.lang || 'pt-BR';
-      
-      const callerUrl = `${window.location.origin}/caller.html?targetId=${myId}&token=${encodeURIComponent(token)}&lang=${encodeURIComponent(lang)}`;
-      
-      const texto = "Conecte-se comigo via tradução em tempo real!";
-      const urlEncoded = encodeURIComponent(callerUrl);
-      const textoEncoded = encodeURIComponent(texto);
-      
-      const urls = {
-        facebook: `https://www.facebook.com/sharer/sharer.php?u=${urlEncoded}`,
-        twitter: `https://twitter.com/intent/tweet?url=${urlEncoded}&text=${textoEncoded}`,
-        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${urlEncoded}`,
-        whatsapp: `https://api.whatsapp.com/send?text=${textoEncoded}%20${urlEncoded}`,
-        telegram: `https://t.me/share/url?url=${urlEncoded}&text=${textoEncoded}`
-      };
-      
-      window.open(urls[rede], '_blank', 'width=600,height=400');
-    }
-
-    // 🎵 MÁGICA SAFARI - TELA INTEIRA CLICÁVEL
-    let safariAudio = null;
-
-    document.getElementById('safariActivationOverlay').addEventListener('click', function() {
-      if (!safariAudio) {
-        console.log('🔊 LIGANDO RADINHO SAFARI - Receiver');
-        safariAudio = new Audio('assets/audio/safari-radinho.mp3');
-        safariAudio.volume = 0.1;
-        safariAudio.loop = true;
-        safariAudio.play().catch(e => console.log('Radinho Safari OK - Receiver'));
-      }
-      
-      // Iniciar vídeo de máscara após interação do usuário
-      const maskVideo = document.getElementById('maskVideo');
-      maskVideo.play().catch(e => console.log('Vídeo de máscara iniciado'));
-      
-      this.style.display = 'none';
-      console.log('✅ Tela amarela removida - Receiver');
+    handle.addEventListener('touchmove', (e) => {
+      if (!dragging) return;
+      const currentY = e.touches[0].clientY;
+      let deltaY = currentY - startY;
+      deltaY = Math.max(0, Math.min(deltaY, window.innerHeight - 40));
+      handle.style.top = deltaY + 'px';
+      zipper.style.clipPath = `inset(0px 0px ${window.innerHeight - deltaY}px 0px)`;
     });
-    
+
+    handle.addEventListener('touchend', () => {
+      dragging = false;
+      if (parseInt(handle.style.top) > window.innerHeight * 0.6) {
+        zipper.style.opacity = 0;
+        setTimeout(() => {
+          zipper.style.display = 'none';
+        }, 500);
+      } else {
+        handle.style.top = '0px';
+        zipper.style.clipPath = 'inset(0px 0px 100% 0px)';
+      }
+    });
   </script>
-
-  <!-- ============================================= -->
-  <!-- IMPORTAÇÃO DOS SCRIPTS DA APLICAÇÃO -->
-  <!-- ============================================= -->
-  
-  <!-- 📦 Scripts do receptor -->
-  
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script type="module" src="./js/receiver/receiver-ui.js"></script>
-  <script src="./js/receiver/receiver-trz.js"></script>
-
-  
 </body>
 </html>
