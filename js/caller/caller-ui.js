@@ -2,6 +2,80 @@
 import { WebRTCCore } from '../../core/webrtc-core.js';
 import { CameraVigilante } from '../../core/camera-vigilante.js';
 
+// ========== 🎵 MESA DE MIXAGEM CALLER ==========
+let audioCtx;
+let radinhoSource, radinhoGain;
+
+function iniciarAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function tocarRadinho() {
+  iniciarAudioContext();
+  radinhoSource = audioCtx.createBufferSource();
+  radinhoGain = audioCtx.createGain();
+  radinhoSource.loop = true;
+  radinhoSource.connect(radinhoGain).connect(audioCtx.destination);
+  radinhoGain.gain.setValueAtTime(0.05, audioCtx.currentTime); // ✅ VOLUME BAIXO
+
+  fetch('assets/audio/safari-radinho.mp3')
+    .then(res => res.arrayBuffer())
+    .then(buffer => audioCtx.decodeAudioData(buffer))
+    .then(decoded => {
+      radinhoSource.buffer = decoded;
+      radinhoSource.start();
+    });
+}
+
+function tocarSomDinamico(url) {
+  const source = audioCtx.createBufferSource();
+  const gainNode = audioCtx.createGain();
+  source.connect(gainNode).connect(audioCtx.destination);
+  gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+
+  fetch(url)
+    .then(res => res.arrayBuffer())
+    .then(buffer => audioCtx.decodeAudioData(buffer))
+    .then(decoded => {
+      source.buffer = decoded;
+      source.start();
+    });
+}
+
+function aoReceberMensagem(mensagem) {
+  const elemento = document.getElementById('texto-recebido');
+  if (!elemento) return;
+  
+  // Efeitos visuais
+  elemento.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
+  elemento.style.border = '2px solid #ff0000';
+  elemento.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+  elemento.innerText = mensagem;
+
+  // ✅ MESA DE MIXAGEM EM AÇÃO:
+  // 1. Reduz radinho para quase mudo
+  if (radinhoGain) {
+    radinhoGain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+  }
+  
+  // 2. Toca máquina de escrever
+  tocarSomDinamico('assets/audio/keyboard.mp3');
+
+  // 3. Aguarda e inicia voz
+  setTimeout(() => {
+    falarTextoSistemaHibrido(mensagem, elemento, null, window.meuIdiomaLocal || 'pt-BR');
+  }, 2000);
+
+  // 4. Restaura radinho após leitura
+  setTimeout(() => {
+    if (radinhoGain) {
+      radinhoGain.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 0.5);
+    }
+  }, 7000);
+}
+
 // 🎵 VARIÁVEIS DE ÁUDIO
 let audioContext = null;
 let somDigitacao = null;
@@ -927,34 +1001,8 @@ async function iniciarCameraAposPermissoes() {
 
         // ✅✅✅ CONFIGURA CALLBACKS ANTES DE INICIALIZAR (MANTÉM CÓDIGO ORIGINAL)
         window.rtcCore.setDataChannelCallback(async (mensagem) => {
-            iniciarSomDigitacao();
-
-            console.log('📩 Mensagem recebida no CALLER:', mensagem);
-
-            const elemento = document.getElementById('texto-recebido');
-            const imagemImpaciente = document.getElementById('lemurFixed');
-            
-            if (elemento) {
-                elemento.textContent = "";
-                elemento.style.opacity = '1';
-                elemento.style.transition = 'opacity 0.5s ease';
-                
-                elemento.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
-                elemento.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
-                elemento.style.border = '2px solid #ff0000';
-            }
-
-            if (imagemImpaciente) {
-                imagemImpaciente.style.display = 'block';
-            }
-
-            // ✅✅✅ SOLUÇÃO DEFINITIVA: Usar o idioma GUARDADO
-            const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
-            
-            console.log(`🎯 TTS Caller: Idioma guardado = ${idiomaExato}`);
-            
-            // 🎤 CHAMADA PARA SISTEMA HÍBRIDO TTS AVANÇADO
-            await falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
+            // ✅ AGORA USA A MESA DE MIXAGEM PROFISSIONAL!
+            aoReceberMensagem(mensagem);
         });
 
         const myId = crypto.randomUUID().substr(0, 8);
