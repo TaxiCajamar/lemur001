@@ -287,6 +287,14 @@
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
   <script src="./js/receiver/receiver-trz.js"></script>
 
+  <!-- 🆕 SCRIPT SOLICITADO - ADICIONADO EXATAMENTE COMO PEDIDO -->
+  <script>
+    document.getElementById('safariActivationOverlay').addEventListener('click', function () {
+      iniciarAudioContext();
+      tocarRadinho();
+      this.style.display = 'none';
+    });
+  </script>
   
 </body>
 </html>
