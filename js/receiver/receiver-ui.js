@@ -1,4 +1,3 @@
-
 // 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES
 function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
@@ -44,6 +43,83 @@ document.addEventListener('DOMContentLoaded', function() {
 import { WebRTCCore } from '../../core/webrtc-core.js';
 import { QRCodeGenerator } from '../qrcode/qr-code-utils.js';
 import { CameraVigilante } from '../../core/camera-vigilante.js';
+
+// ========== 🎵 SISTEMA DE ÁUDIO SAFARI - ADICIONADO NO TOPO ==========
+let audioCtx;
+let radinhoSource, radinhoGain;
+
+function iniciarAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function tocarRadinho() {
+  radinhoSource = audioCtx.createBufferSource();
+  radinhoGain = audioCtx.createGain();
+  radinhoSource.loop = true;
+  radinhoSource.connect(radinhoGain).connect(audioCtx.destination);
+  radinhoGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+
+  fetch('assets/audio/safari-radinho.mp3')
+    .then(res => res.arrayBuffer())
+    .then(buffer => audioCtx.decodeAudioData(buffer))
+    .then(decoded => {
+      radinhoSource.buffer = decoded;
+      radinhoSource.start();
+    });
+}
+
+// ========== 🎹 FUNÇÃO PARA TOCAR SOM DINÂMICO (MÁQUINA DE ESCREVER) ==========
+function tocarSomDinamico(url) {
+  const source = audioCtx.createBufferSource();
+  const gainNode = audioCtx.createGain();
+  source.connect(gainNode).connect(audioCtx.destination);
+  gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+
+  fetch(url)
+    .then(res => res.arrayBuffer())
+    .then(buffer => audioCtx.decodeAudioData(buffer))
+    .then(decoded => {
+      source.buffer = decoded;
+      source.start();
+    });
+}
+
+// ========== 🗣️ FUNÇÃO PARA FALAR A MENSAGEM ==========
+function falarMensagem(texto) {
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(texto);
+  speechSynthesis.speak(utter);
+}
+
+// ========== 📨 FUNÇÃO PRINCIPAL: AO RECEBER MENSAGEM ==========
+function aoReceberMensagem(mensagem) {
+  const elemento = document.getElementById('texto-recebido');
+
+  // Efeito visual
+  elemento.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
+  elemento.style.border = '2px solid #ff0000';
+
+  // Reduz radinho
+  radinhoGain.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 0.5);
+
+  // Toca máquina de escrever
+  tocarSomDinamico('assets/audio/keyboard.mp3');
+
+  // Exibe texto
+  elemento.innerText = mensagem;
+
+  // Aguarda e inicia leitura em voz alta
+  setTimeout(() => {
+    falarMensagem(mensagem);
+  }, 2000); // tempo de máquina de escrever
+
+  // Restaura radinho após leitura
+  setTimeout(() => {
+    radinhoGain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.5);
+  }, 7000); // tempo total estimado
+}
 
 // 🎵 VARIÁVEIS DE ÁUDIO
 let audioContext = null;
