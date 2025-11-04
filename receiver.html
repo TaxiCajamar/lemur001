@@ -242,7 +242,7 @@
       const token = window.qrCodeData?.token || '';
       const lang = window.qrCodeData?.lang || 'pt-BR';
       
-      const callerUrl = `${window.location.origin}/caller.html?targetId=${myId}&token=${encodeURIComponent(token)}&lang=${encodeURIComponent(lang)}`;
+      const callerUrl = `${window.location.origin}/caller-selector.html?targetId=${myId}&token=${encodeURIComponent(token)}&lang=${encodeURIComponent(lang)}`;
       
       const texto = "Conecte-se comigo via tradução em tempo real!";
       const urlEncoded = encodeURIComponent(callerUrl);
@@ -259,20 +259,17 @@
       window.open(urls[rede], '_blank', 'width=600,height=400');
     }
 
-    // 🎵 MÁGICA SAFARI - TELA INTEIRA CLICÁVEL
-    let safariAudio = null;
-
-    document.getElementById('safariActivationOverlay').addEventListener('click', function() {
-      if (!safariAudio) {
-        console.log('🔊 LIGANDO RADINHO SAFARI - Receiver');
-        safariAudio = new Audio('assets/audio/safari-radinho.mp3');
-        safariAudio.volume = 0.1;
-        safariAudio.loop = true;
-        safariAudio.play().catch(e => console.log('Radinho Safari OK - Receiver'));
+    // ✅✅✅ SCRIPT UNIFICADO - PERFEITAMENTE COMPATÍVEL COM MESA DE SOM
+    document.getElementById('safariActivationOverlay').addEventListener('click', function () {
+      // ✅ Chama APENAS as funções do sistema de mesa de som
+      if (typeof iniciarAudioContext === 'function') {
+        iniciarAudioContext();
       }
-      
+      if (typeof tocarRadinho === 'function') {
+        tocarRadinho();
+      }
       this.style.display = 'none';
-      console.log('✅ Tela amarela removida - Receiver');
+      console.log('🎵 Mesa de som profissional ativada via tela amarela');
     });
     
   </script>
@@ -285,16 +282,9 @@
   
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
+  
+  <!-- 🎵 SCRIPT DA MESA DE SOM - AGORA COMPATÍVEL -->
   <script src="./js/receiver/receiver-trz.js"></script>
-
-  <!-- 🆕 SCRIPT SOLICITADO - ADICIONADO EXATAMENTE COMO PEDIDO -->
-  <script>
-    document.getElementById('safariActivationOverlay').addEventListener('click', function () {
-      iniciarAudioContext();
-      tocarRadinho();
-      this.style.display = 'none';
-    });
-  </script>
   
 </body>
 </html>
