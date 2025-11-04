@@ -112,7 +112,8 @@ function aoReceberMensagem(mensagem) {
 
   // Aguarda e inicia leitura em voz alta
   setTimeout(() => {
-    falarMensagem(mensagem);
+    // ✅ SUBSTITUIÇÃO: falarMensagem(mensagem) → falarTextoSistemaHibrido(mensagem, elemento, null, window.meuIdiomaLocal)
+    falarTextoSistemaHibrido(mensagem, elemento, null, window.meuIdiomaLocal || 'pt-BR');
   }, 2000); // tempo de máquina de escrever
 
   // Restaura radinho após leitura
@@ -120,7 +121,6 @@ function aoReceberMensagem(mensagem) {
     radinhoGain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.5);
   }, 7000); // tempo total estimado
 }
-
 // 🎵 VARIÁVEIS DE ÁUDIO
 let audioContext = null;
 let somDigitacao = null;
