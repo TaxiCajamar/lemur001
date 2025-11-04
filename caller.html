@@ -171,22 +171,18 @@
       window.open(urls[rede], '_blank', 'width=600,height=400');
     }
 
-    <script>
-// ✅✅✅ MESA DE SOM COMPATÍVEL - CALLER
-document.getElementById('safariActivationOverlay').addEventListener('click', function() {
-  // ✅ Chama APENAS as funções da mesa de som profissional
-  if (typeof iniciarAudioContext === 'function') {
-    iniciarAudioContext();
-  }
-  if (typeof tocarRadinho === 'function') {
-    tocarRadinho();
-  }
-  this.style.display = 'none';
-  console.log('🎵 Mesa de som ativada no Caller');
-});
-    
-</script>
-    
+    // ✅✅✅ MESA DE SOM COMPATÍVEL - CALLER
+    document.getElementById('safariActivationOverlay').addEventListener('click', function() {
+      // ✅ Chama APENAS as funções da mesa de som profissional
+      if (typeof iniciarAudioContext === 'function') {
+        iniciarAudioContext();
+      }
+      if (typeof tocarRadinho === 'function') {
+        tocarRadinho();
+      }
+      this.style.display = 'none';
+      console.log('🎵 Mesa de som ativada no Caller');
+    });
   </script>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
