@@ -1,6 +1,4 @@
 import { WebRTCCore } from '../../core/webrtc-core.js';
-import { CameraVigilante } from '../../core/camera-vigilante.js';
-
 
 // 🎵 VARIÁVEIS DE ÁUDIO
 let audioContext = null;
@@ -231,7 +229,7 @@ async function traduzirFrasesFixas() {
 // 🌐 Tradução apenas para texto
 async function translateText(text, targetLang) {
     try {
-        const response = await fetch('https://chat-tradutor-7umw.onrender.com/translate', {
+        const response = await fetch('https://chat-tradutor-bvvx.onrender.com/translate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text, targetLang })
@@ -256,16 +254,11 @@ function setupCameraToggle() {
     let currentCamera = 'user';
     let isSwitching = false;
 
-   toggleButton.addEventListener('click', async () => {
-    // ✅ PARAR VIGILANTE DURANTE TROCA
-    if (window.cameraVigilante) {
-        window.cameraVigilante.pararMonitoramento();
-    }
-
-    if (isSwitching) return;
-    isSwitching = true;
-    toggleButton.style.opacity = '0.5';
-    toggleButton.style.cursor = 'wait';
+    toggleButton.addEventListener('click', async () => {
+        if (isSwitching) return;
+        isSwitching = true;
+        toggleButton.style.opacity = '0.5';
+        toggleButton.style.cursor = 'wait';
 
         try {
             if (window.localStream) {
@@ -295,20 +288,12 @@ function setupCameraToggle() {
 
             console.log(`✅ Câmera alterada para: ${currentCamera === 'user' ? 'Frontal' : 'Traseira'}`);
 
-               } catch (error) {
+        } catch (error) {
             console.error('❌ Erro ao alternar câmera:', error);
         } finally {
             isSwitching = false;
             toggleButton.style.opacity = '1';
             toggleButton.style.cursor = 'pointer';
-            
-            // ✅ REINICIAR VIGILANTE APÓS TROCA
-            setTimeout(() => {
-                if (window.cameraVigilante && window.localStream) {
-                    window.cameraVigilante.reiniciarMonitoramento();
-                    console.log('✅ Vigilante reiniciado com nova câmera no notificador');
-                }
-            }, 1500);
         }
     });
 
@@ -392,7 +377,7 @@ async function falarComGoogleTTS(mensagem, elemento, idioma) {
     try {
         console.log(`🎤 Iniciando Google TTS para ${idioma}:`, mensagem.substring(0, 50) + '...');
         
-        const resposta = await fetch('https://chat-tradutor-7umw.onrender.com/speak', {
+        const resposta = await fetch('https://chat-tradutor.onrender.com/speak', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -496,59 +481,38 @@ window.enviarMensagemTraduzida = function(mensagemTraduzida) {
     }
 };
 
-// ✅ FUNÇÃO PRINCIPAL PARA INICIAR CÂMERA E WEBRTC (MODO RESILIENTE)
+// ✅ FUNÇÃO PRINCIPAL PARA INICIAR CÂMERA E WEBRTC
 async function iniciarCameraAposPermissoes() {
     try {
-        console.log('🎥 Tentando iniciar câmera NOTIFICADOR (modo resiliente)...');
+        if (!permissaoConcedida) {
+            throw new Error('Permissões não concedidas');
+        }
+
+        console.log('📹 Iniciando câmera para notificador...');
         
-        // ✅ TENTA a câmera, mas NÃO TRAVA se falhar
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
+            video: true,
             audio: false
-        }).catch(error => {
-            console.log('⚠️ Câmera NOTIFICADOR indisponível, continuando sem vídeo...', error);
-            return null; // ⬅️ RETORNA NULL EM VEZ DE THROW ERROR
         });
 
-        // ✅ SE CÂMERA FUNCIONOU: Configura normalmente
-if (stream) {
-    window.localStream = stream;
+        window.localStream = stream;
 
-    const localVideo = document.getElementById('localVideo');
-    if (localVideo) {
-        localVideo.srcObject = stream;
-    }
-
-    setupCameraToggle();
-    console.log('✅ Câmera NOTIFICADOR iniciada com sucesso');
-
-    // ✅ INICIAR VIGILANTE QUANDO CÂMERA ESTIVER PRONTA
-    setTimeout(() => {
-        if (window.cameraVigilante) {
-            window.cameraVigilante.iniciarMonitoramento();
-            console.log('👁️ Vigilante ativado para câmera do notificador');
-        }
-    }, 1000);
+        const localVideo = document.getElementById('localVideo');
+        if (localVideo) {
+            localVideo.srcObject = stream;
             
-        } else {
-            // ✅ SE CÂMERA FALHOU: Apenas avisa, mas continua
-            console.log('ℹ️ NOTIFICADOR operando em modo áudio/texto (sem câmera)');
-            window.localStream = null;
+            const mobileLoading = document.getElementById('mobileLoading');
+            if (mobileLoading) {
+                mobileLoading.style.display = 'none';
+            }
         }
 
-        // ✅✅✅ REMOVE LOADING INDEPENDENTE DA CÂMERA
-        const mobileLoading = document.getElementById('mobileLoading');
-        if (mobileLoading) {
-            mobileLoading.style.display = 'none';
-        }
+        setupCameraToggle();
 
         console.log('🌐 Inicializando WebRTC...');
         window.rtcCore = new WebRTCCore();
 
-        // ✅✅✅ MANTÉM TODO O CÓDIGO ORIGINAL DAQUI PARA BAIXO
+        // ✅ SIMPLIFICADO: Apenas o essencial do Notificador
         const params = new URLSearchParams(window.location.search);
         const myId = window.location.href.split('?')[1]?.split('&')[0] || '';
         const lang = params.get('lang') || 'pt-BR';
@@ -592,9 +556,8 @@ if (stream) {
         });
 
         window.rtcCore.onIncomingCall = (offer, idiomaDoCaller) => {
-            // ✅✅✅ REMOVEMOS a verificação "if (!window.localStream) return;"
-            // AGORA aceita chamadas mesmo sem câmera!
-            
+            if (!window.localStream) return;
+
             console.log('🎯 Caller fala:', idiomaDoCaller);
             console.log('🎯 Eu (notificador) entendo:', lang);
 
@@ -603,10 +566,7 @@ if (stream) {
 
             console.log('🎯 Vou traduzir:', idiomaDoCaller, '→', lang);
 
-            // ✅✅✅ ENVIA stream local SE disponível, senão null
-            const streamParaUsar = window.localStream || null;
-            
-            window.rtcCore.handleIncomingCall(offer, streamParaUsar, (remoteStream) => {
+            window.rtcCore.handleIncomingCall(offer, window.localStream, (remoteStream) => {
                 remoteStream.getAudioTracks().forEach(track => track.enabled = false);
 
                 const remoteVideo = document.getElementById('remoteVideo');
@@ -647,16 +607,14 @@ if (stream) {
         }, 1000);
 
     } catch (error) {
-        // ✅✅✅ EM CASO DE ERRO: Remove loading E continua
-        console.error("❌ Erro não crítico na câmera NOTIFICADOR:", error);
+        console.error("Erro ao iniciar câmera:", error);
         
         const mobileLoading = document.getElementById('mobileLoading');
         if (mobileLoading) {
             mobileLoading.style.display = 'none';
         }
         
-        // ✅ NÃO FAZ throw error! Apenas retorna normalmente
-        console.log('🟡 NOTIFICADOR continua funcionando (áudio/texto)');
+        throw error;
     }
 }
 
