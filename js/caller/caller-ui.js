@@ -13,18 +13,17 @@ let primeiraFraseTTS = true;
 let navegadorTTSPreparado = false;
 let ultimoIdiomaTTS = 'pt-BR';
 
-// 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES (IGUAL AO RECEIVER)
+// 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES
 function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
     const toggleButton = document.getElementById('instructionToggle');
     
     if (!instructionBox || !toggleButton) return;
     
-    // Estado inicial: expandido
     let isExpanded = true;
     
     toggleButton.addEventListener('click', function(e) {
-        e.stopPropagation(); // Impede que o clique propague para o box
+        e.stopPropagation();
         
         isExpanded = !isExpanded;
         
@@ -39,7 +38,6 @@ function setupInstructionToggle() {
         }
     });
     
-    // Opcional: fechar ao clicar fora (se quiser)
     document.addEventListener('click', function(e) {
         if (!instructionBox.contains(e.target) && isExpanded) {
             instructionBox.classList.remove('expandido');
@@ -50,23 +48,22 @@ function setupInstructionToggle() {
     });
 }
 
-// 🌐 TRADUÇÃO DAS FRASES FIXAS (IGUAL AO RECEIVER)
+// 🌐 TRADUÇÃO DAS FRASES FIXAS
 async function traduzirFrasesFixas() {
   try {
-    // ✅✅✅ AGORA USA O IDIOMA GUARDADO!
     const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
     
     console.log(`🌐 Traduzindo frases fixas para: ${idiomaExato}`);
 
     const frasesParaTraduzir = {
-       "translator-label": "Real-time translation.",      // ⬅️ PRIMEIRO ELEMENTO
-  "translator-label-2": "Real-time translation.",   // ⬅️ SEGUNDO ELEMENTO (NOVO)
-  "welcome-text": "Welcome! Let's begin.",
-  "wait-connection": "Waiting for connection.",
-  "both-connected": "Both online.",
-  "drop-voice": "Speak clearly.",
-  "check-replies": "Read the message.",
-  "flip-cam": "Flip the camera. Share!"
+        "translator-label": "Real-time translation.",
+        "translator-label-2": "Real-time translation.",
+        "welcome-text": "Welcome! Let's begin.",
+        "wait-connection": "Waiting for connection.",
+        "both-connected": "Both online.",
+        "drop-voice": "Speak clearly.",
+        "check-replies": "Read the message.",
+        "flip-cam": "Flip the camera. Share!"
     };
 
     for (const [id, texto] of Object.entries(frasesParaTraduzir)) {
@@ -165,7 +162,7 @@ function iniciarAudio() {
     console.log('🎵 Áudio desbloqueado!');
 }
 
-// 🎤 SOLICITAR TODAS AS PERMISSÕES DE UMA VEZ (IGUAL AO RECEIVER)
+// 🎤 SOLICITAR TODAS AS PERMISSÕES DE UMA VEZ
 async function solicitarTodasPermissoes() {
     try {
         console.log('🎯 Solicitando todas as permissões...');
@@ -287,7 +284,7 @@ function criarTelaChamando() {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(102, 126, 234, 0.3); /* Violeta com 30% de transparência */
+    background: rgba(102, 126, 234, 0.3);
     z-index: 9997;
     display: flex;
     flex-direction: column;
@@ -295,7 +292,6 @@ function criarTelaChamando() {
     align-items: center;
   `;
 
-  // Botão de cancelar apenas
   telaChamada.innerHTML = `
     <div id="botao-cancelar" style="
       position: absolute;
@@ -320,7 +316,6 @@ function criarTelaChamando() {
   document.body.appendChild(telaChamada);
 
   document.getElementById('botao-cancelar').addEventListener('click', function() {
-    // Esconde a imagem do lemur ao cancelar
     if (lemurWaiting) {
       lemurWaiting.style.display = 'none';
     }
@@ -332,177 +327,6 @@ function criarTelaChamando() {
   return telaChamada;
 }
 
-// 🎥 FUNÇÃO PARA ALTERNAR ENTRE CÂMERAS (CORRIGIDA - ROBUSTA)
-function setupCameraToggle() {
-    const toggleButton = document.getElementById('toggleCamera');
-    let currentCamera = 'user'; // 'user' = frontal, 'environment' = traseira
-    let isSwitching = false; // Evita múltiplos cliques
-
-    if (!toggleButton) {
-        console.log('❌ Botão de alternar câmera não encontrado');
-        return;
-    }
-
-    toggleButton.addEventListener('click', async () => {
-        // Evita múltiplos cliques durante a troca
-        if (isSwitching) {
-            console.log('⏳ Troca de câmera já em andamento...');
-            return;
-        }
-
-        isSwitching = true;
-        toggleButton.style.opacity = '0.5'; // Feedback visual
-        toggleButton.style.cursor = 'wait';
-
-        try {
-            console.log('🔄 Iniciando troca de câmera...');
-            
-            // ✅ 1. PARA COMPLETAMENTE a stream atual
-            if (window.localStream) {
-                console.log('⏹️ Parando stream atual...');
-                window.localStream.getTracks().forEach(track => {
-                    track.stop(); // Para completamente cada track
-                });
-                window.localStream = null;
-            }
-
-            // ✅ 2. PEQUENA PAUSA para o navegador liberar a câmera
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // ✅ 3. Alterna entre frontal e traseira
-            currentCamera = currentCamera === 'user' ? 'environment' : 'user';
-            console.log(`🎯 Solicitando câmera: ${currentCamera === 'user' ? 'Frontal' : 'Traseira'}`);
-            
-            // ✅ 4. TENTATIVA PRINCIPAL com facingMode
-            try {
-                const newStream = await navigator.mediaDevices.getUserMedia({
-                    video: { 
-                        facingMode: currentCamera,
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
-                });
-
-                await handleNewStream(newStream, currentCamera);
-                
-            } catch (facingModeError) {
-                console.log('❌ facingMode falhou, tentando fallback...');
-                await tryFallbackCameras(currentCamera);
-            }
-
-        } catch (error) {
-            console.error('❌ Erro crítico ao alternar câmera:', error);
-            alert('Não foi possível alternar a câmera. Tente novamente.');
-        } finally {
-            // ✅ SEMPRE restaura o botão
-            isSwitching = false;
-            toggleButton.style.opacity = '1';
-            toggleButton.style.cursor = 'pointer';
-        }
-    });
-
-    // ✅ FUNÇÃO PARA LIDAR COM NOVA STREAM
-    async function handleNewStream(newStream, cameraType) {
-        // Atualiza o vídeo local
-        const localVideo = document.getElementById('localVideo');
-        if (localVideo) {
-            localVideo.srcObject = newStream;
-        }
-
-        // ✅ ATUALIZAÇÃO CRÍTICA: Atualiza stream global
-        window.localStream = newStream;
-
-        // ✅ ATUALIZAÇÃO CRÍTICA: WebRTC
-        if (window.rtcCore && window.rtcCore.peer) {
-            const connectionState = window.rtcCore.peer.connectionState;
-            console.log(`📡 Estado da conexão WebRTC: ${connectionState}`);
-            
-            if (connectionState === 'connected') {
-                console.log('🔄 Atualizando WebRTC com nova câmera...');
-                
-                try {
-                    // Atualiza o stream local no core
-                    window.rtcCore.localStream = newStream;
-                    
-                    // Usa replaceTrack para atualizar a transmissão
-                    const newVideoTrack = newStream.getVideoTracks()[0];
-                    const senders = window.rtcCore.peer.getSenders();
-                    
-                    let videoUpdated = false;
-                    for (const sender of senders) {
-                        if (sender.track && sender.track.kind === 'video') {
-                            await sender.replaceTrack(newVideoTrack);
-                            videoUpdated = true;
-                            console.log('✅ Sender de vídeo atualizado no WebRTC');
-                        }
-                    }
-                    
-                    if (!videoUpdated) {
-                        console.log('⚠️ Nenhum sender de vídeo encontrado');
-                    }
-                } catch (webrtcError) {
-                    console.error('❌ Erro ao atualizar WebRTC:', webrtcError);
-                }
-            } else {
-                console.log(`ℹ️ WebRTC não conectado (${connectionState}), apenas atualização local`);
-            }
-        }
-
-        console.log(`✅ Câmera alterada para: ${cameraType === 'user' ? 'Frontal' : 'Traseira'}`);
-    }
-
-    // ✅ FALLBACK PARA DISPOSITIVOS MÚLTIPLOS
-    async function tryFallbackCameras(requestedCamera) {
-        try {
-            console.log('🔄 Buscando dispositivos de câmera...');
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const videoDevices = devices.filter(device => device.kind === 'videoinput');
-            
-            console.log(`📷 Câmeras encontradas: ${videoDevices.length}`);
-            
-            if (videoDevices.length > 1) {
-                // ✅ Estratégia: Pega a próxima câmera disponível
-                const currentDeviceId = window.localStream ? 
-                    window.localStream.getVideoTracks()[0]?.getSettings()?.deviceId : null;
-                
-                let newDeviceId;
-                if (currentDeviceId && videoDevices.length > 1) {
-                    // Encontra a próxima câmera na lista
-                    const currentIndex = videoDevices.findIndex(device => device.deviceId === currentDeviceId);
-                    newDeviceId = videoDevices[(currentIndex + 1) % videoDevices.length].deviceId;
-                } else {
-                    // Primeira vez ou não conseguiu identificar, pega a primeira disponível
-                    newDeviceId = videoDevices[0].deviceId;
-                }
-                
-                console.log(`🎯 Tentando câmera com deviceId: ${newDeviceId.substring(0, 10)}...`);
-                
-                const newStream = await navigator.mediaDevices.getUserMedia({
-                    video: { 
-                        deviceId: { exact: newDeviceId },
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    },
-                    audio: false
-                });
-
-                await handleNewStream(newStream, 'fallback');
-                console.log('✅ Câmera alternada via fallback de dispositivos');
-                
-            } else {
-                console.warn('⚠️ Apenas uma câmera disponível');
-                alert('Apenas uma câmera foi detectada neste dispositivo.');
-            }
-        } catch (fallbackError) {
-            console.error('❌ Fallback também falhou:', fallbackError);
-            alert('Não foi possível acessar outra câmera. Verifique as permissões.');
-        }
-    }
-
-    console.log('✅ Botão de alternar câmera configurado com tratamento robusto');
-}
-
 // 🔄 FUNÇÃO UNIFICADA: Tentar conexão visual (COM ESPERA INTELIGENTE)
 async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStream, meuIdioma) {
   console.log('🚀 Iniciando fluxo visual de conexão...');
@@ -511,10 +335,6 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
   let notificacaoEnviada = false;
   window.conexaoCancelada = false;
   
-  // ✅ AGUARDA O WEBRTC ESTAR COMPLETAMENTE INICIALIZADO
-  console.log('⏳ Aguardando inicialização completa do WebRTC...');
-  
-  // Função para verificar se o WebRTC está pronto
   const aguardarWebRTCPronto = () => {
     return new Promise((resolve) => {
       const verificar = () => {
@@ -531,7 +351,6 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
   };
 
   try {
-    // Aguarda o WebRTC estar pronto antes de qualquer tentativa
     await aguardarWebRTCPronto();
 
     console.log('🔇 Fase 1: Tentativas silenciosas (6s)');
@@ -543,7 +362,6 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
       if (tentativasFase1 > 0) {
         console.log(`🔄 Tentativa silenciosa ${4 - tentativasFase1}`);
         
-        // ✅ VERIFICAÇÃO EXTRA ANTES DE CHAMAR
         if (window.rtcCore && typeof window.rtcCore.startCall === 'function') {
           window.rtcCore.startCall(receiverId, localStream, meuIdioma);
         } else {
@@ -566,7 +384,6 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
           
           console.log('🔄 Tentando conexão...');
           
-          // ✅ VERIFICAÇÃO SEMPRE ANTES DE TENTAR
           if (window.rtcCore && typeof window.rtcCore.startCall === 'function') {
             window.rtcCore.startCall(receiverId, localStream, meuIdioma);
           }
@@ -578,7 +395,6 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
       }
     };
     
-    // ✅ PEQUENO ATRASO PARA GARANTIR ESTABILIDADE
     setTimeout(() => {
       tentarConexaoSilenciosa();
     }, 1000);
@@ -587,17 +403,15 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
     console.error('❌ Erro no fluxo de conexão:', error);
   }
   
- window.rtcCore.setRemoteStreamCallback(stream => {
+  window.rtcCore.setRemoteStreamCallback(stream => {
     conexaoEstabelecida = true;
     console.log('✅ Conexão estabelecida com sucesso!');
     
-    // ✅ ESCONDE A IMAGEM DO LEMUR AO CONECTAR
     const lemurWaiting = document.getElementById('lemurWaiting');
     if (lemurWaiting) {
         lemurWaiting.style.display = 'none';
     }
     
-    // ✅ FECHA A CAIXA DE INSTRUÇÕES QUANDO CONECTAR
     const instructionBox = document.getElementById('instructionBox');
     if (instructionBox) {
         instructionBox.classList.remove('expandido');
@@ -611,14 +425,13 @@ async function iniciarConexaoVisual(receiverId, receiverToken, meuId, localStrea
     stream.getAudioTracks().forEach(track => track.enabled = false);
     const remoteVideo = document.getElementById('remoteVideo');
     if (remoteVideo) remoteVideo.srcObject = stream;
-});
+  });
 }
 
-// ✅ FUNÇÃO PARA LIBERAR INTERFACE (FALLBACK) - CORRIGIDA
+// ✅ FUNÇÃO PARA LIBERAR INTERFACE (FALLBACK)
 function liberarInterfaceFallback() {
     console.log('🔓 Usando fallback para liberar interface...');
     
-    // ✅ CORREÇÃO: Remove o loader correto (mobileLoading) - IGUAL AO RECEIVER
     const mobileLoading = document.getElementById('mobileLoading');
     if (mobileLoading) {
         mobileLoading.style.display = 'none';
@@ -636,11 +449,9 @@ async function aplicarBandeiraLocal(langCode) {
 
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🔴';
 
-        // ✅✅✅ SOLUÇÃO INTELIGENTE: Guardar o idioma original
         window.meuIdiomaLocal = langCode;
         console.log('💾 Idioma local guardado:', window.meuIdiomaLocal);
 
-        // ✅ MESMA BANDEIRA NAS DUAS POSIÇÕES (usando elementos que EXISTEM)
         const languageFlagElement = document.querySelector('.language-flag');
         if (languageFlagElement) languageFlagElement.textContent = bandeira;
 
@@ -662,7 +473,6 @@ async function aplicarBandeiraRemota(langCode) {
 
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🔴';
 
-        // ✅✅✅ SOLUÇÃO INTELIGENTE: Guardar o idioma REMOTO também!
         window.meuIdiomaRemoto = langCode;
         console.log('💾 Idioma REMOTO guardado:', window.meuIdiomaRemoto);
 
@@ -676,13 +486,12 @@ async function aplicarBandeiraRemota(langCode) {
     }
 }
 
-// 🎤 SISTEMA HÍBRIDO TTS AVANÇADO - SUBSTITUIÇÃO COMPLETA
+// 🎤 SISTEMA HÍBRIDO TTS AVANÇADO
 
 // 🎤 FUNÇÃO TTS DO NAVEGADOR (GRÁTIS) - OTIMIZADA
 function falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma) {
     return new Promise((resolve) => {
         try {
-            // Para qualquer fala anterior
             window.speechSynthesis.cancel();
             
             const utterance = new SpeechSynthesisUtterance(mensagem);
@@ -691,7 +500,6 @@ function falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma) {
             utterance.pitch = 1.0;
             utterance.volume = 0.9;
             
-            // EVENTO: FALA COMEÇOU
             utterance.onstart = () => {
                 pararSomDigitacao();
                 
@@ -708,7 +516,6 @@ function falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma) {
                 console.log(`🔊 Áudio Navegador TTS iniciado em ${idioma}`);
             };
             
-            // EVENTO: FALA TERMINOU
             utterance.onend = () => {
                 console.log('🔚 Áudio Navegador TTS terminado');
                 if (imagemImpaciente) {
@@ -717,7 +524,6 @@ function falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma) {
                 resolve(true);
             };
             
-            // EVENTO: ERRO NA FALA
             utterance.onerror = (error) => {
                 pararSomDigitacao();
                 console.log('❌ Erro no áudio Navegador TTS:', error);
@@ -746,10 +552,9 @@ function prepararNavegadorTTS(idioma) {
     if (navegadorTTSPreparado) return;
     
     try {
-        // Fala silenciosa para carregar o motor de voz
         const utterance = new SpeechSynthesisUtterance('');
         utterance.lang = idioma;
-        utterance.volume = 0; // Silencioso
+        utterance.volume = 0;
         utterance.onend = () => {
             navegadorTTSPreparado = true;
             console.log(`✅ Navegador TTS preparado para ${idioma}`);
@@ -783,7 +588,6 @@ async function falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma) {
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         
-        // EVENTO: ÁUDIO COMEÇOU
         audio.onplay = () => {
             pararSomDigitacao();
             
@@ -794,13 +598,12 @@ async function falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma) {
                 elemento.textContent = mensagem;
             }
             if (imagemImpaciente) {
-                    imagemImpaciente.style.display = 'none';
-                }
+                imagemImpaciente.style.display = 'none';
+            }
             
             console.log(`🔊 Áudio Google TTS iniciado em ${idioma}`);
         };
         
-        // EVENTO: ÁUDIO TERMINOU
         audio.onended = () => {
             console.log('🔚 Áudio Google TTS terminado');
             if (imagemImpaciente) {
@@ -808,7 +611,6 @@ async function falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma) {
             }
         };
         
-        // EVENTO: ERRO NO ÁUDIO
         audio.onerror = () => {
             pararSomDigitacao();
             console.log('❌ Erro no áudio Google TTS');
@@ -826,7 +628,7 @@ async function falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma) {
         
     } catch (error) {
         console.error('❌ Erro no Google TTS:', error);
-        throw error; // Repassa o erro para o fallback
+        throw error;
     }
 }
 
@@ -835,16 +637,13 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
     try {
         console.log(`🎯 TTS Híbrido: "${mensagem.substring(0, 50)}..." em ${idioma}`);
         
-        // Atualiza último idioma usado
         ultimoIdiomaTTS = idioma;
         
         if (primeiraFraseTTS) {
             console.log('🚀 PRIMEIRA FRASE: Usando Google TTS (rápido)');
             
-            // ✅ 1. PRIMEIRA FRASE: Google TTS (rápido)
             await falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma);
             
-            // ✅ 2. PREPARA NAVEGADOR EM SEGUNDO PLANO
             console.log(`🔄 Preparando navegador TTS para ${idioma}...`);
             prepararNavegadorTTS(idioma);
             
@@ -853,10 +652,8 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
         } else {
             console.log('💰 PRÓXIMAS FRASES: Usando Navegador TTS (grátis)');
             
-            // ✅ 3. PRÓXIMAS FRASES: Navegador TTS (grátis)
             const sucesso = await falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma);
             
-            // ✅ 4. FALLBACK: Se navegador falhar, volta para Google
             if (!sucesso) {
                 console.log('🔄 Fallback: Navegador falhou, usando Google TTS');
                 await falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma);
@@ -868,64 +665,24 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
     } catch (error) {
         console.error('❌ Erro no sistema híbrido TTS:', error);
         
-        // ✅ FALLBACK FINAL: Tenta navegador como última opção
         console.log('🔄 Tentando fallback final com navegador TTS...');
         await falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma);
     }
 }
 
-// ✅ FUNÇÃO PARA INICIAR CÂMERA APÓS PERMISSÕES (MODO RESILIENTE)
+// ✅ FUNÇÃO PARA INICIAR CÂMERA APÓS PERMISSÕES (USANDO CAMERA-VIGILANTE)
 async function iniciarCameraAposPermissoes() {
     try {
-        console.log('🎥 Tentando iniciar câmera CALLER (modo resiliente)...');
+        console.log('🎥 Iniciando sistema de câmera CALLER...');
         
-        // ✅ TENTA a câmera, mas NÃO TRAVA se falhar
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: false
-        }).catch(error => {
-            console.log('⚠️ Câmera CALLER indisponível, continuando sem vídeo...', error);
-            return null; // ⬅️ RETORNA NULL EM VEZ DE THROW ERROR
-        });
-
-        // ✅ SE CÂMERA FUNCIONOU: Configura normalmente
-        if (stream) {
-            window.localStream = stream;
-            
-            const localVideo = document.getElementById('localVideo');
-            if (localVideo) {
-                localVideo.srcObject = stream;
-            }
-
-            // 🎥 CONFIGURA BOTÃO DE ALTERNAR CÂMERA (só se câmera funcionou)
-            setupCameraToggle();
-            
-            console.log('✅ Câmera CALLER iniciada com sucesso');
-
-            // 🆕 🆕 🆕 ADICIONAR ESTAS 2 LINHAS AQUI 🆕 🆕 🆕
-    window.cameraVigilante = new CameraVigilante();
-    window.cameraVigilante.iniciarMonitoramento();
-    // 🆕 🆕 🆕 FIM DAS 2 LINHAS 🆕 🆕 🆕
+        // 🎥🎥🎥 USA O SISTEMA UNIFICADO DE CÂMERA 🎥🎥🎥
+        window.cameraVigilante = new CameraVigilante();
+        await window.cameraVigilante.inicializarSistema();
         
-        } else {
-            // ✅ SE CÂMERA FALHOU: Apenas avisa, mas continua
-            console.log('ℹ️ CALLER operando em modo áudio/texto (sem câmera)');
-            window.localStream = null;
-        }
-
-        // ✅✅✅ REMOVE LOADING INDEPENDENTE DA CÂMERA
-        const mobileLoading = document.getElementById('mobileLoading');
-        if (mobileLoading) {
-            mobileLoading.style.display = 'none';
-        }
-
         console.log('🌐 Inicializando WebRTC CALLER...');
         window.rtcCore = new WebRTCCore();
 
-        // ✅✅✅ CONFIGURA CALLBACKS ANTES DE INICIALIZAR (MANTÉM CÓDIGO ORIGINAL)
+        // ✅✅✅ CONFIGURA CALLBACKS ANTES DE INICIALIZAR
         window.rtcCore.setDataChannelCallback(async (mensagem) => {
             iniciarSomDigitacao();
 
@@ -948,12 +705,10 @@ async function iniciarCameraAposPermissoes() {
                 imagemImpaciente.style.display = 'block';
             }
 
-            // ✅✅✅ SOLUÇÃO DEFINITIVA: Usar o idioma GUARDADO
             const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
             
             console.log(`🎯 TTS Caller: Idioma guardado = ${idiomaExato}`);
             
-            // 🎤 CHAMADA PARA SISTEMA HÍBRIDO TTS AVANÇADO
             await falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
         });
 
@@ -979,14 +734,12 @@ async function iniciarCameraAposPermissoes() {
           lang: receiverLang
         };
 
-        // ✅✅✅ CORREÇÃO CRÍTICA: INICIA CONEXÃO MESMO SEM CÂMERA
+        // ✅✅✅ INICIA CONEXÃO MESMO SEM CÂMERA
         if (receiverId) {
           document.getElementById('callActionBtn').style.display = 'none';
           
-          // ✅✅✅ REMOVEMOS a verificação "if (localStream)" - AGORA SEMPRE INICIA!
           const meuIdioma = window.meuIdiomaLocal || 'pt-BR';
           
-          // ✅ PEQUENO ATRASO PARA GARANTIR QUE TUDO ESTÁ ESTÁVEL
           setTimeout(() => {
             // ✅✅✅ ENVIA null se câmera falhou - WebRTC deve aceitar!
             const streamParaEnviar = window.localStream || null;
@@ -1014,7 +767,6 @@ async function iniciarCameraAposPermissoes() {
         aplicarBandeiraRemota(receiverLang);
 
     } catch (error) {
-        // ✅✅✅ EM CASO DE ERRO: Remove loading E continua
         console.error("❌ Erro não crítico na câmera CALLER:", error);
         
         const mobileLoading = document.getElementById('mobileLoading');
@@ -1022,17 +774,16 @@ async function iniciarCameraAposPermissoes() {
             mobileLoading.style.display = 'none';
         }
         
-        // ✅ NÃO FAZ throw error! Apenas retorna normalmente
         console.log('🟡 CALLER continua funcionando (áudio/texto)');
     }
 }
 
-// 🚀 INICIALIZAÇÃO AUTOMÁTICA (ATUALIZADA COM NOVAS FUNCIONALIDADES)
+// 🚀 INICIALIZAÇÃO AUTOMÁTICA
 window.onload = async () => {
     try {
         console.log('🚀 Iniciando aplicação caller automaticamente...');
         
-        // 1. Obtém o idioma para tradução - APENAS DO NAVEGADOR (IGUAL AO RECEIVER)
+        // 1. Obtém o idioma para tradução
         const lang = navigator.language || 'pt-BR';
         
         // ✅✅✅ PRIMEIRO: Aplica bandeira e GUARDA o idioma
@@ -1047,10 +798,10 @@ window.onload = async () => {
         // 4. Carrega sons da máquina de escrever
         await carregarSomDigitacao();
         
-        // 5. Solicita TODAS as permissões (câmera + microfone) - AUTOMÁTICO
+        // 5. Solicita TODAS as permissões (câmera + microfone)
         await solicitarTodasPermissoes();
         
-        // 6. Configura o toggle das instruções (NOVO)
+        // 6. Configura o toggle das instruções
         setupInstructionToggle();
         
         // 7. Libera interface (remove loading)
@@ -1062,7 +813,7 @@ window.onload = async () => {
             console.log('✅ Interface liberada via fallback');
         }
         
-        // 8. Inicia câmera e WebRTC (já inclui setupCameraToggle)
+        // 🎥🎥🎥 8. INICIA SISTEMA DE CÂMERA UNIFICADO 🎥🎥🎥
         await iniciarCameraAposPermissoes();
         
         console.log('✅ Caller iniciado com sucesso!');
