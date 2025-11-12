@@ -5,22 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur-EchoMeP2P-Caller</title>
   <link rel="stylesheet" href="mobile-style.css" />
- 
+  
 </head>
 <body>
 
   <!-- 🧩 Container principal -->
   <div class="box-principal">
+
     <!-- 🐵 Logo Lemur -->
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
 
-    <!-- 🐵 Imagem do Lemur Impaciente -->
-    <img id="lemurWaiting" src="assets/images/lemurImpaciente.png" alt="Aguardando conexão" style="display: none;" />
+    <!-- 🐵 Imagem do Lemur Impaciente durante conexão -->
+<img id="lemurWaiting" src="assets/images/lemurImpaciente.png" alt="Aguardando conexão" style="display: none;" />
 
     <!-- 🌉 Imagem ponte -->
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
     
-    <!-- ⏳ Loader de carregamento -->
+    <!-- ⏳ Loader de carregamento (IGUAL AO RECEIVER) -->
     <div id="mobileLoading" class="mobile-loader">
       <div class="loader-circle"></div>
     </div>
@@ -30,27 +31,28 @@
       Real-time translation.
     </div>
 
-    <!-- 🆕 LINKS DE REDES SOCIAIS -->
-    <div class="social-links-fixed">
-      <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed">
-        <img src="assets/images/linke.png" alt="LinkedIn">
-      </a>
-      <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed">
-        <img src="assets/images/insta.png" alt="Instagram">
-      </a>
-      <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed">
-        <img src="assets/images/face.png" alt="Facebook">
-      </a>
-      <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed">
-        <img src="assets/images/redeX.png" alt="Website">
-      </a>
-      <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed">
-        <img src="assets/images/wattsap.png" alt="WhatsApp">
-      </a>
-      <a href="https://t.me/lemurinnovation" target="_blank" class="social-btn-fixed">
-        <img src="assets/images/telegran.png" alt="Telegram">
-      </a>
-    </div>
+ <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS - SIMPLIFICADO -->
+<div class="social-links-fixed">
+  <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/linke.png" alt="LinkedIn">
+  </a>
+  <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/insta.png" alt="Instagram">
+  </a>
+  <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/face.png" alt="Facebook">
+  </a>
+  <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/redeX.png" alt="Website">
+  </a>
+  <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/wattsap.png" alt="WhatsApp">
+  </a>
+  <a href="https://t.me/lemurinnovation" target="_blank" class="social-btn-fixed">
+    <img src="assets/images/telegran.png" alt="Telegram">
+  </a>
+</div>
+
 
     <div class="remoter-Lang">🏳️</div>
     <div class="local-Lang">🏳️</div>
@@ -66,59 +68,60 @@
       </div>
     </div>
 
-    <!-- 🧾 Overlay com informações -->
+    <!-- 🧾 Overlay com informações (inicialmente oculto) -->
     <div class="info-overlay hidden">
       <span id="myId"></span>
     </div>
 
     <button id="callActionBtn" style="display: none;">SEND 🚀</button>
 
-    <!-- ✅ CAIXA DE TEXTO -->
+    <!-- ✅ APENAS A CAIXA PRINCIPAL DE TEXTO -->
     <div id="texto-recebido"></div>
 
-    <!-- 🏳️ Bandeira do idioma -->
+    <!-- 🏳️ Bandeira do idioma atual -->
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
 
     <!-- 🎤 Microfone -->
     <button class="record-btn" id="recordButton" disabled>🎤</button>
+             
   </div>
 
-  <!-- 📋 Instruction box -->
-  <div class="instruction-box expandido" id="instructionBox">
-    <button class="instruction-toggle" id="instructionToggle"></button>
-    <div class="instruction-content">
-      <div class="instruction-item">
-        <img src="assets/images/hello.png" alt="Hello icon" />
-        <span id="welcome-text">Welcome! Let's begin.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/realtime.png" alt="Realtime icon" />
-        <span id="translator-label-2">Real-time translation.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/Ancioso.png" alt="Loading icon" />
-        <span id="wait-connection">Waiting for connection.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/juntos.png" alt="Connected icon" />
-        <span id="both-connected">Both online.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/trduz.png" alt="Message icon" />
-        <span id="check-replies">Read the message.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/mic.png" alt="Mic icon" />
-        <span id="drop-voice">Speak clearly.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/cam.png" alt="Camera icon" />
-        <span id="flip-cam">Flip the camera. Share!</span>
-      </div>
+  <!-- 📋 Instruction box with toggle -->
+<div class="instruction-box expandido" id="instructionBox">
+  <button class="instruction-toggle" id="instructionToggle"></button>
+  <div class="instruction-content">
+    <div class="instruction-item">
+      <img src="assets/images/hello.png" alt="Hello icon" />
+      <span id="welcome-text">Welcome! Let's begin.</span>
+    </div>
+    <div class="instruction-item">
+  <img src="assets/images/realtime.png" alt="Realtime icon" />
+  <span id="translator-label-2">Real-time translation.</span>  <!-- ⬅️ MUDE PARA ID ÚNICO -->
+</div>
+    <div class="instruction-item">
+      <img src="assets/images/Ancioso.png" alt="Loading icon" />
+      <span id="wait-connection">Waiting for connection.</span>
+    </div>
+    <div class="instruction-item">
+      <img src="assets/images/juntos.png" alt="Connected icon" />
+      <span id="both-connected">Both online.</span>
+    </div>
+    <div class="instruction-item">
+      <img src="assets/images/trduz.png" alt="Message icon" />
+      <span id="check-replies">Read the message.</span>
+    </div>
+    <div class="instruction-item">
+      <img src="assets/images/mic.png" alt="Mic icon" />
+      <span id="drop-voice">Speak clearly.</span>
+    </div>
+    <div class="instruction-item">
+      <img src="assets/images/cam.png" alt="Camera icon" />
+      <span id="flip-cam">Flip the camera. Share!</span>
     </div>
   </div>
+</div>
 
-  <!-- 🔄 Botão para alternar câmera -->
+  <!-- 🔄 Botão para alternar câmera (IGUAL AO RECEIVER) -->
   <button id="toggleCamera" class="camera-toggle-btn">
     <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
   </button>
@@ -132,45 +135,11 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- 🆕 ELEMENTOS SAFARI -->
-  <div id="safariActivationOverlay">
-    <button id="safariActivationButton"></button>
-  </div>
-
-  <button id="safariMicButton"></button>
-
-  <!-- 💬 CAMPO TEXTO -->
-  <div id="chatInputContainer">
-    <input type="text" id="textInput" placeholder="Fale ou digite sua mensagem..." />
-    <button id="sendMessageButton">📤</button>
-  </div>
-
   <script>
-    // 🎯 CAPTURA PARÂMETROS DA URL - CÓDIGO CRÍTICO ADICIONADO
-    document.addEventListener('DOMContentLoaded', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token') || '';
-        const targetId = urlParams.get('targetId') || '';
-        const lang = urlParams.get('lang') || navigator.language || 'pt-BR';
-        
-        // ✅ ARMAZENA OS DADOS PARA USO POSTERIOR
-        window.qrCodeData = {
-            token: token,
-            myId: targetId, // ⚠️ ATENÇÃO: targetId vira myId
-            lang: lang
-        };
-        
-        console.log('📥 Caller-safari - Dados recebidos:', { token, targetId, lang });
-        
-        // ✅ INICIALIZA SISTEMA COM OS DADOS RECEBIDOS
-        if (typeof window.inicializarCaller === 'function') {
-            window.inicializarCaller(token, targetId, lang);
-        }
-    });
-
-    // 🆕 FUNÇÃO PARA COMPARTILHAR NAS REDES SOCIAIS
+    
+// 🆕 FUNÇÃO PARA COMPARTILHAR NAS REDES SOCIAIS
+    
     function compartilharSocial(rede) {
-      // ✅ AGORA USA window.qrCodeData QUE SERÁ PREENCHIDO
       const myId = window.qrCodeData?.myId || '';
       const token = window.qrCodeData?.token || '';
       const lang = window.qrCodeData?.lang || 'pt-BR';
@@ -189,122 +158,12 @@
         telegram: `https://t.me/share/url?url=${urlEncoded}&text=${textoEncoded}`
       };
       
-      if (urls[rede]) {
-        window.open(urls[rede], '_blank', 'width=600,height=400');
-      }
+      window.open(urls[rede], '_blank', 'width=600,height=400');
     }
-
-    // 🎵 MÁGICA SAFARI
-    let safariAudio = null;
-
-    document.getElementById('safariActivationButton').addEventListener('click', function() {
-      if (!safariAudio) {
-        console.log('🔊 LIGANDO RADINHO SAFARI - Caller');
-        safariAudio = new Audio('assets/audio/safari-radinho.mp3');
-        safariAudio.volume = 0.1;
-        safariAudio.loop = true;
-        safariAudio.play().catch(e => console.log('Radinho Safari OK - Caller'));
-      }
-      
-      document.getElementById('safariActivationOverlay').style.display = 'none';
-      console.log('✅ Tela amarela removida - Botão azul permanece - Caller');
-    });
-
-    document.getElementById('safariMicButton').addEventListener('click', function(e) {
-      e.stopPropagation();
-      console.log('💬 ABRINDO CAMPO TEXTO + TECLADO - Caller');
-      
-      const chatContainer = document.getElementById('chatInputContainer');
-      chatContainer.classList.add('visible');
-      
-      setTimeout(() => {
-        document.getElementById('textInput').focus();
-      }, 100);
-    });
-
-    // 📤 BOTÃO ENVIAR - SISTEMA DE TEXTO
-    document.getElementById('sendMessageButton').addEventListener('click', function() {
-      const textInput = document.getElementById('textInput');
-      const texto = textInput.value.trim();
-      
-      if (texto) {
-        console.log('💬 Caller - Texto para tradução:', texto);
-        
-        // 🆕 VERIFICA SE A FUNÇÃO DE TRADUÇÃO EXISTE
-        if (typeof window.translateText === 'function') {
-          window.translateText(texto).then(traduzido => {
-            if (traduzido && traduzido.trim() !== "") {
-              console.log(`🌐 Caller - Traduzido: "${texto}" → "${traduzido}"`);
-              
-              // 🆕 ENVIA VIA WEBRTC SE DISPONÍVEL
-              if (window.rtcCore && window.rtcCore.dataChannel && 
-                  window.rtcCore.dataChannel.readyState === 'open') {
-                window.rtcCore.dataChannel.send(traduzido);
-                console.log('✅ Caller - Mensagem enviada para Receiver');
-              } else {
-                console.log('⏳ Caller - Canal WebRTC não disponível ainda');
-                // Fallback: mostra mensagem de erro
-                alert('Conexão não estabelecida. Aguarde a conexão com o receiver.');
-              }
-            }
-          }).catch(error => {
-            console.error('❌ Erro na tradução:', error);
-          });
-        } else {
-          console.log('❌ Função translateText não disponível');
-          alert('Sistema de tradução não carregado. Recarregue a página.');
-        }
-        
-        // Limpa e esconde
-        textInput.value = '';
-        document.getElementById('chatInputContainer').classList.remove('visible');
-        textInput.blur();
-      }
-    });
-
-    // 🆕 SISTEMA DE RECEBIMENTO PARA CALLER
-    function configurarRecepcaoCaller() {
-      if (window.rtcCore && typeof window.rtcCore.setDataChannelCallback === 'function') {
-        window.rtcCore.setDataChannelCallback(async (mensagem) => {
-          console.log('📩 Caller - Mensagem recebida do Receiver:', mensagem);
-          
-          // 🆕 USA SISTEMA TTS SE DISPONÍVEL
-          if (typeof window.falarTextoSistemaHibrido === 'function') {
-            const elemento = document.getElementById('texto-recebido');
-            const imagemImpaciente = document.getElementById('lemurWaiting');
-            const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
-            
-            await window.falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
-            console.log('🔊 Caller - Mensagem falada via TTS');
-          } else {
-            console.log('❌ Caller - Sistema TTS não disponível');
-            // Fallback: mostra mensagem
-            const elemento = document.getElementById('texto-recebido');
-            if (elemento) {
-              elemento.textContent = `Receiver: ${mensagem}`;
-            }
-          }
-        });
-        console.log('✅ Caller - Sistema de recepção configurado');
-      } else {
-        console.log('⏳ Caller - RTC Core não carregado, tentando novamente...');
-        setTimeout(configurarRecepcaoCaller, 1000);
-      }
-    }
-
-    // ⌨️ TECLA ENTER TAMBÉM ENVIA
-    document.getElementById('textInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        document.getElementById('sendMessageButton').click();
-      }
-    });
-
-    // 🆕 INICIALIZA RECEPÇÃO APÓS CARREGAMENTO
-    setTimeout(configurarRecepcaoCaller, 2000);
 
   </script>
 
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/caller/caller-ui.js"></script>
   <script src="./js/caller/caller-trz.js"></script>
   
