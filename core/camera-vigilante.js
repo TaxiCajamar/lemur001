@@ -1,18 +1,18 @@
-// 🎯 VIGILANTE DE CÂMERAS UNIVERSAL + GERENCIADOR INTELIGENTE
+// 🎯 VIGILANTE DE CÂMERAS UNIVERSAL - CONTROLE ÚNICO
 // 📍 Localização: core/camera-vigilante.js
 
 class CameraVigilante {
     constructor() {
-        // 👁️ MÓDULO VIGILANTE EXPANDIDO
+        // 👁️ MÓDULO VIGILANTE
         this.estaMonitorando = false;
         this.intervaloMonitoramento = null;
         this.ultimoFrameTime = null;
         this.tentativasRecuperacao = 0;
         this.maxTentativas = 3;
         
-        // 🎥 CONTROLE DE TODAS AS CÂMERAS (NOVO)
-        this.todasAsCameras = []; // 🆕 LISTA DE TODAS AS CÂMERAS
-        this.cameraAtual = null;  // 🆕 CÂMERA EM USO
+        // 🎥 CONTROLE DE CÂMERAS
+        this.todasAsCameras = [];
+        this.cameraAtual = null;
         this.camerasCache = null;
         this.ultimaAtualizacao = 0;
         this.cacheValidity = 30000;
@@ -21,123 +21,115 @@ class CameraVigilante {
         this.botaoToggle = null;
         this.isSwitching = false;
         
-        console.log('🎯 CameraVigilante (Vigilância Universal) inicializado');
+        console.log('🎯 CameraVigilante (Controle Único) inicializado');
     }
 
-    // 🆕 MÉTODO PARA MAPEAR TODAS AS CÂMERAS DISPONÍVEIS
+    // 🚀 INICIALIZAÇÃO COMPLETA DO SISTEMA
+    async inicializarSistema() {
+        try {
+            console.log('🚀 Inicializando sistema completo de câmera...');
+            
+            // 1. 🗺️ MAPEAR CÂMERAS
+            await this.mapearTodasCameras();
+            
+            // 2. 📹 INICIAR CÂMERA PRINCIPAL
+            await this.iniciarCameraPadrao();
+            
+            // 3. 🔘 CONFIGURAR BOTÃO
+            this.configurarBotaoToggle();
+            
+            // 4. 👁️ INICIAR VIGILÂNCIA
+            this.iniciarMonitoramento();
+            
+            console.log('✅ Sistema de câmera inicializado com sucesso');
+            
+        } catch (error) {
+            console.error('❌ Erro na inicialização do sistema de câmera:', error);
+            // ⚠️ Continua sem câmera, mas sistema funciona
+        }
+    }
+
+    // 📹 INICIAR CÂMERA PADRÃO (substitui a do receiver-ui.js)
+    async iniciarCameraPadrao() {
+        try {
+            console.log('📹 Iniciando câmera padrão...');
+            
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            });
+
+            await this.handleNewStream(stream);
+            console.log('✅ Câmera padrão iniciada');
+            
+        } catch (error) {
+            console.log('⚠️ Câmera indisponível, continuando sem vídeo...', error);
+            // ⚠️ Não trava o sistema - continua em modo áudio/texto
+        }
+    }
+
+    // 🗺️ MAPEAR TODAS AS CÂMERAS
     async mapearTodasCameras() {
         try {
-            console.log('🗺️ Mapeando todas as câmeras disponíveis...');
             const devices = await navigator.mediaDevices.enumerateDevices();
             this.todasAsCameras = devices.filter(device => device.kind === 'videoinput');
             
-            console.log(`📷 Câmeras mapeadas: ${this.todasAsCameras.length}`);
-            this.todasAsCameras.forEach((cam, index) => {
-                console.log(`   ${index + 1}. ${cam.label || 'Camera ' + index} (${cam.deviceId.substring(0, 10)}...)`);
-            });
-            
+            console.log(`📷 Câmeras encontradas: ${this.todasAsCameras.length}`);
             return this.todasAsCameras;
+            
         } catch (error) {
             console.error('❌ Erro ao mapear câmeras:', error);
             return [];
         }
     }
 
-    // 🆕 VIGILÂNCIA DA CÂMERA ATUAL + PREPARAÇÃO DAS DEMAIS
+    // 👁️ VIGILÂNCIA DA CÂMERA
     async iniciarMonitoramento() {
         if (this.estaMonitorando) return;
 
-        console.log('👁️ Iniciando vigilância universal de câmeras...');
+        console.log('👁️ Iniciando vigilância de câmera...');
         
-        // 🗺️ PRIMEIRO: MAPEA TODAS AS CÂMERAS
-        await this.mapearTodasCameras();
-        
-        // 📹 MARCA CÂMERA ATUAL
-        if (window.localStream) {
-            const videoTrack = window.localStream.getVideoTracks()[0];
-            if (videoTrack) {
-                const settings = videoTrack.getSettings();
-                this.cameraAtual = this.todasAsCameras.find(cam => 
-                    cam.deviceId === settings.deviceId
-                );
-                console.log(`🎯 Câmera atual: ${this.cameraAtual?.label || 'Desconhecida'}`);
-            }
-        }
-
         this.estaMonitorando = true;
         this.ultimoFrameTime = Date.now();
 
-        // 👁️ OBSERVA A CÂMERA ATUAL
         this.observarVideo();
         
-        // ⚡ VERIFICAÇÃO PERIÓDICA DA SAÚDE
         this.intervaloMonitoramento = setInterval(() => {
             this.verificarSaudeCamera();
         }, 5000);
 
-        console.log('✅ Vigilância universal ativada');
+        console.log('✅ Vigilância ativada');
     }
 
-    // 🆕 VERIFICAÇÃO EXPANDIDA - VIGIA SAÚDE GERAL
+    // 🔍 VERIFICAÇÃO DE SAÚDE
     async verificarSaudeCamera() {
         if (!this.estaMonitorando) return;
 
-        console.log('🔍 Verificação universal de saúde das câmeras...');
-        
-        // 1. ✅ VERIFICA CÂMERA ATUAL
         const agora = Date.now();
         const tempoSemFrames = agora - this.ultimoFrameTime;
         
         if (tempoSemFrames > 10000) {
-            console.log('🚨 Câmera atual possivelmente congelada');
+            console.log('🚨 Câmera possivelmente congelada');
             this.tentarRecuperarCamera('congelada');
             return;
         }
 
-        // 2. ✅ VERIFICA SE A CÂMERA ATUAL AINDA EXISTE
         if (window.localStream) {
             const videoTrack = window.localStream.getVideoTracks()[0];
-            if (!videoTrack) {
-                console.log('🚨 Nenhuma track de vídeo encontrada');
-                this.tentarRecuperarCamera('sem_track');
-                return;
-            }
-            
-            if (videoTrack.readyState === 'ended') {
-                console.log('🚨 Track de vídeo terminou');
-                this.tentarRecuperarCamera('track_terminada');
+            if (!videoTrack || videoTrack.readyState === 'ended') {
+                console.log('🚨 Problema na track de vídeo');
+                this.tentarRecuperarCamera('track_problema');
                 return;
             }
         }
 
-        // 3. 🆕 VERIFICA DISPONIBILIDADE DAS OUTRAS CÂMERAS
-        await this.verificarDisponibilidadeCameras();
-
-        console.log('✅ Todas as câmeras estão saudáveis');
+        console.log('✅ Câmera saudável');
     }
 
-    // 🆕 VERIFICA SE AS OUTRAS CÂMERAS AINDA ESTÃO DISPONÍVEIS
-    async verificarDisponibilidadeCameras() {
-        try {
-            const camerasAtuais = await this.mapearTodasCameras();
-            
-            // 🚨 DETECTA SE ALGUMA CÂMERA DESAPARECEU
-            if (camerasAtuais.length < this.todasAsCameras.length) {
-                console.log('⚠️ Número de câmeras disponíveis mudou');
-                this.todasAsCameras = camerasAtuais;
-            }
-            
-            // 🚨 VERIFICA SE A CÂMERA ATUAL AINDA EXISTE
-            if (this.cameraAtual && !camerasAtuais.find(cam => cam.deviceId === this.cameraAtual.deviceId)) {
-                console.log('🚨 Câmera atual não está mais disponível!');
-                this.tentarRecuperarCamera('camera_removida');
-            }
-            
-        } catch (error) {
-            console.log('❌ Erro ao verificar disponibilidade:', error);
-        }
-    }
-
+    // 📺 OBSERVAR ELEMENTO DE VÍDEO
     observarVideo() {
         const localVideo = document.getElementById('localVideo');
         if (!localVideo) return;
@@ -147,14 +139,15 @@ class CameraVigilante {
         });
 
         localVideo.addEventListener('error', (error) => {
-            console.log('❌ Erro detectado no elemento de vídeo:', error);
-            this.tentarRecuperarCamera('erro_no_video');
+            console.log('❌ Erro no elemento de vídeo:', error);
+            this.tentarRecuperarCamera('erro_video');
         });
     }
 
+    // 🔄 RECUPERAÇÃO INTELIGENTE
     async tentarRecuperarCamera(motivo) {
         if (this.tentativasRecuperacao >= this.maxTentativas) {
-            console.log('❌ Máximo de tentativas de recuperação atingido');
+            console.log('❌ Máximo de tentativas de recuperação');
             return;
         }
 
@@ -166,46 +159,35 @@ class CameraVigilante {
             await this.executarRecuperacao();
             this.iniciarMonitoramento();
             this.tentativasRecuperacao = 0;
-            console.log('✅ Câmera recuperada com sucesso!');
+            console.log('✅ Câmera recuperada!');
         } catch (error) {
             console.log('❌ Falha na recuperação:', error);
-            if (this.tentativasRecuperacao < this.maxTentativas) {
-                setTimeout(() => {
-                    this.tentarRecuperarCamera(motivo);
-                }, 2000);
-            }
         }
     }
 
-    // 🆕 RECUPERAÇÃO INTELIGENTE - TENTA CÂMERAS ALTERNATIVAS
     async executarRecuperacao() {
-        console.log('🔧 Executando recuperação inteligente...');
+        console.log('🔧 Executando recuperação...');
         
-        // 1. 🗺️ ATUALIZA MAPA DE CÂMERAS
         await this.mapearTodasCameras();
         
         if (this.todasAsCameras.length === 0) {
             throw new Error('Nenhuma câmera disponível');
         }
 
-        // 2. 🎯 TENTA CÂMERA ALTERNATIVA (NÃO A QUE FALHOU)
         let cameraParaTentar = null;
         
         if (this.cameraAtual && this.todasAsCameras.length > 1) {
-            // Tenta a próxima câmera na lista
             const indexAtual = this.todasAsCameras.findIndex(cam => 
                 cam.deviceId === this.cameraAtual.deviceId
             );
             const proximaIndex = (indexAtual + 1) % this.todasAsCameras.length;
             cameraParaTentar = this.todasAsCameras[proximaIndex];
         } else {
-            // Primeira tentativa ou só tem uma câmera
             cameraParaTentar = this.todasAsCameras[0];
         }
 
-        console.log(`🎯 Tentando câmera alternativa: ${cameraParaTentar.label || 'Camera alternativa'}`);
+        console.log(`🎯 Tentando câmera: ${cameraParaTentar.label || 'Camera alternativa'}`);
 
-        // 3. 📹 TENTA NOVA CÂMERA
         const novaStream = await navigator.mediaDevices.getUserMedia({
             video: { 
                 deviceId: { exact: cameraParaTentar.deviceId },
@@ -216,57 +198,25 @@ class CameraVigilante {
         });
 
         await this.handleNewStream(novaStream);
-        console.log('✅ Recuperação inteligente concluída');
     }
 
-    // ✅ ATUALIZADO: AGORA ATUALIZA O CONTROLE DA CÂMERA ATUAL
-    async handleNewStream(newStream) {
-        // Atualiza vídeo local
-        const localVideo = document.getElementById('localVideo');
-        if (localVideo) {
-            localVideo.srcObject = newStream;
-        }
-
-        // Atualiza stream global
-        window.localStream = newStream;
-
-        // 🆕 ATUALIZA CÂMERA ATUAL NO VIGILANTE
-        const videoTrack = newStream.getVideoTracks()[0];
-        if (videoTrack) {
-            const settings = videoTrack.getSettings();
-            this.cameraAtual = this.todasAsCameras.find(cam => 
-                cam.deviceId === settings.deviceId
-            );
-            console.log(`🔄 Câmera atualizada no vigilante: ${this.cameraAtual?.label || 'Nova câmera'}`);
-        }
-
-        // Atualiza WebRTC se conectado
-        this.atualizarWebRTC(newStream);
-
-        // 🔄 REINICIA VIGILÂNCIA PARA A NOVA CÂMERA
-        this.reiniciarMonitoramento();
-    }
-
-    // =============================================
-    // 🔘 MÓDULO DE CONTROLE DO BOTÃO
-    // =============================================
-
+    // 🔘 SISTEMA DE BOTÃO (substitui setupCameraToggle do receiver-ui.js)
     configurarBotaoToggle(buttonId = 'toggleCamera') {
         this.botaoToggle = document.getElementById(buttonId);
         
         if (!this.botaoToggle) {
-            console.log('❌ Botão de alternar câmera não encontrado:', buttonId);
+            console.log('❌ Botão de alternar câmera não encontrado');
             return false;
         }
 
         this.botaoToggle.addEventListener('click', () => this.handleToggleClick());
-        console.log('✅ Botão de câmera configurado:', buttonId);
+        console.log('✅ Botão de câmera configurado');
         return true;
     }
 
     async handleToggleClick() {
         if (this.isSwitching) {
-            console.log('⏳ Troca de câmera já em andamento...');
+            console.log('⏳ Troca já em andamento...');
             return;
         }
 
@@ -275,18 +225,15 @@ class CameraVigilante {
         this.botaoToggle.style.cursor = 'wait';
 
         try {
-            console.log('🚀 Iniciando troca inteligente de câmera...');
+            console.log('🔄 Iniciando troca de câmera...');
             
-            // 🛑 PARA STREAM ATUAL
             if (window.localStream) {
                 window.localStream.getTracks().forEach(track => track.stop());
                 window.localStream = null;
             }
 
-            // ⏳ AGUARDA LIBERAÇÃO
             await new Promise(resolve => setTimeout(resolve, 250));
 
-            // 🔄 USA SISTEMA INTELIGENTE
             const newStream = await this.alternarCameraInteligente();
             await this.handleNewStream(newStream);
             
@@ -297,8 +244,6 @@ class CameraVigilante {
             
             if (error.message.includes('Apenas uma câmera')) {
                 this.botaoToggle.style.display = 'none';
-            } else {
-                await this.tryFallbackBasico();
             }
         } finally {
             this.isSwitching = false;
@@ -308,37 +253,31 @@ class CameraVigilante {
     }
 
     async alternarCameraInteligente() {
-        try {
-            const camerasOrdenadas = await this.obterCamerasOrdenadas();
-            
-            if (camerasOrdenadas.length <= 1) {
-                throw new Error('Apenas uma câmera disponível');
-            }
-            
-            const deviceIdAtual = window.localStream?.getVideoTracks()[0]?.getSettings()?.deviceId;
-            const indexAtual = deviceIdAtual ? 
-                camerasOrdenadas.findIndex(cam => cam.deviceId === deviceIdAtual) : -1;
-            
-            const proximaIndex = (indexAtual + 1) % camerasOrdenadas.length;
-            const proximaCamera = camerasOrdenadas[proximaIndex];
-            
-            console.log(`🔄 [INTELIGENTE] Alternando para: ${proximaCamera.label || 'Camera ' + proximaIndex}`);
-            
-            const newStream = await navigator.mediaDevices.getUserMedia({
-                video: { 
-                    deviceId: { exact: proximaCamera.deviceId },
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                },
-                audio: false
-            });
-            
-            return newStream;
-            
-        } catch (error) {
-            console.error('❌ [INTELIGENTE] Falha:', error);
-            throw error;
+        const camerasOrdenadas = await this.obterCamerasOrdenadas();
+        
+        if (camerasOrdenadas.length <= 1) {
+            throw new Error('Apenas uma câmera disponível');
         }
+        
+        const deviceIdAtual = window.localStream?.getVideoTracks()[0]?.getSettings()?.deviceId;
+        const indexAtual = deviceIdAtual ? 
+            camerasOrdenadas.findIndex(cam => cam.deviceId === deviceIdAtual) : -1;
+        
+        const proximaIndex = (indexAtual + 1) % camerasOrdenadas.length;
+        const proximaCamera = camerasOrdenadas[proximaIndex];
+        
+        console.log(`🔄 Alternando para: ${proximaCamera.label || 'Camera ' + proximaIndex}`);
+        
+        const newStream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+                deviceId: { exact: proximaCamera.deviceId },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: false
+        });
+        
+        return newStream;
     }
 
     async obterCamerasOrdenadas() {
@@ -348,7 +287,7 @@ class CameraVigilante {
         
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
-        const camerasOrdenadas = await this.ordenarCamerasPorPrioridade(videoDevices);
+        const camerasOrdenadas = this.ordenarCamerasPorPrioridade(videoDevices);
         
         this.camerasCache = camerasOrdenadas;
         this.ultimaAtualizacao = Date.now();
@@ -356,26 +295,7 @@ class CameraVigilante {
         return camerasOrdenadas;
     }
 
-    calcularPontuacaoRapida(camera) {
-        let pontuacao = 50;
-        const label = camera.label.toLowerCase();
-        
-        if (label.includes('back') && !label.includes('ultra') && !label.includes('wide')) {
-            pontuacao += 40;
-        } else if (label.includes('front') || label.includes('selfie')) {
-            pontuacao += 30;
-        } else if (label.includes('wide') || label.includes('ultra')) {
-            pontuacao += 10;
-        } else if (label.includes('tele') || label.includes('zoom')) {
-            pontuacao += 5;
-        } else if (label.includes('macro')) {
-            pontuacao += 2;
-        }
-        
-        return pontuacao;
-    }
-
-    async ordenarCamerasPorPrioridade(cameras) {
+    ordenarCamerasPorPrioridade(cameras) {
         const camerasComInfo = [];
         
         for (const camera of cameras) {
@@ -388,28 +308,44 @@ class CameraVigilante {
             .map(item => item.camera);
     }
 
-    async tryFallbackBasico() {
-        try {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const videoDevices = devices.filter(device => device.kind === 'videoinput');
-            
-            if (videoDevices.length > 1) {
-                const newStream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: false
-                });
-                await this.handleNewStream(newStream);
-            }
-        } catch (fallbackError) {
-            console.error('❌ Fallback também falhou:', fallbackError);
+    calcularPontuacaoRapida(camera) {
+        let pontuacao = 50;
+        const label = camera.label.toLowerCase();
+        
+        if (label.includes('back') && !label.includes('ultra') && !label.includes('wide')) {
+            pontuacao += 40;
+        } else if (label.includes('front') || label.includes('selfie')) {
+            pontuacao += 30;
+        } else if (label.includes('wide') || label.includes('ultra')) {
+            pontuacao += 10;
         }
+        
+        return pontuacao;
     }
 
-    // =============================================
-    // 🔧 MÉTODOS DE CONTROLE (MANTIDOS)
-    // =============================================
+    // ✅ MANIPULAÇÃO DE STREAM (substitui handleNewStream do receiver-ui.js)
+    async handleNewStream(newStream) {
+        const localVideo = document.getElementById('localVideo');
+        if (localVideo) {
+            localVideo.srcObject = newStream;
+        }
 
-    // ✅ ESTA PARTE CONTINUA EXATAMENTE IGUAL (CRÍTICA)
+        window.localStream = newStream;
+
+        const videoTrack = newStream.getVideoTracks()[0];
+        if (videoTrack) {
+            const settings = videoTrack.getSettings();
+            this.cameraAtual = this.todasAsCameras.find(cam => 
+                cam.deviceId === settings.deviceId
+            );
+            console.log(`🔄 Câmera atual: ${this.cameraAtual?.label || 'Nova câmera'}`);
+        }
+
+        this.atualizarWebRTC(newStream);
+        this.reiniciarMonitoramento();
+    }
+
+    // 🌐 ATUALIZAR WEBRTC (substitui atualização duplicada do receiver-ui.js)
     atualizarWebRTC(novaStream) {
         if (window.rtcCore && window.rtcCore.peer) {
             const connectionState = window.rtcCore.peer.connectionState;
@@ -432,6 +368,7 @@ class CameraVigilante {
         }
     }
 
+    // 🔧 CONTROLE DO MONITORAMENTO
     pararMonitoramento() {
         if (this.intervaloMonitoramento) {
             clearInterval(this.intervaloMonitoramento);
@@ -453,5 +390,4 @@ class CameraVigilante {
     }
 }
 
-// 🌐 EXPORTAÇÃO (MESMO NOME - NADA MUDA NOS IMPORTS)
 export { CameraVigilante };
