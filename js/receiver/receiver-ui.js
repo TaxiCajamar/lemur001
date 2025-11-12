@@ -517,9 +517,11 @@ window.onload = async () => {
     try {
         console.log('🚀 Iniciando aplicação receiver automaticamente...');
         
-        // 1. Obtém o idioma para tradução
+        // ✅✅✅ CORREÇÃO: Declara params UMA VEZ no início
         const params = new URLSearchParams(window.location.search);
         const lang = params.get('lang') || navigator.language || 'pt-BR';
+        const token = params.get('token') || '';
+        const targetIdFromUrl = params.get('targetId') || '';
         
         // ✅✅✅ PRIMEIRO: Aplica bandeira e GUARDA o idioma
         await aplicarBandeiraLocal(lang);
@@ -552,12 +554,8 @@ window.onload = async () => {
         // 8. Configura WebRTC (mantido do código original)
         window.rtcCore = new WebRTCCore();
 
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token') || '';
-        const targetIdFromUrl = params.get('targetId') || '';
-
+        // ✅✅✅ CORREÇÃO: USA AS VARIÁVEIS JÁ DECLARADAS, NÃO DECLARA NOVAMENTE
         const myId = targetIdFromUrl || crypto.randomUUID().substr(0, 8);
-        const lang = params.get('lang') || navigator.language || 'pt-BR';
 
         window.targetTranslationLang = lang;
 
