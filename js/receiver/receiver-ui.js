@@ -230,10 +230,34 @@ function esconderClickQuandoConectar() {
     console.log('👀 Observando conexão WebRTC para esconder botão Click');
 }
 
-// 🆕 SISTEMA HÍBRIDO DO TEXTO-RECEBIDO - COM CONTEÚDO FIXO DAS INSTRUÇÕES
+// 🆕 SISTEMA HÍBRIDO DO TEXTO-RECEBIDO - COM LAYOUT IDÊNTICO AO INSTRUCTION-BOX
 function inicializarTextoRecebidoHibrido() {
     const textoRecebido = document.getElementById("texto-recebido");
     if (!textoRecebido) return;
+
+    // 🎯 APLICA TODAS AS CLASSES CSS DO INSTRUCTION-BOX ORIGINAL
+    textoRecebido.classList.add("instruction-box", "expandido");
+    
+    // Remove quaisquer estilos conflitantes que possam existir no texto-recebido
+    textoRecebido.style.cssText = `
+        position: absolute !important;
+        bottom: 1% !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 85% !important;
+        max-width: 300px !important;
+        min-width: 200px !important;
+        padding: 1% 2% !important;
+        background: #ffffff !important;
+        border: 2px solid #4CAF50 !important;
+        border-radius: 12px !important;
+        box-shadow: inset 0 0 10px rgba(0, 128, 0, 0.2) !important;
+        font-size: 16px !important;
+        z-index: 100 !important;
+        text-align: left !important;
+        transition: all 0.3s ease !important;
+        overflow: hidden !important;
+    `;
 
     // Cria o botão de toggle
     const toggleBtn = document.createElement("button");
@@ -284,30 +308,35 @@ function inicializarTextoRecebidoHibrido() {
     // Inicializa expandido com as instruções fixas
     textoRecebido.innerHTML = conteudoInstrucoes;
     textoRecebido.appendChild(toggleBtn);
-    textoRecebido.classList.add("instruction-box", "expandido");
 
     // Alterna expandido/recolhido
     toggleBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         
         if (textoRecebido.classList.contains("expandido")) {
-            // MODO RECOLHIDO - Limpa para mensagens
+            // MODO RECOLHIDO - Aplica estilo recolhido IDÊNTICO ao original
             textoRecebido.classList.remove("expandido");
             textoRecebido.classList.add("recolhido");
+            textoRecebido.style.height = "40px";
+            textoRecebido.style.width = "50px";
+            textoRecebido.style.cursor = "pointer";
             textoRecebido.innerHTML = '';
             textoRecebido.appendChild(toggleBtn);
             console.log('📖 Modo recolhido - pronto para mensagens');
         } else {
-            // MODO EXPANDIDO - Volta com instruções fixas
+            // MODO EXPANDIDO - Volta com instruções fixas e estilo expandido
             textoRecebido.classList.remove("recolhido");
             textoRecebido.classList.add("expandido");
+            textoRecebido.style.height = "300px";
+            textoRecebido.style.width = "85%";
+            textoRecebido.style.cursor = "default";
             textoRecebido.innerHTML = conteudoInstrucoes;
             textoRecebido.appendChild(toggleBtn);
             console.log('📖 Modo expandido - mostrando instruções fixas');
         }
     });
 
-    console.log('✅ Sistema híbrido inicializado - texto-recebido com instruções fixas');
+    console.log('✅ Sistema híbrido inicializado - texto-recebido com layout IDÊNTICO ao instruction-box');
 }
 
 // 🆕 CONFIGURA CALLBACK WEBCRTC PARA O SISTEMA HÍBRIDO
@@ -323,12 +352,17 @@ function configurarCallbackWebRTCHibrido() {
 
         // 🎯 SÓ MOSTRA MENSAGENS SE ESTIVER NO MODO RECOLHIDO
         if (textoRecebido.classList.contains("recolhido")) {
-            // Aplica todos os efeitos visuais originais
-            textoRecebido.style.opacity = '1';
-            textoRecebido.style.transition = 'opacity 0.5s ease';
-            textoRecebido.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
-            textoRecebido.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
-            textoRecebido.style.border = '2px solid #ff0000';
+            // Para mensagens, remove temporariamente alguns estilos do instruction-box
+            textoRecebido.style.background = "rgba(255, 0, 0, 0.1) !important";
+            textoRecebido.style.border = "2px solid red !important";
+            textoRecebido.style.boxShadow = "inset 0 0 10px rgba(255, 0, 0, 0.3) !important";
+            textoRecebido.style.animation = "pulsar-flutuar-intenso 0.8s infinite ease-in-out";
+            textoRecebido.style.color = "#333 !important";
+            textoRecebido.style.fontSize = "16px !important";
+            textoRecebido.style.textAlign = "center !important";
+            textoRecebido.style.display = "flex !important";
+            textoRecebido.style.alignItems = "center !important";
+            textoRecebido.style.justifyContent = "center !important";
 
             // Efeito máquina de escrever
             textoRecebido.textContent = "";
