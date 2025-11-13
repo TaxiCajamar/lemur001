@@ -8,87 +8,6 @@
   <link rel="stylesheet" href="mobile-style.css" />
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
  
-  <style>
-    /* =============================================
-       CONFIGURAÇÕES GERAIS E LAYOUT PRINCIPAL
-       ============================================= */
-
-    html {
-      height: 100%;
-      font-size: clamp(14px, 2.5vw, 18px);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      transition: background-color 0.5s;
-    }
-
-    body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      font-size: 1em;
-    }
-
- .box-principal {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 2vh 2vw;
-  box-sizing: border-box;
-  background-color: #aee2ff;
-  position: relative;   /* mantém referência para o filho absoluto */
-  /* 🔴 não limitar altura nem usar overflow */
-}
-
-#texto-recebido {
-  position: absolute;
-  bottom: 20%;              /* pé fixo a 20% do fundo */
-  left: 50%;
-  transform: translateX(-50%);
-  
-  /* altura automática */
-  height: auto;             /* cresce conforme o conteúdo */
-  
-  font-size: 1em !important;
-  padding: 2vh 2vw;
-  border: 0.2vh solid #4CAF50;
-  border-radius: 1vh;
-  background-color: #f8f9fa;
-  width: 90%;
-  min-height: 60px;
-  
-  white-space: normal;
-  word-wrap: break-word;
-  text-align: left;
-  
-  display: flex;
-  flex-direction: column;   /* itens em coluna */
-  align-items: flex-start;
-  
-  color: #333;
-  font-weight: normal;
-  box-sizing: border-box;
-  z-index: 30;
-}
-
-.instruction-item {
-  display: flex;            /* imagem + texto na mesma linha */
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-  line-height: 1.4;
-  font-family: 'Segoe UI', sans-serif;
-  color: #333;
-  font-size: 0.95em !important;
-}
-
-.instruction-item img {
-  width: 30px !important;
-  height: 30px !important;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-  </style>
 </head>
 
 <body>
@@ -111,49 +30,7 @@
       <div class="loader-circle"></div>
     </div>
 
-    <!-- ============================================= -->
-    <!-- COMPONENTE DE INSTRUÇÕES INTERATIVAS -->
-    <!-- ============================================= -->
-
-    <div id="texto-recebido">
-      <div class="instruction-item">
-        <img src="assets/images/hello.png" alt="Hello icon" />
-        <span id="welcome-text">Welcome! Let's begin.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/realtime.png" alt="Realtime icon" />
-        <span id="translator-label-2">Real-time translation.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/QRcode.png" alt="QR icon" />
-        <span id="tap-qr">Tap the QR code to start.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/mobil.png" alt="Mobile icon" />
-        <span id="quick-scan">Ask to scan the QR.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/Ancioso.png" alt="Loading icon" />
-        <span id="wait-connection">Waiting for connection.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/juntos.png" alt="Connected icon" />
-        <span id="both-connected">Both online.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/trduz.png" alt="Message icon" />
-        <span id="check-replies">Read the message.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/mic.png" alt="Mic icon" />
-        <span id="drop-voice">Speak clearly.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/cam.png" alt="Camera icon" />
-        <span id="flip-cam">Flip the camera. Share!</span>
-      </div>
-    </div>
-
+    
     <!-- ============================================= -->
     <!-- BOTÕES DE CONTROLE PRINCIPAIS -->
     <!-- ============================================= -->
@@ -258,7 +135,7 @@
     <!-- ÁREA DE EXIBIÇÃO DE TEXTO TRADUZIDO -->
     <!-- ============================================= -->
 
-  
+    <div id="texto-recebido"></div>
 
     <!-- ============================================= -->
     <!-- INDICADORES DE IDIOMA ATUAL -->
