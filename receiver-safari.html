@@ -28,62 +28,57 @@
       font-size: 1em;
     }
 
-   .box-principal {
+ .box-principal {
   width: 100%;
   max-width: 600px;
-  /* 🔴 REMOVER height fixo */
-  /* height: 100%; */
   margin: 0 auto;
   padding: 2vh 2vw;
   box-sizing: border-box;
   background-color: #aee2ff;
-  position: relative;
-  /* 🔴 REMOVER overflow-y */
-  /* overflow-y: auto; */
+  position: relative;   /* mantém referência para o filho absoluto */
+  /* 🔴 não limitar altura nem usar overflow */
 }
 
-    /* =============================================
-       ESTILO EXCLUSIVO DO #texto-recebido
-       ============================================= */
-  #texto-recebido {
+#texto-recebido {
   position: absolute;
   bottom: 20%;              /* pé fixo a 20% do fundo */
   left: 50%;
   transform: translateX(-50%);
+  
+  /* altura automática */
+  height: auto;             /* cresce conforme o conteúdo */
+  
   font-size: 1em !important;
   padding: 2vh 2vw;
-  margin: 2vh 0;
   border: 0.2vh solid #4CAF50;
   border-radius: 1vh;
   background-color: #f8f9fa;
   width: 90%;
   min-height: 60px;
-  /* 🔴 não limitar altura */
+  
   white-space: normal;
   word-wrap: break-word;
   text-align: left;
+  
   display: flex;
-  flex-direction: column;
+  flex-direction: column;   /* itens em coluna */
   align-items: flex-start;
+  
   color: #333;
   font-weight: normal;
-  opacity: 1;
-  visibility: visible;
   box-sizing: border-box;
   z-index: 30;
 }
 
-
 .instruction-item {
-  display: flex;               /* 🔽 imagem + texto na mesma linha */
-  align-items: center;         /* centraliza verticalmente */
-  gap: 8px;                    /* espaço entre ícone e texto */
+  display: flex;            /* imagem + texto na mesma linha */
+  align-items: center;
+  gap: 8px;
   margin-bottom: 6px;
   line-height: 1.4;
   font-family: 'Segoe UI', sans-serif;
   color: #333;
-  transition: opacity 0.3s ease;
-  font-size: 0.95em !important; /* 🔽 fonte menor e proporcional ao ícone */
+  font-size: 0.95em !important;
 }
 
 .instruction-item img {
