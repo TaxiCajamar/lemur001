@@ -1,159 +1,3 @@
-.instruction-box {
-  position: absolute;
-  bottom: 1%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 85%;
-  max-width: 300px;
-  min-width: 200px;
-  padding: 1% 2%;
-  background: #ffffff;
-  border: 2px solid #4CAF50;
-  border-radius: 12px;
-  box-shadow: inset 0 0 10px rgba(0, 128, 0, 0.2);
-  font-size: 16px !important;
-  z-index: 30;
-  text-align: left;
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-.instruction-box.recolhido {
-  height: 40px;
-  width: 50px;
-  cursor: pointer;
-}
-
-.instruction-box.expandido {
-  height: 300px !important; 
-  max-height: 1000px;
-}
-
-.instruction-item {
-  display: block;          /* ✅ Comportamento normal de bloco */
-  margin-bottom: 1%;
-  line-height: 1.2;
-  font-family: 'Segoe UI', sans-serif;
-  color: #333;
-  transition: opacity 0.3s ease;
-  font-size: 16px !important;
-}
-
-.instruction-item img {
-  display: inline-block;   /* ✅ Imagem na mesma linha */
-  vertical-align: middle;
-  margin-right: 3%;
-}
-
-.instruction-item span {
-  display: inline-block;   /* ✅ Texto na mesma linha */
-  vertical-align: middle;
-}
-
-.instruction-box.recolhido .instruction-item {
-  opacity: 0;
-  display: none;
-}
-
-.instruction-box.expandido .instruction-item {
-  opacity: 1;
-  display: flex;
-}
-
-.instruction-item img {
-   width: 30px !important;
-  height: 30px !important;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.instruction-toggle {
-  position: absolute;
-  top: 4px;
-  right: 6px;
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  color: #4CAF50;
-  font-weight: bold;
-  z-index: 30;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s ease;
-}
-
-.instruction-toggle:hover {
-  background-color: rgba(76, 175, 80, 0.1);
-}
-
-.instruction-box.recolhido .instruction-toggle::after {
-  content: "?";
-  font-size: 14px;
-}
-
-.instruction-box.expandido .instruction-toggle::after {
-  content: "×";
-  font-size: 18px;
-}
-
-.instruction-box.recolhido:hover {
-  background: #f8fff8;
-  border-color: #45a049;
-}
-@media (max-width: 480px) {
-  .instruction-box {
-    width: 90%;
-    font-size: 0.8em;
-    bottom: 0.5%;
-  }
-  
-  .instruction-item img {
-    width: 20px;
-    height: 20px;
-  }
-}
-
-@media (min-width: 768px) {
-  .instruction-box {
-    width: 70%;
-    font-size: 1em;
-  }
-}
-
-#texto-recebido {
-  position: absolute;
-  bottom: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.2em;
-  padding: 2vh 2vw;
-  margin: 2vh 0;
-  border: 0.2vh solid #4CAF50;
-  border-radius: 1vh;
-  background-color: #f8f9fa;
-  width: 90%;
-  min-height: 60px;
-  max-height: none;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  text-align: center;
-  display: flex;
-  align-items: flex-start; /* Alinha no topo para expansão descendente */
-  flex-direction: column;  /* Organiza conteúdo em coluna */
-  color: #333;
-  font-weight: bold;
-  opacity: 1;
-  visibility: visible;
-  box-sizing: border-box;
-  z-index: 30;
-}
-
 /* =============================================
    CONFIGURAÇÕES GERAIS E LAYOUT PRINCIPAL
    ============================================= */
@@ -186,6 +30,63 @@ body {
   overflow-y: auto;
 }
 
+/* ============================================= */
+/* 🦁 COMPONENTES SAFARI-SPECIFIC - RECEIVER    */
+/* ============================================= */
+
+/* 💬 CAMPO TEXTO WHATSAPP-STYLE */
+#chatInputContainer {
+  position: fixed;
+  bottom: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: bottom 0.3s ease;
+  z-index: 10002;
+  background: white;
+  padding: 10px;
+  border-radius: 25px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#chatInputContainer.visible {
+  bottom: 20px;
+}
+
+#textInput {
+  border: none;
+  outline: none;
+  padding: 8px 12px;
+  width: 250px;
+  font-size: 16px;
+  background: transparent;
+}
+
+#sendMessageButton {
+  background: #2196F3;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+#sendMessageButton:active {
+  transform: scale(0.95);
+}
+
+/* ===== CLASSE HIDDEN ===== */
+.hidden {
+    display: none !important;
+}
 
 /* =============================================
    COMPONENTES DE TEXTO E REDES SOCIAIS FIXAS
@@ -371,6 +272,103 @@ body {
    COMPONENTES DE INTERFACE - INSTRUÇÕES
    ============================================= */
 
+.instruction-box {
+  position: absolute;
+  bottom: 1%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 85%;
+  max-width: 300px;
+  min-width: 200px;
+  padding: 1% 2%;
+  background: #ffffff;
+  border: 2px solid #4CAF50;
+  border-radius: 12px;
+  box-shadow: inset 0 0 10px rgba(0, 128, 0, 0.2);
+  font-size: 16px !important;
+  z-index: 100;
+  text-align: left;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.instruction-box.recolhido {
+  height: 40px;
+  width: 50px;
+  cursor: pointer;
+}
+
+.instruction-box.expandido {
+  height: 300px !important; 
+  max-height: 1000px;
+}
+
+.instruction-item {
+  display: flex;
+  align-items: center;
+  gap: 3%;
+  margin-bottom: 1%;
+  line-height: 1.2;
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+  transition: opacity 0.3s ease;
+}
+
+.instruction-box.recolhido .instruction-item {
+  opacity: 0;
+  display: none;
+}
+
+.instruction-box.expandido .instruction-item {
+  opacity: 1;
+  display: flex;
+}
+
+.instruction-item img {
+   width: 30px !important;
+  height: 30px !important;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.instruction-toggle {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #4CAF50;
+  font-weight: bold;
+  z-index: 101;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.instruction-toggle:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.instruction-box.recolhido .instruction-toggle::after {
+  content: "?";
+  font-size: 14px;
+}
+
+.instruction-box.expandido .instruction-toggle::after {
+  content: "×";
+  font-size: 18px;
+}
+
+.instruction-box.recolhido:hover {
+  background: #f8fff8;
+  border-color: #45a049;
+}
 
 /* =============================================
    COMPONENTES DE INTERFACE - BOTÕES E CONTROLES
@@ -545,7 +543,34 @@ body {
    COMPONENTES DE INTERFACE - TEXTOS E LABELS
    ============================================= */
 
-
+#texto-recebido {
+  position: absolute;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.2em;
+  padding: 2vh 2vw;
+  margin: 2vh 0;
+  border: 0.2vh solid #4CAF50;
+  border-radius: 1vh;
+  background-color: #f8f9fa;
+  width: 90%;
+  min-height: 60px;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  text-align: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: #333;
+  font-weight: bold;
+  opacity: 1;
+  visibility: visible;
+  box-sizing: border-box;
+  z-index: 30;
+}
 
 #logo-traduz {
   position: absolute;
@@ -881,3 +906,22 @@ receiver.html #texto-recebido {
    MEDIA QUERIES - RESPONSIVIDADE
    ============================================= */
 
+@media (max-width: 480px) {
+  .instruction-box {
+    width: 90%;
+    font-size: 0.8em;
+    bottom: 0.5%;
+  }
+  
+  .instruction-item img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .instruction-box {
+    width: 70%;
+    font-size: 1em;
+  }
+}
