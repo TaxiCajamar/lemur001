@@ -8,7 +8,7 @@ export class TTSHibrido {
         this.audioCarregado = false;
     }
 
-    // 🎵 CONFIGURAÇÃO DO SOM DE DIGITAÇÃO
+    // 🎵 CARREGAR SOM DE DIGITAÇÃO
     async carregarSomDigitacao() {
         return new Promise((resolve) => {
             try {
@@ -36,6 +36,7 @@ export class TTSHibrido {
         });
     }
 
+    // 🎵 INICIAR LOOP DE DIGITAÇÃO
     iniciarSomDigitacao() {
         if (!this.audioCarregado || !this.somDigitacao) return;
         
@@ -54,6 +55,7 @@ export class TTSHibrido {
         }
     }
 
+    // 🎵 PARAR SOM DE DIGITAÇÃO
     pararSomDigitacao() {
         if (this.somDigitacao) {
             try {
