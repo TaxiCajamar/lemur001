@@ -192,11 +192,7 @@ async function traduzirFrasesFixas() {
       }
     }
 
-    // 🆕 NOVO: MOSTRAR INSTRUÇÕES NO TEXTO-RECEBIDO HÍBRIDO
-    const frasesInstrucoes = Object.values(frasesParaTraduzir);
-    mostrarInstrucoes(frasesInstrucoes);
-
-    console.log('✅ Frases fixas traduzidas e instruções mostradas');
+    console.log('✅ Frases fixas traduzidas com sucesso');
 
   } catch (error) {
     console.error("❌ Erro ao traduzir frases fixas:", error);
@@ -234,46 +230,129 @@ function esconderClickQuandoConectar() {
     console.log('👀 Observando conexão WebRTC para esconder botão Click');
 }
 
-// 🆕 NOVO SISTEMA HÍBRIDO DO TEXTO-RECEBIDO
-// Seleciona o único box que vai existir
-const textoRecebido = document.getElementById("texto-recebido");
+// 🆕 SISTEMA HÍBRIDO DO TEXTO-RECEBIDO - COM CONTEÚDO FIXO DAS INSTRUÇÕES
+function inicializarTextoRecebidoHibrido() {
+    const textoRecebido = document.getElementById("texto-recebido");
+    if (!textoRecebido) return;
 
-// Cria o botão de toggle
-const toggleBtn = document.createElement("button");
-toggleBtn.classList.add("instruction-toggle");
-textoRecebido.appendChild(toggleBtn);
+    // Cria o botão de toggle
+    const toggleBtn = document.createElement("button");
+    toggleBtn.classList.add("instruction-toggle");
+    
+    // 🎯 CONTEÚDO FIXO DAS INSTRUÇÕES (EXATAMENTE IGUAL AO instructionBox ORIGINAL)
+    const conteudoInstrucoes = `
+        <div class="instruction-content">
+            <div class="instruction-item">
+                <img src="assets/images/hello.png" alt="Hello icon" />
+                <span id="welcome-text">Welcome! Let's begin.</span>
+            </div>
+            <div class="instruction-item">
+                <img src="assets/images/realtime.png" alt="Realtime icon" />
+                <span id="translator-label-2">Real-time translation.</span>
+            </div>
+            <div class="instruction-item">
+                <img src="assets/images/QRcode.png" alt="QR icon" />
+                <span id="tap-qr">Tap the QR code to start.</span>
+            </div>
+            <div class="instruction-item">
+                <img src="assets/images/mobil.png" alt="Mobile icon" />
+                <span id="quick-scan">Ask to scan the QR.</span>
+            </div>
+            <div class="instruction-item">
+                <img src="assets/images/Ancioso.png" alt="Loading icon" />
+                <span id="wait-connection">Waiting for connection.</span>
+            </div>
+            <div class="instruction-item">
+                <img src="assets/images/juntos.png" alt="Connected icon" />
+                <span id="both-connected">Both online.</span>
+            </div>
+            <div class="instruction-item">
+                <img src="assets/images/trduz.png" alt="Message icon" />
+                <span id="check-replies">Read the message.</span>
+            </div>
+            <div class="instruction-item">
+                <img src="assets/images/mic.png" alt="Mic icon" />
+                <span id="drop-voice">Speak clearly.</span>
+            </div>
+            <div class="instruction-item">
+                <img src="assets/images/cam.png" alt="Camera icon" />
+                <span id="flip-cam">Flip the camera. Share!</span>
+            </div>
+        </div>
+    `;
 
-// Inicializa expandido (como instruction-box)
-textoRecebido.classList.add("instruction-box", "expandido");
+    // Inicializa expandido com as instruções fixas
+    textoRecebido.innerHTML = conteudoInstrucoes;
+    textoRecebido.appendChild(toggleBtn);
+    textoRecebido.classList.add("instruction-box", "expandido");
 
-// Função para mostrar instruções traduzidas dentro do textoRecebido
-function mostrarInstrucoes(frasesTraduzidas) {
-  if (!textoRecebido) return;
-  
-  textoRecebido.innerHTML = ""; // limpa conteúdo
-  frasesTraduzidas.forEach(frase => {
-    const item = document.createElement("div");
-    item.classList.add("instruction-item");
-    item.textContent = frase;
-    textoRecebido.appendChild(item);
-  });
-  textoRecebido.appendChild(toggleBtn); // recoloca o botão
+    // Alterna expandido/recolhido
+    toggleBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        
+        if (textoRecebido.classList.contains("expandido")) {
+            // MODO RECOLHIDO - Limpa para mensagens
+            textoRecebido.classList.remove("expandido");
+            textoRecebido.classList.add("recolhido");
+            textoRecebido.innerHTML = '';
+            textoRecebido.appendChild(toggleBtn);
+            console.log('📖 Modo recolhido - pronto para mensagens');
+        } else {
+            // MODO EXPANDIDO - Volta com instruções fixas
+            textoRecebido.classList.remove("recolhido");
+            textoRecebido.classList.add("expandido");
+            textoRecebido.innerHTML = conteudoInstrucoes;
+            textoRecebido.appendChild(toggleBtn);
+            console.log('📖 Modo expandido - mostrando instruções fixas');
+        }
+    });
+
+    console.log('✅ Sistema híbrido inicializado - texto-recebido com instruções fixas');
 }
 
-// Alterna expandido/recolhido
-toggleBtn.addEventListener("click", (e) => {
-  e.stopPropagation(); // Impede que o clique propague
-  
-  if (textoRecebido.classList.contains("expandido")) {
-    textoRecebido.classList.remove("expandido");
-    textoRecebido.classList.add("recolhido");
-    console.log('📖 Modo recolhido - pronto para mensagens');
-  } else {
-    textoRecebido.classList.remove("recolhido");
-    textoRecebido.classList.add("expandido");
-    console.log('📖 Modo expandido - mostrando instruções');
-  }
-});
+// 🆕 CONFIGURA CALLBACK WEBCRTC PARA O SISTEMA HÍBRIDO
+function configurarCallbackWebRTCHibrido() {
+    if (!window.rtcCore) return;
+
+    window.rtcCore.setDataChannelCallback(async (mensagem) => {
+        const textoRecebido = document.getElementById("texto-recebido");
+        if (!textoRecebido) return;
+
+        ttsHibrido.iniciarSomDigitacao();
+        console.log('📩 Mensagem recebida:', mensagem);
+
+        // 🎯 SÓ MOSTRA MENSAGENS SE ESTIVER NO MODO RECOLHIDO
+        if (textoRecebido.classList.contains("recolhido")) {
+            // Aplica todos os efeitos visuais originais
+            textoRecebido.style.opacity = '1';
+            textoRecebido.style.transition = 'opacity 0.5s ease';
+            textoRecebido.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
+            textoRecebido.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+            textoRecebido.style.border = '2px solid #ff0000';
+
+            // Efeito máquina de escrever
+            textoRecebido.textContent = "";
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < mensagem.length) {
+                    textoRecebido.textContent += mensagem[i];
+                    i++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 50);
+        }
+
+        // Mostra imagem e executa TTS (independente do modo)
+        const imagemImpaciente = document.getElementById('lemurFixed');
+        if (imagemImpaciente) {
+            imagemImpaciente.style.display = 'block';
+        }
+
+        const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
+        await ttsHibrido.falarTextoSistemaHibrido(mensagem, textoRecebido, imagemImpaciente, idiomaExato);
+    });
+}
 
 // 🎥 FUNÇÃO PARA INICIAR CÂMERA E WEBRTC (AGORA COM CameraVigilante)
 async function iniciarCameraAposPermissoes() {
@@ -393,43 +472,6 @@ async function iniciarCameraAposPermissoes() {
         window.rtcCore.initialize(myId);
         window.rtcCore.setupSocketHandlers();
 
-        // ✅ 6. CONFIGURA CALLBACK PARA MENSAGENS (AGORA COM SISTEMA HÍBRIDO)
-        window.rtcCore.setDataChannelCallback(async (mensagem) => {
-            ttsHibrido.iniciarSomDigitacao();
-
-            console.log('📩 Mensagem recebida:', mensagem);
-
-            // 🆕 NOVO: SÓ MOSTRA MENSAGENS SE ESTIVER RECOLHIDO
-            if (textoRecebido.classList.contains("recolhido")) {
-                textoRecebido.style.opacity = '1';
-                textoRecebido.style.transition = 'opacity 0.5s ease';
-                
-                textoRecebido.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
-                textoRecebido.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
-                textoRecebido.style.border = '2px solid #ff0000';
-
-                // Efeito máquina de escrever
-                textoRecebido.textContent = "";
-                let i = 0;
-                const interval = setInterval(() => {
-                    textoRecebido.textContent += mensagem[i];
-                    i++;
-                    if (i >= mensagem.length) clearInterval(interval);
-                }, 50);
-            }
-
-            const imagemImpaciente = document.getElementById('lemurFixed');
-            if (imagemImpaciente) {
-                imagemImpaciente.style.display = 'block';
-            }
-
-            const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
-            
-            console.log(`🎯 TTS Receiver: Idioma guardado = ${idiomaExato}`);
-            
-            await ttsHibrido.falarTextoSistemaHibrido(mensagem, textoRecebido, imagemImpaciente, idiomaExato);
-        });
-
         // ✅ 7. CONFIGURA HANDLER DE CHAMADAS (MESMO CÓDIGO DO ORIGINAL)
         window.rtcCore.onIncomingCall = (offer, idiomaDoCaller) => {
             console.log('📞 Chamada recebida - Com/Sem câmera');
@@ -501,19 +543,22 @@ window.onload = async () => {
         // ✅✅✅ PRIMEIRO: Aplica bandeira e GUARDA o idioma
         await aplicarBandeiraLocal(lang);
 
+        // 🆕 2. INICIALIZA O SISTEMA HÍBRIDO ANTES DA TRADUÇÃO
+        inicializarTextoRecebidoHibrido();
+
         // ✅✅✅ DEPOIS: Traduz frases com o idioma JÁ GUARDADO  
         await traduzirFrasesFixas();
         
-        // 3. Inicia áudio
+        // 4. Inicia áudio
         iniciarAudio();
         
-        // 4. Carrega sons da máquina de escrever (AGORA NO TTS HÍBRIDO)
+        // 5. Carrega sons da máquina de escrever (AGORA NO TTS HÍBRIDO)
         await ttsHibrido.carregarSomDigitacao();
         
-        // 5. Solicita TODAS as permissões (câmera + microfone)
+        // 6. Solicita TODAS as permissões (câmera + microfone)
         await solicitarTodasPermissoes();
         
-        // 6. Libera interface
+        // 7. Libera interface
         if (typeof window.liberarInterface === 'function') {
             window.liberarInterface();
             console.log('✅ Interface liberada via função global');
@@ -522,10 +567,13 @@ window.onload = async () => {
             console.log('✅ Interface liberada via fallback');
         }
         
-        // 7. Inicia câmera e WebRTC (AGORA COM CameraVigilante)
+        // 8. Inicia câmera e WebRTC (AGORA COM CameraVigilante)
         await iniciarCameraAposPermissoes();
+
+        // 🆕 9. CONFIGURA CALLBACK WEBCRTC HÍBRIDO
+        configurarCallbackWebRTCHibrido();
         
-        console.log('✅ Receiver iniciado com sucesso!');
+        console.log('✅ Receiver iniciado com sistema híbrido!');
         
     } catch (error) {
         console.error('❌ Erro ao inicializar receiver:', error);
