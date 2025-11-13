@@ -1,30 +1,34 @@
-// 🆕 CONTROLE DE ESTADOS DO TEXTO-RECEBIDO (VERSÃO SIMPLES)
+// 🆕 CONTROLE DE ESTADOS DO TEXTO-RECEBIDO (CORREÇÃO)
 function initTextoRecebido() {
     const textoBox = document.getElementById('texto-recebido');
     
-    // Estado 1: Modo instruction
+    // Estado 1: Clone EXATO do instructionBox
     textoBox.innerHTML = `
-        <div style="text-align: center; padding: 20px;">
-            <p>Conectando... Aguarde a tradução</p>
-            <button onclick="recolherInstructionMode()" style="
-                background: #00ff00; 
-                color: black; 
-                border: none; 
-                padding: 8px 16px; 
-                margin-top: 10px; 
-                border-radius: 5px; 
-                cursor: pointer;
-            ">OK</button>
+        <div class="instruction-content">
+            <p><strong>Welcome! Let's begin.</strong></p>
+            <p>Tap the QR code to start.</p>
+            <p>Ask to scan the QR.</p>
+            <p>Waiting for connection.</p>
+            <p>Both online.</p>
+            <p>Speak clearly.</p>
+            <p>Read the message.</p>
+            <p>Flip the camera. Share!</p>
+            <button onclick="recolherInstructionMode()" class="instruction-button">OK</button>
         </div>
     `;
+    textoBox.classList.add('instruction-mode');
+    textoBox.style.display = 'block'; // Garante que está visível
 }
 
 function recolherInstructionMode() {
     const textoBox = document.getElementById('texto-recebido');
     
-    // Estado 2: Volta ao modo normal
+    // Estado 2: Volta ao modo normal de texto
+    textoBox.classList.remove('instruction-mode');
     textoBox.innerHTML = '';
-    console.log('📖 Modo instruction recolhido - pronto para receber textos');
+    textoBox.style.display = 'block'; // Mantém visível para receber textos
+    
+    console.log('📖 Instruction mode recolhido - pronto para receber textos');
 }
 
 // Inicializa quando a página carrega
