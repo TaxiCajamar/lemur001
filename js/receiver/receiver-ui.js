@@ -5,10 +5,11 @@ function setupInstructionToggle() {
     
     if (!instructionBox || !toggleButton) return;
     
+    // Estado inicial: expandido
     let isExpanded = true;
     
     toggleButton.addEventListener('click', function(e) {
-        e.stopPropagation();
+        e.stopPropagation(); // Impede que o clique propague para o box
         
         isExpanded = !isExpanded;
         
@@ -23,6 +24,7 @@ function setupInstructionToggle() {
         }
     });
     
+    // Opcional: fechar ao clicar fora (se quiser)
     document.addEventListener('click', function(e) {
         if (!instructionBox.contains(e.target) && isExpanded) {
             instructionBox.classList.remove('expandido');
@@ -52,6 +54,8 @@ let permissaoConcedida = false;
 let primeiraFraseTTS = true;
 let navegadorTTSPreparado = false;
 let ultimoIdiomaTTS = 'pt-BR';
+
+// [Sistema de espera do lêmure removido]
 
 // 🎵 CARREGAR SOM DE DIGITAÇÃO
 function carregarSomDigitacao() {
@@ -207,9 +211,11 @@ async function aplicarBandeiraLocal(langCode) {
 
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🔴';
 
+        // ✅✅✅ SOLUÇÃO INTELIGENTE: Guardar o idioma original
         window.meuIdiomaLocal = langCode;
         console.log('💾 Idioma local guardado:', window.meuIdiomaLocal);
 
+        // ✅ CORREÇÃO: MESMA BANDEIRA NAS DUAS POSIÇÕES
         const languageFlagElement = document.querySelector('.language-flag');
         if (languageFlagElement) languageFlagElement.textContent = bandeira;
 
@@ -231,6 +237,7 @@ async function aplicarBandeiraRemota(langCode) {
 
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🔴';
 
+        // ✅✅✅ SOLUÇÃO INTELIGENTE: Guardar o idioma REMOTO também!
         window.meuIdiomaRemoto = langCode;
         console.log('💾 Idioma REMOTO guardado:', window.meuIdiomaRemoto);
 
@@ -248,12 +255,14 @@ async function aplicarBandeiraRemota(langCode) {
 function liberarInterfaceFallback() {
     console.log('🔓 Usando fallback para liberar interface...');
     
+    // Remove tela de loading
     const loadingScreen = document.getElementById('loadingScreen');
     if (loadingScreen) {
         loadingScreen.style.display = 'none';
         console.log('✅ Tela de loading removida');
     }
     
+    // Mostra conteúdo principal
     const elementosEscondidos = document.querySelectorAll('.hidden-until-ready');
     elementosEscondidos.forEach(elemento => {
         elemento.style.display = '';
@@ -262,26 +271,27 @@ function liberarInterfaceFallback() {
     console.log(`✅ ${elementosEscondidos.length} elementos liberados`);
 }
 
-// 🌐 TRADUÇÃO DAS FRASES FIXAS
+// 🌐 TRADUÇÃO DAS FRASES FIXAS (AGORA SEPARADA)
 async function traduzirFrasesFixas() {
   try {
+    // ✅✅✅ AGORA USA O IDIOMA GUARDADO!
     const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
     
     console.log(`🌐 Traduzindo frases fixas para: ${idiomaExato}`);
 
     const frasesParaTraduzir = {
         "qr-modal-title": "This is your online key",
-        "qr-modal-description": "You can ask to scan, share or print on your business card.",
-        "translator-label": "Real-time translation.",
-        "translator-label-2": "Real-time translation.",
-        "welcome-text": "Welcome! Let's begin.",
-        "tap-qr": "Tap the QR code to start.",
-        "quick-scan": "Ask to scan the QR.",
-        "wait-connection": "Waiting for connection.",
-        "both-connected": "Both online.",
-        "drop-voice": "Speak clearly.",
-        "check-replies": "Read the message.",
-        "flip-cam": "Flip the camera. Share!"
+      "qr-modal-description": "You can ask to scan, share or print on your business card.",
+      "translator-label": "Real-time translation.",      // ⬅️ PRIMEIRO ELEMENTO
+  "translator-label-2": "Real-time translation.",   // ⬅️ SEGUNDO ELEMENTO (NOVO)
+       "welcome-text": "Welcome! Let's begin.",
+    "tap-qr": "Tap the QR code to start.",
+  "quick-scan": "Ask to scan the QR.",
+  "wait-connection": "Waiting for connection.",
+  "both-connected": "Both online.",
+  "drop-voice": "Speak clearly.",
+  "check-replies": "Read the message.",
+  "flip-cam": "Flip the camera. Share!"
     };
 
     for (const [id, texto] of Object.entries(frasesParaTraduzir)) {
@@ -307,19 +317,22 @@ function esconderClickQuandoConectar() {
     
     if (!elementoClick || !remoteVideo) return;
     
+    // Observa mudanças no remoteVideo para detectar conexão
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'srcObject') {
                 if (remoteVideo.srcObject) {
+                    // WebRTC conectou - esconde o botão click DEFINITIVAMENTE
                     elementoClick.style.display = 'none';
                     elementoClick.classList.remove('piscar-suave');
                     console.log('🔗 WebRTC conectado - botão Click removido');
-                    observer.disconnect();
+                    observer.disconnect(); // Para de observar
                 }
             }
         });
     });
     
+    // Começa a observar o remoteVideo
     observer.observe(remoteVideo, {
         attributes: true,
         attributeFilter: ['srcObject']
@@ -328,12 +341,13 @@ function esconderClickQuandoConectar() {
     console.log('👀 Observando conexão WebRTC para esconder botão Click');
 }
 
-// 🎤 SISTEMA HÍBRIDO TTS AVANÇADO
+// 🎤 SISTEMA HÍBRIDO TTS AVANÇADO - SUBSTITUIÇÃO COMPLETA
 
 // 🎤 FUNÇÃO TTS DO NAVEGADOR (GRÁTIS) - OTIMIZADA
 function falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma) {
     return new Promise((resolve) => {
         try {
+            // Para qualquer fala anterior
             window.speechSynthesis.cancel();
             
             const utterance = new SpeechSynthesisUtterance(mensagem);
@@ -342,6 +356,7 @@ function falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma) {
             utterance.pitch = 1.0;
             utterance.volume = 0.9;
             
+            // EVENTO: FALA COMEÇOU
             utterance.onstart = () => {
                 pararSomDigitacao();
                 
@@ -358,6 +373,7 @@ function falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma) {
                 console.log(`🔊 Áudio Navegador TTS iniciado em ${idioma}`);
             };
             
+            // EVENTO: FALA TERMINOU
             utterance.onend = () => {
                 console.log('🔚 Áudio Navegador TTS terminado');
                 if (imagemImpaciente) {
@@ -366,6 +382,7 @@ function falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma) {
                 resolve(true);
             };
             
+            // EVENTO: ERRO NA FALA
             utterance.onerror = (error) => {
                 pararSomDigitacao();
                 console.log('❌ Erro no áudio Navegador TTS:', error);
@@ -394,9 +411,10 @@ function prepararNavegadorTTS(idioma) {
     if (navegadorTTSPreparado) return;
     
     try {
+        // Fala silenciosa para carregar o motor de voz
         const utterance = new SpeechSynthesisUtterance('');
         utterance.lang = idioma;
-        utterance.volume = 0;
+        utterance.volume = 0; // Silencioso
         utterance.onend = () => {
             navegadorTTSPreparado = true;
             console.log(`✅ Navegador TTS preparado para ${idioma}`);
@@ -430,6 +448,7 @@ async function falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma) {
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         
+        // EVENTO: ÁUDIO COMEÇOU
         audio.onplay = () => {
             pararSomDigitacao();
             
@@ -446,6 +465,7 @@ async function falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma) {
             console.log(`🔊 Áudio Google TTS iniciado em ${idioma}`);
         };
         
+        // EVENTO: ÁUDIO TERMINOU
         audio.onended = () => {
             console.log('🔚 Áudio Google TTS terminado');
             if (imagemImpaciente) {
@@ -453,6 +473,7 @@ async function falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma) {
             }
         };
         
+        // EVENTO: ERRO NO ÁUDIO
         audio.onerror = () => {
             pararSomDigitacao();
             console.log('❌ Erro no áudio Google TTS');
@@ -470,7 +491,7 @@ async function falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma) {
         
     } catch (error) {
         console.error('❌ Erro no Google TTS:', error);
-        throw error;
+        throw error; // Repassa o erro para o fallback
     }
 }
 
@@ -479,13 +500,16 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
     try {
         console.log(`🎯 TTS Híbrido: "${mensagem.substring(0, 50)}..." em ${idioma}`);
         
+        // Atualiza último idioma usado
         ultimoIdiomaTTS = idioma;
         
         if (primeiraFraseTTS) {
             console.log('🚀 PRIMEIRA FRASE: Usando Google TTS (rápido)');
             
+            // ✅ 1. PRIMEIRA FRASE: Google TTS (rápido)
             await falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma);
             
+            // ✅ 2. PREPARA NAVEGADOR EM SEGUNDO PLANO
             console.log(`🔄 Preparando navegador TTS para ${idioma}...`);
             prepararNavegadorTTS(idioma);
             
@@ -494,8 +518,10 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
         } else {
             console.log('💰 PRÓXIMAS FRASES: Usando Navegador TTS (grátis)');
             
+            // ✅ 3. PRÓXIMAS FRASES: Navegador TTS (grátis)
             const sucesso = await falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma);
             
+            // ✅ 4. FALLBACK: Se navegador falhar, volta para Google
             if (!sucesso) {
                 console.log('🔄 Fallback: Navegador falhou, usando Google TTS');
                 await falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma);
@@ -507,21 +533,20 @@ async function falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, id
     } catch (error) {
         console.error('❌ Erro no sistema híbrido TTS:', error);
         
+        // ✅ FALLBACK FINAL: Tenta navegador como última opção
         console.log('🔄 Tentando fallback final com navegador TTS...');
         await falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma);
     }
 }
 
-// 🚀 INICIALIZAÇÃO AUTOMÁTICA (USANDO CAMERA-VIGILANTE)
+// 🚀 INICIALIZAÇÃO AUTOMÁTICA (SEM BOTÃO DE PERMISSÕES)
 window.onload = async () => {
     try {
         console.log('🚀 Iniciando aplicação receiver automaticamente...');
         
-        // ✅✅✅ CORREÇÃO: Declara params UMA VEZ no início
+        // 1. Obtém o idioma para tradução
         const params = new URLSearchParams(window.location.search);
         const lang = params.get('lang') || navigator.language || 'pt-BR';
-        const token = params.get('token') || '';
-        const targetIdFromUrl = params.get('targetId') || '';
         
         // ✅✅✅ PRIMEIRO: Aplica bandeira e GUARDA o idioma
         await aplicarBandeiraLocal(lang);
@@ -547,14 +572,15 @@ window.onload = async () => {
             console.log('✅ Interface liberada via fallback');
         }
         
-        // 🎥🎥🎥 AGORA: INICIA SISTEMA DE CÂMERA ÚNICO 🎥🎥🎥
+        // 🎥🎥🎥 7. INICIA SISTEMA DE CÂMERA ÚNICO 🎥🎥🎥
         window.cameraVigilante = new CameraVigilante();
         await window.cameraVigilante.inicializarSistema();
         
-        // 8. Configura WebRTC (mantido do código original)
+        // 8. Configura WebRTC
         window.rtcCore = new WebRTCCore();
 
-        // ✅✅✅ CORREÇÃO: USA AS VARIÁVEIS JÁ DECLARADAS, NÃO DECLARA NOVAMENTE
+        const token = params.get('token') || '';
+        const targetIdFromUrl = params.get('targetId') || '';
         const myId = targetIdFromUrl || crypto.randomUUID().substr(0, 8);
 
         window.targetTranslationLang = lang;
@@ -565,7 +591,7 @@ window.onload = async () => {
             lang: lang
         };
 
-        // Configura QR Code (mantido)
+        // Configura QR Code
         document.getElementById('logo-traduz').addEventListener('click', function() {
             // 🔄 VERIFICA SE JÁ EXISTE UM QR CODE ATIVO
             const overlay = document.querySelector('.info-overlay');
@@ -584,7 +610,7 @@ window.onload = async () => {
             
             if (isConnected) {
                 console.log('❌ WebRTC já conectado - QR Code não pode ser reaberto');
-                return; // ⬅️ Apenas retorna silenciosamente
+                return;
             }
             
             console.log('🗝️ Gerando/Reabrindo QR Code e Link...');
@@ -599,7 +625,7 @@ window.onload = async () => {
             // Gera o QR Code
             QRCodeGenerator.generate("qrcode", callerUrl);
             
-            // 🆕 CONFIGURA BOTÃO COPIAR SIMPLES
+            // CONFIGURA BOTÃO COPIAR
             const btnCopiar = document.getElementById('copiarLink');
             if (btnCopiar) {
                 btnCopiar.onclick = function() {
@@ -614,7 +640,6 @@ window.onload = async () => {
                         }, 2000);
                     }).catch(err => {
                         console.log('❌ Erro ao copiar link:', err);
-                        // Fallback para dispositivos sem clipboard API
                         const textArea = document.createElement('textarea');
                         textArea.value = callerUrl;
                         document.body.appendChild(textArea);
