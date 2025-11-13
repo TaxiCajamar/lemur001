@@ -1,86 +1,73 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur EchoMe P2P Receiver</title>
-
   <link rel="stylesheet" href="mobile-style.css" />
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
- 
 </head>
 
 <body>
 
   <div class="box-principal">
 
-    <!-- ============================================= -->
-    <!-- ELEMENTOS DE MARCA E IDENTIDADE VISUAL -->
-    <!-- ============================================= -->
-
+    <!-- ELEMENTOS VISUAIS -->
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
     <img id="click" src="assets/images/click.png" alt="Click" />
     
-    <!-- ============================================= -->
-    <!-- SISTEMA DE LOADING E INDICADORES -->
-    <!-- ============================================= -->
-
+    <!-- LOADING -->
     <div id="mobileLoading" class="mobile-loader">
       <div class="loader-circle"></div>
     </div>
 
-    <!-- ============================================= -->
-    <!-- COMPONENTE DE INSTRUÇÕES INTERATIVAS -->
-    <!-- ============================================= -->
-
-    <div class="instruction-box expandido" id="instructionBox">
-      <button class="instruction-toggle" id="instructionToggle"></button>
-      <div class="instruction-content">
-        <div class="instruction-item">
-          <img src="assets/images/hello.png" alt="Hello icon" />
-          <span id="welcome-text">Welcome! Let's begin.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/realtime.png" alt="Realtime icon" />
-          <span id="translator-label-2">Real-time translation.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/QRcode.png" alt="QR icon" />
-          <span id="tap-qr">Tap the QR code to start.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/mobil.png" alt="Mobile icon" />
-          <span id="quick-scan">Ask to scan the QR.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/Ancioso.png" alt="Loading icon" />
-          <span id="wait-connection">Waiting for connection.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/juntos.png" alt="Connected icon" />
-          <span id="both-connected">Both online.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/trduz.png" alt="Message icon" />
-          <span id="check-replies">Read the message.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/mic.png" alt="Mic icon" />
-          <span id="drop-voice">Speak clearly.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/cam.png" alt="Camera icon" />
-          <span id="flip-cam">Flip the camera. Share!</span>
+    <!-- TEXTO RECEBIDO COM INSTRUÇÕES DENTRO -->
+    <div id="texto-recebido">
+      <div class="instruction-box expandido" id="instructionBox">
+        <button class="instruction-toggle" id="instructionToggle"></button>
+        <div class="instruction-content">
+          <div class="instruction-item">
+            <img src="assets/images/hello.png" alt="Hello icon" />
+            <span id="welcome-text">Welcome! Let's begin.</span>
+          </div>
+          <div class="instruction-item">
+            <img src="assets/images/realtime.png" alt="Realtime icon" />
+            <span id="translator-label-2">Real-time translation.</span>
+          </div>
+          <div class="instruction-item">
+            <img src="assets/images/QRcode.png" alt="QR icon" />
+            <span id="tap-qr">Tap the QR code to start.</span>
+          </div>
+          <div class="instruction-item">
+            <img src="assets/images/mobil.png" alt="Mobile icon" />
+            <span id="quick-scan">Ask to scan the QR.</span>
+          </div>
+          <div class="instruction-item">
+            <img src="assets/images/Ancioso.png" alt="Loading icon" />
+            <span id="wait-connection">Waiting for connection.</span>
+          </div>
+          <div class="instruction-item">
+            <img src="assets/images/juntos.png" alt="Connected icon" />
+            <span id="both-connected">Both online.</span>
+          </div>
+          <div class="instruction-item">
+            <img src="assets/images/trduz.png" alt="Message icon" />
+            <span id="check-replies">Read the message.</span>
+          </div>
+          <div class="instruction-item">
+            <img src="assets/images/mic.png" alt="Mic icon" />
+            <span id="drop-voice">Speak clearly.</span>
+          </div>
+          <div class="instruction-item">
+            <img src="assets/images/cam.png" alt="Camera icon" />
+            <span id="flip-cam">Flip the camera. Share!</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ============================================= -->
-    <!-- BOTÕES DE CONTROLE PRINCIPAIS -->
-    <!-- ============================================= -->
-
+    <!-- BOTÕES PRINCIPAIS -->
     <button id="logo-traduz" class="botao-key">
       <img src="assets/images/key.png" alt="Gerar QR Code" />
     </button>
@@ -89,49 +76,39 @@
       <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
     </button>
 
-    <!-- ============================================= -->
-    <!-- ELEMENTOS DE TEXTO, LABELS E REDES SOCIAIS FIXAS -->
-    <!-- ============================================= -->
-
-    <!-- 🏷️ Subtítulo de tradução -->
+    <!-- LABEL DE TRADUÇÃO -->
     <div class="translator-label" id="translator-label">
       Real-time translation.
     </div>
 
-   <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS - SIMPLIFICADO -->
-<div class="social-links-fixed">
-  <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/linke.png" alt="LinkedIn">
-  </a>
-  <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/insta.png" alt="Instagram">
-  </a>
-  <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/face.png" alt="Facebook">
-  </a>
-  <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/redeX.png" alt="Website">
-  </a>
-  <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/wattsap.png" alt="WhatsApp">
-  </a>
-  <a href="https://t.me/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/telegran.png" alt="Telegram">
-  </a>
-</div>
+    <!-- REDES SOCIAIS -->
+    <div class="social-links-fixed">
+      <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/linke.png" alt="LinkedIn">
+      </a>
+      <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/insta.png" alt="Instagram">
+      </a>
+      <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/face.png" alt="Facebook">
+      </a>
+      <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/redeX.png" alt="Website">
+      </a>
+      <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/wattsap.png" alt="WhatsApp">
+      </a>
+      <a href="https://t.me/lemurinnovation" target="_blank" class="social-btn-fixed">
+        <img src="assets/images/telegran.png" alt="Telegram">
+      </a>
+    </div>
 
-    <!-- ============================================= -->
-    <!-- INDICADORES DE IDIOMA E BANDEIRAS -->
-    <!-- ============================================= -->
-
+    <!-- INDICADORES DE IDIOMA -->
     <div class="remoter-Lang">🏳️</div>
     <div class="local-Lang">🏳️</div>
     <div class="local-mic-Lang">🏳️</div>
 
-    <!-- ============================================= -->
-    <!-- SISTEMA DE VÍDEO E STREAMING -->
-    <!-- ============================================= -->
-
+    <!-- SISTEMA DE VÍDEO -->
     <div class="video-wrapper">
       <video id="remoteVideo" autoplay playsinline></video>
       <div class="pip-local-wrapper">
@@ -139,68 +116,44 @@
       </div>
     </div>
    
-    <!-- ============================================= -->
-    <!-- OVERLAY DE QR CODE (INICIALMENTE OCULTO) -->
-    <!-- ============================================= -->
-
+    <!-- OVERLAY QR CODE -->
     <div class="info-overlay hidden">
       <h2 id="qr-modal-title">This is your online key</h2>
-
       <div class="qrcode-container">
         <div id="qrcode"></div>
       </div>
-
       <p class="qr-modal-description" id="qr-modal-description">
         You can ask to scan, share or print on your business card.
       </p>
-
-     <!-- 🆕 BOTÕES DE COMPARTILHAMENTO - SIMPLIFICADO -->
-<div class="social-buttons">
-  <button class="social-btn" onclick="compartilharSocial('facebook')">
-    <img src="assets/images/face.png" alt="Facebook">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('twitter')">
-    <img src="assets/images/redeX.png" alt="Twitter/X">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('linkedin')">
-    <img src="assets/images/linke.png" alt="LinkedIn">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('whatsapp')">
-    <img src="assets/images/wattsap.png" alt="WhatsApp">
-  </button>
-  <button class="social-btn" onclick="compartilharSocial('telegram')">
-    <img src="assets/images/telegran.png" alt="Telegram">
-  </button>
-</div>
-
-      <!-- 🆕 BOTÃO COPIAR SIMPLES E UNIVERSAL -->
+      <div class="social-buttons">
+        <button class="social-btn" onclick="compartilharSocial('facebook')">
+          <img src="assets/images/face.png" alt="Facebook">
+        </button>
+        <button class="social-btn" onclick="compartilharSocial('twitter')">
+          <img src="assets/images/redeX.png" alt="Twitter/X">
+        </button>
+        <button class="social-btn" onclick="compartilharSocial('linkedin')">
+          <img src="assets/images/linke.png" alt="LinkedIn">
+        </button>
+        <button class="social-btn" onclick="compartilharSocial('whatsapp')">
+          <img src="assets/images/wattsap.png" alt="WhatsApp">
+        </button>
+        <button class="social-btn" onclick="compartilharSocial('telegram')">
+          <img src="assets/images/telegran.png" alt="Telegram">
+        </button>
+      </div>
       <button id="copiarLink" class="btn-copiar-simples">🔗</button>
     </div>
 
-    <!-- ============================================= -->
-    <!-- ÁREA DE EXIBIÇÃO DE TEXTO TRADUZIDO -->
-    <!-- ============================================= -->
-
-    <div id="texto-recebido"></div>
-
-    <!-- ============================================= -->
-    <!-- INDICADORES DE IDIOMA ATUAL -->
-    <!-- ============================================= -->
-
+    <!-- INDICADOR DE IDIOMA ATUAL -->
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
 
-    <!-- ============================================= -->
-    <!-- BOTÕES DE CONTROLE DE ÁUDIO -->
-    <!-- ============================================= -->
-
+    <!-- BOTÃO GRAVAR -->
     <button class="record-btn" id="recordButton" disabled>🎤</button>
 
-  </div> <!-- Fim do .box-principal -->
+  </div>
 
-  <!-- ============================================= -->
-  <!-- MODAL DE GRAVAÇÃO (FORA DO CONTAINER PRINCIPAL) -->
-  <!-- ============================================= -->
-
+  <!-- MODAL GRAVAÇÃO -->
   <div class="recording-modal hidden-until-ready" id="recordingModal">
     <div class="recording-indicator">
       <div class="recording-dot"></div>
@@ -210,13 +163,7 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- ============================================= -->
-  <!-- SCRIPTS DE INICIALIZAÇÃO E CONFIGURAÇÃO -->
-  <!-- ============================================= -->
-
   <script>
-    // ===== FUNÇÕES GLOBAIS DE CONTROLE DE INTERFACE =====
-    
     window.liberarInterface = function () {
       console.log('✅ Interface já está visível');
     };
@@ -232,7 +179,6 @@
       }
     });
 
-    // 🆕 FUNÇÃO PARA COMPARTILHAR NAS REDES SOCIAIS (QR CODE)
     function compartilharSocial(rede) {
       const myId = window.qrCodeData?.myId || '';
       const token = window.qrCodeData?.token || '';
@@ -256,16 +202,9 @@
     }
   </script>
 
-  <!-- ============================================= -->
-  <!-- IMPORTAÇÃO DOS SCRIPTS DA APLICAÇÃO -->
-  <!-- ============================================= -->
-  
-  <!-- 📦 Scripts do receptor -->
-  
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
   <script src="./js/receiver/receiver-trz.js"></script>
-
   
 </body>
 </html>
