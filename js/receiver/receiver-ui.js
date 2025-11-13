@@ -1,41 +1,3 @@
-// 🆕 CONTROLE DE ESTADOS DO TEXTO-RECEBIDO (CORREÇÃO)
-function initTextoRecebido() {
-    const textoBox = document.getElementById('texto-recebido');
-    
-    // Estado 1: Clone EXATO do instructionBox
-    textoBox.innerHTML = `
-        <div class="instruction-content">
-            <p><strong>Welcome! Let's begin.</strong></p>
-            <p>Tap the QR code to start.</p>
-            <p>Ask to scan the QR.</p>
-            <p>Waiting for connection.</p>
-            <p>Both online.</p>
-            <p>Speak clearly.</p>
-            <p>Read the message.</p>
-            <p>Flip the camera. Share!</p>
-            <button onclick="recolherInstructionMode()" class="instruction-button">OK</button>
-        </div>
-    `;
-    textoBox.classList.add('instruction-mode');
-    textoBox.style.display = 'block'; // Garante que está visível
-}
-
-function recolherInstructionMode() {
-    const textoBox = document.getElementById('texto-recebido');
-    
-    // Estado 2: Volta ao modo normal de texto
-    textoBox.classList.remove('instruction-mode');
-    textoBox.innerHTML = '';
-    textoBox.style.display = 'block'; // Mantém visível para receber textos
-    
-    console.log('📖 Instruction mode recolhido - pronto para receber textos');
-}
-
-// Inicializa quando a página carrega
-document.addEventListener('DOMContentLoaded', function() {
-    initTextoRecebido();
-});
-
 // 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES
 function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
@@ -73,9 +35,59 @@ function setupInstructionToggle() {
     });
 }
 
-// Inicializa o toggle quando a página carregar
+// 🆕 BOX HÍBRIDO - INSTRUCTION + TEXTO-RECEBIDO
+function criarBoxHibrido() {
+    const box = document.getElementById('texto-recebido');
+    if (!box) return;
+    
+    // Estado 1: COMO instructionBox
+    box.innerHTML = `
+        <div class="instruction-content">
+            <div class="instruction-item">📱 <span>Tap the QR code to start</span></div>
+            <div class="instruction-item">🔗 <span>Ask to scan the QR</span></div>
+            <div class="instruction-item">⏳ <span>Waiting for connection</span></div>
+            <div class="instruction-item">✅ <span>Both online</span></div>
+            <div class="instruction-item">🎤 <span>Speak clearly</span></div>
+            <div class="instruction-item">📖 <span>Read the message</span></div>
+            <div class="instruction-item">📷 <span>Flip the camera. Share!</span></div>
+        </div>
+        <button class="instruction-toggle">×</button>
+    `;
+    
+    // Aplica estilo do instructionBox
+    box.classList.add('instruction-box', 'expandido');
+    box.style.bottom = '1%'; // Posição do instructionBox
+    box.style.zIndex = '100'; // Acima de outros elementos
+    
+    // TOGGLE: Quando clicar, vira texto-recebido
+    const toggleBtn = box.querySelector('.instruction-toggle');
+    toggleBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        // Estado 2: VIRA texto-recebido
+        box.classList.remove('instruction-box', 'expandido', 'recolhido');
+        box.innerHTML = ''; // Limpa instruções
+        box.style.bottom = '20%'; // Posição original do texto-recebido
+        box.style.zIndex = '30'; // Z-index original
+        
+        // Restaura estilo original do texto-recebido
+        box.style.background = '#f8f9fa';
+        box.style.border = '0.2vh solid #4CAF50';
+        box.style.borderRadius = '1vh';
+        box.style.width = '90%';
+        box.style.minHeight = '60px';
+        box.style.maxHeight = '200px';
+        box.style.overflowY = 'auto';
+        
+        // Agora está pronto para receber mensagens normalmente
+        console.log('🔄 Box hibrido: Modo texto-recebido ativado');
+    });
+}
+
+// Inicializa quando a página carrega
 document.addEventListener('DOMContentLoaded', function() {
     setupInstructionToggle();
+    criarBoxHibrido();
 });
 
 import { WebRTCCore } from '../../core/webrtc-core.js';
