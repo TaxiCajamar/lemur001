@@ -344,15 +344,24 @@ body {
 }
 
 .instruction-item {
-  display: flex;
-  align-items: center;
-  gap: 3%;
+  display: block;          /* ✅ Comportamento normal de bloco */
   margin-bottom: 1%;
   line-height: 1.2;
   font-family: 'Segoe UI', sans-serif;
   color: #333;
   transition: opacity 0.3s ease;
-   font-size: 16px !important;
+  font-size: 16px !important;
+}
+
+.instruction-item img {
+  display: inline-block;   /* ✅ Imagem na mesma linha */
+  vertical-align: middle;
+  margin-right: 3%;
+}
+
+.instruction-item span {
+  display: inline-block;   /* ✅ Texto na mesma linha */
+  vertical-align: middle;
 }
 
 .instruction-box.recolhido .instruction-item {
