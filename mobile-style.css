@@ -595,15 +595,16 @@ body {
   border-radius: 1vh;
   background-color: #f8f9fa;
   width: 90%;
-  min-height: 60px;
-  max-height: 200px;
-  overflow-y: auto;
+  min-height: 150px;       /* Aumentei para caber as instruções */
+  max-height: 80vh;        /* Mudei para % da tela em vez de 200px */
+  overflow-y: auto;        /* Scroll apenas quando precisar */
   white-space: pre-wrap;
   word-wrap: break-word;
   text-align: center;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  align-items: flex-start; /* ✅ Alinha no topo */
+  flex-direction: column;  /* ✅ Organiza em coluna */
+  /* justify-content: center; REMOVA esta linha */
   color: #333;
   font-weight: bold;
   opacity: 1;
