@@ -636,7 +636,7 @@ body {
   opacity: 1;
   visibility: visible;
   box-sizing: border-box;
-  z-index: 30;
+  z-index: 100;
 }
 
 #logo-traduz {
