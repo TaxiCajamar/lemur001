@@ -1,3 +1,46 @@
+
+// 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES
+function setupInstructionToggle() {
+    const instructionBox = document.getElementById('instructionBox');
+    const toggleButton = document.getElementById('instructionToggle');
+    
+    if (!instructionBox || !toggleButton) return;
+    
+    // Estado inicial: expandido
+    let isExpanded = true;
+    
+    toggleButton.addEventListener('click', function(e) {
+        e.stopPropagation(); // Impede que o clique propague para o box
+        
+        isExpanded = !isExpanded;
+        
+        if (isExpanded) {
+            instructionBox.classList.remove('recolhido');
+            instructionBox.classList.add('expandido');
+            console.log('📖 Instruções expandidas');
+        } else {
+            instructionBox.classList.remove('expandido');
+            instructionBox.classList.add('recolhido');
+            console.log('📖 Instruções recolhidas');
+        }
+    });
+    
+    // Opcional: fechar ao clicar fora (se quiser)
+    document.addEventListener('click', function(e) {
+        if (!instructionBox.contains(e.target) && isExpanded) {
+            instructionBox.classList.remove('expandido');
+            instructionBox.classList.add('recolhido');
+            isExpanded = false;
+            console.log('📖 Instruções fechadas (clique fora)');
+        }
+    });
+}
+
+// Inicializa o toggle quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    setupInstructionToggle();
+});
+
 import { WebRTCCore } from '../../core/webrtc-core.js';
 import { QRCodeGenerator } from '../qrcode/qr-code-utils.js';
 import { CameraVigilante } from '../../core/camera-vigilante.js';
@@ -100,9 +143,11 @@ async function aplicarBandeiraLocal(langCode) {
 
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🔴';
 
+        // ✅✅✅ SOLUÇÃO INTELIGENTE: Guardar o idioma original
         window.meuIdiomaLocal = langCode;
         console.log('💾 Idioma local guardado:', window.meuIdiomaLocal);
 
+        // ✅ CORREÇÃO: MESMA BANDEIRA NAS DUAS POSIÇÕES
         const languageFlagElement = document.querySelector('.language-flag');
         if (languageFlagElement) languageFlagElement.textContent = bandeira;
 
@@ -124,6 +169,7 @@ async function aplicarBandeiraRemota(langCode) {
 
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🔴';
 
+        // ✅✅✅ SOLUÇÃO INTELIGENTE: Guardar o idioma REMOTO também!
         window.meuIdiomaRemoto = langCode;
         console.log('💾 Idioma REMOTO guardado:', window.meuIdiomaRemoto);
 
@@ -141,12 +187,14 @@ async function aplicarBandeiraRemota(langCode) {
 function liberarInterfaceFallback() {
     console.log('🔓 Usando fallback para liberar interface...');
     
+    // Remove tela de loading
     const loadingScreen = document.getElementById('loadingScreen');
     if (loadingScreen) {
         loadingScreen.style.display = 'none';
         console.log('✅ Tela de loading removida');
     }
     
+    // Mostra conteúdo principal
     const elementosEscondidos = document.querySelectorAll('.hidden-until-ready');
     elementosEscondidos.forEach(elemento => {
         elemento.style.display = '';
@@ -155,9 +203,10 @@ function liberarInterfaceFallback() {
     console.log(`✅ ${elementosEscondidos.length} elementos liberados`);
 }
 
-// 🌐 TRADUÇÃO DAS FRASES FIXAS
+// 🌐 TRADUÇÃO DAS FRASES FIXAS (AGORA SEPARADA)
 async function traduzirFrasesFixas() {
   try {
+    // ✅✅✅ AGORA USA O IDIOMA GUARDADO!
     const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
     
     console.log(`🌐 Traduzindo frases fixas para: ${idiomaExato}`);
@@ -165,8 +214,8 @@ async function traduzirFrasesFixas() {
     const frasesParaTraduzir = {
         "qr-modal-title": "This is your online key",
       "qr-modal-description": "You can ask to scan, share or print on your business card.",
-      "translator-label": "Real-time translation.",
-  "translator-label-2": "Real-time translation.",
+      "translator-label": "Real-time translation.",      // ⬅️ PRIMEIRO ELEMENTO
+  "translator-label-2": "Real-time translation.",   // ⬅️ SEGUNDO ELEMENTO (NOVO)
        "welcome-text": "Welcome! Let's begin.",
     "tap-qr": "Tap the QR code to start.",
   "quick-scan": "Ask to scan the QR.",
@@ -200,19 +249,22 @@ function esconderClickQuandoConectar() {
     
     if (!elementoClick || !remoteVideo) return;
     
+    // Observa mudanças no remoteVideo para detectar conexão
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'srcObject') {
                 if (remoteVideo.srcObject) {
+                    // WebRTC conectou - esconde o botão click DEFINITIVAMENTE
                     elementoClick.style.display = 'none';
                     elementoClick.classList.remove('piscar-suave');
                     console.log('🔗 WebRTC conectado - botão Click removido');
-                    observer.disconnect();
+                    observer.disconnect(); // Para de observar
                 }
             }
         });
     });
     
+    // Começa a observar o remoteVideo
     observer.observe(remoteVideo, {
         attributes: true,
         attributeFilter: ['srcObject']
@@ -221,198 +273,22 @@ function esconderClickQuandoConectar() {
     console.log('👀 Observando conexão WebRTC para esconder botão Click');
 }
 
-// 🆕 SISTEMA HÍBRIDO DO TEXTO-RECEBIDO - LAYOUT CORRETO
-function inicializarTextoRecebidoHibrido() {
-    const textoRecebido = document.getElementById("texto-recebido");
-    if (!textoRecebido) return;
-
-    const toggleBtn = document.createElement("button");
-    toggleBtn.classList.add("instruction-toggle");
-    
-    const conteudoInstrucoes = `
-        <div class="instruction-content">
-            <div class="instruction-item">
-                <img src="assets/images/hello.png" alt="Hello icon" />
-                <span id="welcome-text">Welcome! Let's begin.</span>
-            </div>
-            <div class="instruction-item">
-                <img src="assets/images/realtime.png" alt="Realtime icon" />
-                <span id="translator-label-2">Real-time translation.</span>
-            </div>
-            <div class="instruction-item">
-                <img src="assets/images/QRcode.png" alt="QR icon" />
-                <span id="tap-qr">Tap the QR code to start.</span>
-            </div>
-            <div class="instruction-item">
-                <img src="assets/images/mobil.png" alt="Mobile icon" />
-                <span id="quick-scan">Ask to scan the QR.</span>
-            </div>
-            <div class="instruction-item">
-                <img src="assets/images/Ancioso.png" alt="Loading icon" />
-                <span id="wait-connection">Waiting for connection.</span>
-            </div>
-            <div class="instruction-item">
-                <img src="assets/images/juntos.png" alt="Connected icon" />
-                <span id="both-connected">Both online.</span>
-            </div>
-            <div class="instruction-item">
-                <img src="assets/images/trduz.png" alt="Message icon" />
-                <span id="check-replies">Read the message.</span>
-            </div>
-            <div class="instruction-item">
-                <img src="assets/images/mic.png" alt="Mic icon" />
-                <span id="drop-voice">Speak clearly.</span>
-            </div>
-            <div class="instruction-item">
-                <img src="assets/images/cam.png" alt="Camera icon" />
-                <span id="flip-cam">Flip the camera. Share!</span>
-            </div>
-        </div>
-    `;
-
-    // INICIALIZA EXPANDIDO (COM LAYOUT DO INSTRUCTION-BOX)
-    textoRecebido.innerHTML = conteudoInstrucoes;
-    textoRecebido.appendChild(toggleBtn);
-    textoRecebido.classList.add("instruction-box", "expandido");
-    
-    // Aplica estilo EXPANDIDO (instruction-box)
-    textoRecebido.style.cssText = `
-        position: absolute !important;
-        bottom: 1% !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 85% !important;
-        max-width: 300px !important;
-        min-width: 200px !important;
-        padding: 1% 2% !important;
-        background: #ffffff !important;
-        border: 2px solid #4CAF50 !important;
-        border-radius: 12px !important;
-        box-shadow: inset 0 0 10px rgba(0, 128, 0, 0.2) !important;
-        font-size: 16px !important;
-        z-index: 100 !important;
-        text-align: left !important;
-        transition: all 0.3s ease !important;
-        overflow: hidden !important;
-        height: 300px !important;
-    `;
-
-    toggleBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        
-        if (textoRecebido.classList.contains("expandido")) {
-            // MODO RECOLHIDO - VOLTA AO LAYOUT ORIGINAL DO TEXTO-RECEBIDO
-            textoRecebido.classList.remove("expandido");
-            textoRecebido.classList.add("recolhido");
-            
-            textoRecebido.style.cssText = '';
-            textoRecebido.style.height = "auto";
-            textoRecebido.style.minHeight = "40px";
-            textoRecebido.style.padding = "10px";
-            textoRecebido.style.textAlign = "center";
-            textoRecebido.style.display = "flex";
-            textoRecebido.style.alignItems = "center";
-            textoRecebido.style.justifyContent = "center";
-            textoRecebido.style.fontSize = "16px";
-            textoRecebido.style.cursor = "pointer";
-            
-            textoRecebido.innerHTML = '';
-            textoRecebido.appendChild(toggleBtn);
-            console.log('📖 Modo recolhido - layout original do texto-recebido');
-        } else {
-            // MODO EXPANDIDO - LAYOUT DO INSTRUCTION-BOX
-            textoRecebido.classList.remove("recolhido");
-            textoRecebido.classList.add("expandido");
-            
-            textoRecebido.style.cssText = `
-                position: absolute !important;
-                bottom: 1% !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                width: 85% !important;
-                max-width: 300px !important;
-                min-width: 200px !important;
-                padding: 1% 2% !important;
-                background: #ffffff !important;
-                border: 2px solid #4CAF50 !important;
-                border-radius: 12px !important;
-                box-shadow: inset 0 0 10px rgba(0, 128, 0, 0.2) !important;
-                font-size: 16px !important;
-                z-index: 100 !important;
-                text-align: left !important;
-                transition: all 0.3s ease !important;
-                overflow: hidden !important;
-                height: 300px !important;
-            `;
-            
-            textoRecebido.innerHTML = conteudoInstrucoes;
-            textoRecebido.appendChild(toggleBtn);
-            console.log('📖 Modo expandido - layout do instruction-box');
-        }
-    });
-
-    console.log('✅ Sistema híbrido inicializado - layout correto');
-}
-
-// 🆕 CONFIGURA CALLBACK WEBCRTC PARA O SISTEMA HÍBRIDO
-function configurarCallbackWebRTCHibrido() {
-    if (!window.rtcCore) return;
-
-    window.rtcCore.setDataChannelCallback(async (mensagem) => {
-        const textoRecebido = document.getElementById("texto-recebido");
-        if (!textoRecebido) return;
-
-        ttsHibrido.iniciarSomDigitacao();
-        console.log('📩 Mensagem recebida:', mensagem);
-
-        // SÓ MOSTRA MENSAGENS SE ESTIVER NO MODO RECOLHIDO (LAYOUT ORIGINAL)
-        if (textoRecebido.classList.contains("recolhido")) {
-            textoRecebido.style.background = "rgba(255, 0, 0, 0.1)";
-            textoRecebido.style.border = "2px solid red";
-            textoRecebido.style.boxShadow = "inset 0 0 10px rgba(255, 0, 0, 0.3)";
-            textoRecebido.style.animation = "pulsar-flutuar-intenso 0.8s infinite ease-in-out";
-            textoRecebido.style.color = "#333";
-            textoRecebido.style.fontSize = "16px";
-            textoRecebido.style.textAlign = "center";
-            textoRecebido.style.display = "flex";
-            textoRecebido.style.alignItems = "center";
-            textoRecebido.style.justifyContent = "center";
-
-            textoRecebido.textContent = "";
-            let i = 0;
-            const interval = setInterval(() => {
-                if (i < mensagem.length) {
-                    textoRecebido.textContent += mensagem[i];
-                    i++;
-                } else {
-                    clearInterval(interval);
-                }
-            }, 50);
-        }
-
-        const imagemImpaciente = document.getElementById('lemurFixed');
-        if (imagemImpaciente) {
-            imagemImpaciente.style.display = 'block';
-        }
-
-        const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
-        await ttsHibrido.falarTextoSistemaHibrido(mensagem, textoRecebido, imagemImpaciente, idiomaExato);
-    });
-}
-
-// 🎥 FUNÇÃO PARA INICIAR CÂMERA E WEBRTC
+// 🎥 FUNÇÃO PARA INICIAR CÂMERA E WEBRTC (AGORA COM CameraVigilante)
 async function iniciarCameraAposPermissoes() {
     try {
         console.log('🎥 Iniciando sistema de câmera com CameraVigilante...');
         
+        // ✅ 1. INICIA CameraVigilante (SUBSTITUI TODO O CÓDIGO DE CÂMERA ANTIGO)
         window.cameraVigilante = new CameraVigilante();
         await window.cameraVigilante.inicializarSistema();
         
+        // ✅ 2. REMOVE LOADING (MESMO CÓDIGO DO ORIGINAL)
         const mobileLoading = document.getElementById('mobileLoading');
         if (mobileLoading) {
             mobileLoading.style.display = 'none';
         }
 
+        // ✅ 3. MOSTRA BOTÃO CLICK (MESMO CÓDIGO DO ORIGINAL)
         setTimeout(() => {
             const elementoClick = document.getElementById('click');
             if (elementoClick) {
@@ -422,6 +298,7 @@ async function iniciarCameraAposPermissoes() {
             }
         }, 500);
 
+        // ✅ 4. CONFIGURAÇÃO WEBRTC (MESMO CÓDIGO DO ORIGINAL)
         window.rtcCore = new WebRTCCore();
 
         const params = new URLSearchParams(window.location.search);
@@ -438,6 +315,7 @@ async function iniciarCameraAposPermissoes() {
             lang: lang
         };
 
+        // ✅ 5. CONFIGURA BOTÃO QR CODE (MESMO CÓDIGO DO ORIGINAL)
         document.getElementById('logo-traduz').addEventListener('click', function() {
             const overlay = document.querySelector('.info-overlay');
             const qrcodeContainer = document.getElementById('qrcode');
@@ -502,6 +380,7 @@ async function iniciarCameraAposPermissoes() {
             console.log('✅ QR Code e Link gerados/reativados!');
         });
 
+        // Fechar QR Code ao clicar fora (MESMO CÓDIGO DO ORIGINAL)
         document.querySelector('.info-overlay').addEventListener('click', function(e) {
             if (e.target === this) {
                 this.classList.add('hidden');
@@ -512,6 +391,37 @@ async function iniciarCameraAposPermissoes() {
         window.rtcCore.initialize(myId);
         window.rtcCore.setupSocketHandlers();
 
+        // ✅ 6. CONFIGURA CALLBACK PARA MENSAGENS (AGORA COM TTS HÍBRIDO)
+        window.rtcCore.setDataChannelCallback(async (mensagem) => {
+            ttsHibrido.iniciarSomDigitacao();
+
+            console.log('📩 Mensagem recebida:', mensagem);
+
+            const elemento = document.getElementById('texto-recebido');
+            const imagemImpaciente = document.getElementById('lemurFixed');
+            
+            if (elemento) {
+                elemento.textContent = "";
+                elemento.style.opacity = '1';
+                elemento.style.transition = 'opacity 0.5s ease';
+                
+                elemento.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
+                elemento.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                elemento.style.border = '2px solid #ff0000';
+            }
+
+            if (imagemImpaciente) {
+                imagemImpaciente.style.display = 'block';
+            }
+
+            const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
+            
+            console.log(`🎯 TTS Receiver: Idioma guardado = ${idiomaExato}`);
+            
+            await ttsHibrido.falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
+        });
+
+        // ✅ 7. CONFIGURA HANDLER DE CHAMADAS (MESMO CÓDIGO DO ORIGINAL)
         window.rtcCore.onIncomingCall = (offer, idiomaDoCaller) => {
             console.log('📞 Chamada recebida - Com/Sem câmera');
 
@@ -552,6 +462,7 @@ async function iniciarCameraAposPermissoes() {
             });
         };
 
+        // ✅ 8. INICIA OBSERVADOR (MESMO CÓDIGO DO ORIGINAL)
         esconderClickQuandoConectar();
 
         console.log('✅ Sistema de câmera e WebRTC inicializado com sucesso!');
@@ -559,6 +470,7 @@ async function iniciarCameraAposPermissoes() {
     } catch (error) {
         console.error("❌ Erro não crítico na inicialização:", error);
         
+        // ✅ MESMO TRATAMENTO DE ERRO DO ORIGINAL
         const mobileLoading = document.getElementById('mobileLoading');
         if (mobileLoading) {
             mobileLoading.style.display = 'none';
@@ -568,26 +480,31 @@ async function iniciarCameraAposPermissoes() {
     }
 }
 
-// 🚀 INICIALIZAÇÃO AUTOMÁTICA
+// 🚀 INICIALIZAÇÃO AUTOMÁTICA (MESMO CÓDIGO DO ORIGINAL)
 window.onload = async () => {
     try {
         console.log('🚀 Iniciando aplicação receiver automaticamente...');
         
+        // 1. Obtém o idioma para tradução
         const params = new URLSearchParams(window.location.search);
         const lang = params.get('lang') || navigator.language || 'pt-BR';
         
+        // ✅✅✅ PRIMEIRO: Aplica bandeira e GUARDA o idioma
         await aplicarBandeiraLocal(lang);
 
-        inicializarTextoRecebidoHibrido();
-
+        // ✅✅✅ DEPOIS: Traduz frases com o idioma JÁ GUARDADO  
         await traduzirFrasesFixas();
         
+        // 3. Inicia áudio
         iniciarAudio();
         
+        // 4. Carrega sons da máquina de escrever (AGORA NO TTS HÍBRIDO)
         await ttsHibrido.carregarSomDigitacao();
         
+        // 5. Solicita TODAS as permissões (câmera + microfone)
         await solicitarTodasPermissoes();
         
+        // 6. Libera interface
         if (typeof window.liberarInterface === 'function') {
             window.liberarInterface();
             console.log('✅ Interface liberada via função global');
@@ -596,11 +513,10 @@ window.onload = async () => {
             console.log('✅ Interface liberada via fallback');
         }
         
+        // 7. Inicia câmera e WebRTC (AGORA COM CameraVigilante)
         await iniciarCameraAposPermissoes();
-
-        configurarCallbackWebRTCHibrido();
         
-        console.log('✅ Receiver iniciado com sistema híbrido!');
+        console.log('✅ Receiver iniciado com sucesso!');
         
     } catch (error) {
         console.error('❌ Erro ao inicializar receiver:', error);
