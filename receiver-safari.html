@@ -28,24 +28,26 @@
       font-size: 1em;
     }
 
-    .box-principal {
-      width: 100%;
-      max-width: 600px;
-      height: 100%;
-      margin: 0 auto;
-      padding: 2vh 2vw;
-      box-sizing: border-box;
-      background-color: #aee2ff;
-      position: relative;
-      overflow-y: auto;
-    }
+   .box-principal {
+  width: 100%;
+  max-width: 600px;
+  /* 🔴 REMOVER height fixo */
+  /* height: 100%; */
+  margin: 0 auto;
+  padding: 2vh 2vw;
+  box-sizing: border-box;
+  background-color: #aee2ff;
+  position: relative;
+  /* 🔴 REMOVER overflow-y */
+  /* overflow-y: auto; */
+}
 
     /* =============================================
        ESTILO EXCLUSIVO DO #texto-recebido
        ============================================= */
   #texto-recebido {
   position: absolute;
-  bottom: 20%;              /* fixa o pé da caixa */
+  bottom: 20%;              /* pé fixo a 20% do fundo */
   left: 50%;
   transform: translateX(-50%);
   font-size: 1em !important;
@@ -56,8 +58,7 @@
   background-color: #f8f9fa;
   width: 90%;
   min-height: 60px;
-  /* 🔴 não usar max-height */
-  /* 🔴 não usar overflow-y */
+  /* 🔴 não limitar altura */
   white-space: normal;
   word-wrap: break-word;
   text-align: left;
