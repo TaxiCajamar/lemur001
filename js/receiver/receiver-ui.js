@@ -1,45 +1,3 @@
-// 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES
-function setupInstructionToggle() {
-    const instructionBox = document.getElementById('instructionBox');
-    const toggleButton = document.getElementById('instructionToggle');
-    
-    if (!instructionBox || !toggleButton) return;
-    
-    // Estado inicial: expandido
-    let isExpanded = true;
-    
-    toggleButton.addEventListener('click', function(e) {
-        e.stopPropagation(); // Impede que o clique propague para o box
-        
-        isExpanded = !isExpanded;
-        
-        if (isExpanded) {
-            instructionBox.classList.remove('recolhido');
-            instructionBox.classList.add('expandido');
-            console.log('📖 Instruções expandidas');
-        } else {
-            instructionBox.classList.remove('expandido');
-            instructionBox.classList.add('recolhido');
-            console.log('📖 Instruções recolhidas');
-        }
-    });
-    
-    // Opcional: fechar ao clicar fora (se quiser)
-    document.addEventListener('click', function(e) {
-        if (!instructionBox.contains(e.target) && isExpanded) {
-            instructionBox.classList.remove('expandido');
-            instructionBox.classList.add('recolhido');
-            isExpanded = false;
-            console.log('📖 Instruções fechadas (clique fora)');
-        }
-    });
-}
-
-// Inicializa o toggle quando a página carregar
-document.addEventListener('DOMContentLoaded', function() {
-    setupInstructionToggle();
-});
-
 import { WebRTCCore } from '../../core/webrtc-core.js';
 import { QRCodeGenerator } from '../qrcode/qr-code-utils.js';
 import { CameraVigilante } from '../../core/camera-vigilante.js';
@@ -202,7 +160,7 @@ function liberarInterfaceFallback() {
     console.log(`✅ ${elementosEscondidos.length} elementos liberados`);
 }
 
-// 🌐 TRADUÇÃO DAS FRASES FIXAS (AGORA SEPARADA)
+// 🌐 TRADUÇÃO DAS FRASES FIXAS (AGORA ADAPTADA PARA O TEXTO-RECEBIDO HÍBRIDO)
 async function traduzirFrasesFixas() {
   try {
     // ✅✅✅ AGORA USA O IDIOMA GUARDADO!
@@ -234,7 +192,11 @@ async function traduzirFrasesFixas() {
       }
     }
 
-    console.log('✅ Frases fixas traduzidas com sucesso');
+    // 🆕 NOVO: MOSTRAR INSTRUÇÕES NO TEXTO-RECEBIDO HÍBRIDO
+    const frasesInstrucoes = Object.values(frasesParaTraduzir);
+    mostrarInstrucoes(frasesInstrucoes);
+
+    console.log('✅ Frases fixas traduzidas e instruções mostradas');
 
   } catch (error) {
     console.error("❌ Erro ao traduzir frases fixas:", error);
@@ -271,6 +233,47 @@ function esconderClickQuandoConectar() {
     
     console.log('👀 Observando conexão WebRTC para esconder botão Click');
 }
+
+// 🆕 NOVO SISTEMA HÍBRIDO DO TEXTO-RECEBIDO
+// Seleciona o único box que vai existir
+const textoRecebido = document.getElementById("texto-recebido");
+
+// Cria o botão de toggle
+const toggleBtn = document.createElement("button");
+toggleBtn.classList.add("instruction-toggle");
+textoRecebido.appendChild(toggleBtn);
+
+// Inicializa expandido (como instruction-box)
+textoRecebido.classList.add("instruction-box", "expandido");
+
+// Função para mostrar instruções traduzidas dentro do textoRecebido
+function mostrarInstrucoes(frasesTraduzidas) {
+  if (!textoRecebido) return;
+  
+  textoRecebido.innerHTML = ""; // limpa conteúdo
+  frasesTraduzidas.forEach(frase => {
+    const item = document.createElement("div");
+    item.classList.add("instruction-item");
+    item.textContent = frase;
+    textoRecebido.appendChild(item);
+  });
+  textoRecebido.appendChild(toggleBtn); // recoloca o botão
+}
+
+// Alterna expandido/recolhido
+toggleBtn.addEventListener("click", (e) => {
+  e.stopPropagation(); // Impede que o clique propague
+  
+  if (textoRecebido.classList.contains("expandido")) {
+    textoRecebido.classList.remove("expandido");
+    textoRecebido.classList.add("recolhido");
+    console.log('📖 Modo recolhido - pronto para mensagens');
+  } else {
+    textoRecebido.classList.remove("recolhido");
+    textoRecebido.classList.add("expandido");
+    console.log('📖 Modo expandido - mostrando instruções');
+  }
+});
 
 // 🎥 FUNÇÃO PARA INICIAR CÂMERA E WEBRTC (AGORA COM CameraVigilante)
 async function iniciarCameraAposPermissoes() {
@@ -390,25 +393,32 @@ async function iniciarCameraAposPermissoes() {
         window.rtcCore.initialize(myId);
         window.rtcCore.setupSocketHandlers();
 
-        // ✅ 6. CONFIGURA CALLBACK PARA MENSAGENS (AGORA COM TTS HÍBRIDO)
+        // ✅ 6. CONFIGURA CALLBACK PARA MENSAGENS (AGORA COM SISTEMA HÍBRIDO)
         window.rtcCore.setDataChannelCallback(async (mensagem) => {
             ttsHibrido.iniciarSomDigitacao();
 
             console.log('📩 Mensagem recebida:', mensagem);
 
-            const elemento = document.getElementById('texto-recebido');
-            const imagemImpaciente = document.getElementById('lemurFixed');
-            
-            if (elemento) {
-                elemento.textContent = "";
-                elemento.style.opacity = '1';
-                elemento.style.transition = 'opacity 0.5s ease';
+            // 🆕 NOVO: SÓ MOSTRA MENSAGENS SE ESTIVER RECOLHIDO
+            if (textoRecebido.classList.contains("recolhido")) {
+                textoRecebido.style.opacity = '1';
+                textoRecebido.style.transition = 'opacity 0.5s ease';
                 
-                elemento.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
-                elemento.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
-                elemento.style.border = '2px solid #ff0000';
+                textoRecebido.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
+                textoRecebido.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                textoRecebido.style.border = '2px solid #ff0000';
+
+                // Efeito máquina de escrever
+                textoRecebido.textContent = "";
+                let i = 0;
+                const interval = setInterval(() => {
+                    textoRecebido.textContent += mensagem[i];
+                    i++;
+                    if (i >= mensagem.length) clearInterval(interval);
+                }, 50);
             }
 
+            const imagemImpaciente = document.getElementById('lemurFixed');
             if (imagemImpaciente) {
                 imagemImpaciente.style.display = 'block';
             }
@@ -417,7 +427,7 @@ async function iniciarCameraAposPermissoes() {
             
             console.log(`🎯 TTS Receiver: Idioma guardado = ${idiomaExato}`);
             
-            await ttsHibrido.falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
+            await ttsHibrido.falarTextoSistemaHibrido(mensagem, textoRecebido, imagemImpaciente, idiomaExato);
         });
 
         // ✅ 7. CONFIGURA HANDLER DE CHAMADAS (MESMO CÓDIGO DO ORIGINAL)
