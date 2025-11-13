@@ -100,11 +100,9 @@ async function aplicarBandeiraLocal(langCode) {
 
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🔴';
 
-        // ✅✅✅ SOLUÇÃO INTELIGENTE: Guardar o idioma original
         window.meuIdiomaLocal = langCode;
         console.log('💾 Idioma local guardado:', window.meuIdiomaLocal);
 
-        // ✅ CORREÇÃO: MESMA BANDEIRA NAS DUAS POSIÇÕES
         const languageFlagElement = document.querySelector('.language-flag');
         if (languageFlagElement) languageFlagElement.textContent = bandeira;
 
@@ -126,7 +124,6 @@ async function aplicarBandeiraRemota(langCode) {
 
         const bandeira = flags[langCode] || flags[langCode.split('-')[0]] || '🔴';
 
-        // ✅✅✅ SOLUÇÃO INTELIGENTE: Guardar o idioma REMOTO também!
         window.meuIdiomaRemoto = langCode;
         console.log('💾 Idioma REMOTO guardado:', window.meuIdiomaRemoto);
 
@@ -144,14 +141,12 @@ async function aplicarBandeiraRemota(langCode) {
 function liberarInterfaceFallback() {
     console.log('🔓 Usando fallback para liberar interface...');
     
-    // Remove tela de loading
     const loadingScreen = document.getElementById('loadingScreen');
     if (loadingScreen) {
         loadingScreen.style.display = 'none';
         console.log('✅ Tela de loading removida');
     }
     
-    // Mostra conteúdo principal
     const elementosEscondidos = document.querySelectorAll('.hidden-until-ready');
     elementosEscondidos.forEach(elemento => {
         elemento.style.display = '';
@@ -160,10 +155,9 @@ function liberarInterfaceFallback() {
     console.log(`✅ ${elementosEscondidos.length} elementos liberados`);
 }
 
-// 🌐 TRADUÇÃO DAS FRASES FIXAS (AGORA ADAPTADA PARA O TEXTO-RECEBIDO HÍBRIDO)
+// 🌐 TRADUÇÃO DAS FRASES FIXAS
 async function traduzirFrasesFixas() {
   try {
-    // ✅✅✅ AGORA USA O IDIOMA GUARDADO!
     const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
     
     console.log(`🌐 Traduzindo frases fixas para: ${idiomaExato}`);
@@ -171,8 +165,8 @@ async function traduzirFrasesFixas() {
     const frasesParaTraduzir = {
         "qr-modal-title": "This is your online key",
       "qr-modal-description": "You can ask to scan, share or print on your business card.",
-      "translator-label": "Real-time translation.",      // ⬅️ PRIMEIRO ELEMENTO
-  "translator-label-2": "Real-time translation.",   // ⬅️ SEGUNDO ELEMENTO (NOVO)
+      "translator-label": "Real-time translation.",
+  "translator-label-2": "Real-time translation.",
        "welcome-text": "Welcome! Let's begin.",
     "tap-qr": "Tap the QR code to start.",
   "quick-scan": "Ask to scan the QR.",
@@ -206,22 +200,19 @@ function esconderClickQuandoConectar() {
     
     if (!elementoClick || !remoteVideo) return;
     
-    // Observa mudanças no remoteVideo para detectar conexão
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'srcObject') {
                 if (remoteVideo.srcObject) {
-                    // WebRTC conectou - esconde o botão click DEFINITIVAMENTE
                     elementoClick.style.display = 'none';
                     elementoClick.classList.remove('piscar-suave');
                     console.log('🔗 WebRTC conectado - botão Click removido');
-                    observer.disconnect(); // Para de observar
+                    observer.disconnect();
                 }
             }
         });
     });
     
-    // Começa a observar o remoteVideo
     observer.observe(remoteVideo, {
         attributes: true,
         attributeFilter: ['srcObject']
@@ -230,40 +221,14 @@ function esconderClickQuandoConectar() {
     console.log('👀 Observando conexão WebRTC para esconder botão Click');
 }
 
-// 🆕 SISTEMA HÍBRIDO DO TEXTO-RECEBIDO - COM LAYOUT IDÊNTICO AO INSTRUCTION-BOX
+// 🆕 SISTEMA HÍBRIDO DO TEXTO-RECEBIDO - LAYOUT CORRETO
 function inicializarTextoRecebidoHibrido() {
     const textoRecebido = document.getElementById("texto-recebido");
     if (!textoRecebido) return;
 
-    // 🎯 APLICA TODAS AS CLASSES CSS DO INSTRUCTION-BOX ORIGINAL
-    textoRecebido.classList.add("instruction-box", "expandido");
-    
-    // Remove quaisquer estilos conflitantes que possam existir no texto-recebido
-    textoRecebido.style.cssText = `
-        position: absolute !important;
-        bottom: 1% !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 85% !important;
-        max-width: 300px !important;
-        min-width: 200px !important;
-        padding: 1% 2% !important;
-        background: #ffffff !important;
-        border: 2px solid #4CAF50 !important;
-        border-radius: 12px !important;
-        box-shadow: inset 0 0 10px rgba(0, 128, 0, 0.2) !important;
-        font-size: 16px !important;
-        z-index: 100 !important;
-        text-align: left !important;
-        transition: all 0.3s ease !important;
-        overflow: hidden !important;
-    `;
-
-    // Cria o botão de toggle
     const toggleBtn = document.createElement("button");
     toggleBtn.classList.add("instruction-toggle");
     
-    // 🎯 CONTEÚDO FIXO DAS INSTRUÇÕES (EXATAMENTE IGUAL AO instructionBox ORIGINAL)
     const conteudoInstrucoes = `
         <div class="instruction-content">
             <div class="instruction-item">
@@ -305,38 +270,88 @@ function inicializarTextoRecebidoHibrido() {
         </div>
     `;
 
-    // Inicializa expandido com as instruções fixas
+    // INICIALIZA EXPANDIDO (COM LAYOUT DO INSTRUCTION-BOX)
     textoRecebido.innerHTML = conteudoInstrucoes;
     textoRecebido.appendChild(toggleBtn);
+    textoRecebido.classList.add("instruction-box", "expandido");
+    
+    // Aplica estilo EXPANDIDO (instruction-box)
+    textoRecebido.style.cssText = `
+        position: absolute !important;
+        bottom: 1% !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 85% !important;
+        max-width: 300px !important;
+        min-width: 200px !important;
+        padding: 1% 2% !important;
+        background: #ffffff !important;
+        border: 2px solid #4CAF50 !important;
+        border-radius: 12px !important;
+        box-shadow: inset 0 0 10px rgba(0, 128, 0, 0.2) !important;
+        font-size: 16px !important;
+        z-index: 100 !important;
+        text-align: left !important;
+        transition: all 0.3s ease !important;
+        overflow: hidden !important;
+        height: 300px !important;
+    `;
 
-    // Alterna expandido/recolhido
     toggleBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         
         if (textoRecebido.classList.contains("expandido")) {
-            // MODO RECOLHIDO - Aplica estilo recolhido IDÊNTICO ao original
+            // MODO RECOLHIDO - VOLTA AO LAYOUT ORIGINAL DO TEXTO-RECEBIDO
             textoRecebido.classList.remove("expandido");
             textoRecebido.classList.add("recolhido");
-            textoRecebido.style.height = "40px";
-            textoRecebido.style.width = "50px";
+            
+            textoRecebido.style.cssText = '';
+            textoRecebido.style.height = "auto";
+            textoRecebido.style.minHeight = "40px";
+            textoRecebido.style.padding = "10px";
+            textoRecebido.style.textAlign = "center";
+            textoRecebido.style.display = "flex";
+            textoRecebido.style.alignItems = "center";
+            textoRecebido.style.justifyContent = "center";
+            textoRecebido.style.fontSize = "16px";
             textoRecebido.style.cursor = "pointer";
+            
             textoRecebido.innerHTML = '';
             textoRecebido.appendChild(toggleBtn);
-            console.log('📖 Modo recolhido - pronto para mensagens');
+            console.log('📖 Modo recolhido - layout original do texto-recebido');
         } else {
-            // MODO EXPANDIDO - Volta com instruções fixas e estilo expandido
+            // MODO EXPANDIDO - LAYOUT DO INSTRUCTION-BOX
             textoRecebido.classList.remove("recolhido");
             textoRecebido.classList.add("expandido");
-            textoRecebido.style.height = "300px";
-            textoRecebido.style.width = "85%";
-            textoRecebido.style.cursor = "default";
+            
+            textoRecebido.style.cssText = `
+                position: absolute !important;
+                bottom: 1% !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: 85% !important;
+                max-width: 300px !important;
+                min-width: 200px !important;
+                padding: 1% 2% !important;
+                background: #ffffff !important;
+                border: 2px solid #4CAF50 !important;
+                border-radius: 12px !important;
+                box-shadow: inset 0 0 10px rgba(0, 128, 0, 0.2) !important;
+                font-size: 16px !important;
+                z-index: 100 !important;
+                text-align: left !important;
+                transition: all 0.3s ease !important;
+                overflow: hidden !important;
+                height: 300px !important;
+            `;
+            
             textoRecebido.innerHTML = conteudoInstrucoes;
             textoRecebido.appendChild(toggleBtn);
-            console.log('📖 Modo expandido - mostrando instruções fixas');
+            console.log('📖 Modo expandido - layout do instruction-box');
         }
     });
 
-    console.log('✅ Sistema híbrido inicializado - texto-recebido com layout IDÊNTICO ao instruction-box');
+    console.log('✅ Sistema híbrido inicializado - layout correto');
 }
 
 // 🆕 CONFIGURA CALLBACK WEBCRTC PARA O SISTEMA HÍBRIDO
@@ -350,21 +365,19 @@ function configurarCallbackWebRTCHibrido() {
         ttsHibrido.iniciarSomDigitacao();
         console.log('📩 Mensagem recebida:', mensagem);
 
-        // 🎯 SÓ MOSTRA MENSAGENS SE ESTIVER NO MODO RECOLHIDO
+        // SÓ MOSTRA MENSAGENS SE ESTIVER NO MODO RECOLHIDO (LAYOUT ORIGINAL)
         if (textoRecebido.classList.contains("recolhido")) {
-            // Para mensagens, remove temporariamente alguns estilos do instruction-box
-            textoRecebido.style.background = "rgba(255, 0, 0, 0.1) !important";
-            textoRecebido.style.border = "2px solid red !important";
-            textoRecebido.style.boxShadow = "inset 0 0 10px rgba(255, 0, 0, 0.3) !important";
+            textoRecebido.style.background = "rgba(255, 0, 0, 0.1)";
+            textoRecebido.style.border = "2px solid red";
+            textoRecebido.style.boxShadow = "inset 0 0 10px rgba(255, 0, 0, 0.3)";
             textoRecebido.style.animation = "pulsar-flutuar-intenso 0.8s infinite ease-in-out";
-            textoRecebido.style.color = "#333 !important";
-            textoRecebido.style.fontSize = "16px !important";
-            textoRecebido.style.textAlign = "center !important";
-            textoRecebido.style.display = "flex !important";
-            textoRecebido.style.alignItems = "center !important";
-            textoRecebido.style.justifyContent = "center !important";
+            textoRecebido.style.color = "#333";
+            textoRecebido.style.fontSize = "16px";
+            textoRecebido.style.textAlign = "center";
+            textoRecebido.style.display = "flex";
+            textoRecebido.style.alignItems = "center";
+            textoRecebido.style.justifyContent = "center";
 
-            // Efeito máquina de escrever
             textoRecebido.textContent = "";
             let i = 0;
             const interval = setInterval(() => {
@@ -377,7 +390,6 @@ function configurarCallbackWebRTCHibrido() {
             }, 50);
         }
 
-        // Mostra imagem e executa TTS (independente do modo)
         const imagemImpaciente = document.getElementById('lemurFixed');
         if (imagemImpaciente) {
             imagemImpaciente.style.display = 'block';
@@ -388,22 +400,19 @@ function configurarCallbackWebRTCHibrido() {
     });
 }
 
-// 🎥 FUNÇÃO PARA INICIAR CÂMERA E WEBRTC (AGORA COM CameraVigilante)
+// 🎥 FUNÇÃO PARA INICIAR CÂMERA E WEBRTC
 async function iniciarCameraAposPermissoes() {
     try {
         console.log('🎥 Iniciando sistema de câmera com CameraVigilante...');
         
-        // ✅ 1. INICIA CameraVigilante (SUBSTITUI TODO O CÓDIGO DE CÂMERA ANTIGO)
         window.cameraVigilante = new CameraVigilante();
         await window.cameraVigilante.inicializarSistema();
         
-        // ✅ 2. REMOVE LOADING (MESMO CÓDIGO DO ORIGINAL)
         const mobileLoading = document.getElementById('mobileLoading');
         if (mobileLoading) {
             mobileLoading.style.display = 'none';
         }
 
-        // ✅ 3. MOSTRA BOTÃO CLICK (MESMO CÓDIGO DO ORIGINAL)
         setTimeout(() => {
             const elementoClick = document.getElementById('click');
             if (elementoClick) {
@@ -413,7 +422,6 @@ async function iniciarCameraAposPermissoes() {
             }
         }, 500);
 
-        // ✅ 4. CONFIGURAÇÃO WEBRTC (MESMO CÓDIGO DO ORIGINAL)
         window.rtcCore = new WebRTCCore();
 
         const params = new URLSearchParams(window.location.search);
@@ -430,7 +438,6 @@ async function iniciarCameraAposPermissoes() {
             lang: lang
         };
 
-        // ✅ 5. CONFIGURA BOTÃO QR CODE (MESMO CÓDIGO DO ORIGINAL)
         document.getElementById('logo-traduz').addEventListener('click', function() {
             const overlay = document.querySelector('.info-overlay');
             const qrcodeContainer = document.getElementById('qrcode');
@@ -495,7 +502,6 @@ async function iniciarCameraAposPermissoes() {
             console.log('✅ QR Code e Link gerados/reativados!');
         });
 
-        // Fechar QR Code ao clicar fora (MESMO CÓDIGO DO ORIGINAL)
         document.querySelector('.info-overlay').addEventListener('click', function(e) {
             if (e.target === this) {
                 this.classList.add('hidden');
@@ -506,7 +512,6 @@ async function iniciarCameraAposPermissoes() {
         window.rtcCore.initialize(myId);
         window.rtcCore.setupSocketHandlers();
 
-        // ✅ 7. CONFIGURA HANDLER DE CHAMADAS (MESMO CÓDIGO DO ORIGINAL)
         window.rtcCore.onIncomingCall = (offer, idiomaDoCaller) => {
             console.log('📞 Chamada recebida - Com/Sem câmera');
 
@@ -547,7 +552,6 @@ async function iniciarCameraAposPermissoes() {
             });
         };
 
-        // ✅ 8. INICIA OBSERVADOR (MESMO CÓDIGO DO ORIGINAL)
         esconderClickQuandoConectar();
 
         console.log('✅ Sistema de câmera e WebRTC inicializado com sucesso!');
@@ -555,7 +559,6 @@ async function iniciarCameraAposPermissoes() {
     } catch (error) {
         console.error("❌ Erro não crítico na inicialização:", error);
         
-        // ✅ MESMO TRATAMENTO DE ERRO DO ORIGINAL
         const mobileLoading = document.getElementById('mobileLoading');
         if (mobileLoading) {
             mobileLoading.style.display = 'none';
@@ -565,34 +568,26 @@ async function iniciarCameraAposPermissoes() {
     }
 }
 
-// 🚀 INICIALIZAÇÃO AUTOMÁTICA (MESMO CÓDIGO DO ORIGINAL)
+// 🚀 INICIALIZAÇÃO AUTOMÁTICA
 window.onload = async () => {
     try {
         console.log('🚀 Iniciando aplicação receiver automaticamente...');
         
-        // 1. Obtém o idioma para tradução
         const params = new URLSearchParams(window.location.search);
         const lang = params.get('lang') || navigator.language || 'pt-BR';
         
-        // ✅✅✅ PRIMEIRO: Aplica bandeira e GUARDA o idioma
         await aplicarBandeiraLocal(lang);
 
-        // 🆕 2. INICIALIZA O SISTEMA HÍBRIDO ANTES DA TRADUÇÃO
         inicializarTextoRecebidoHibrido();
 
-        // ✅✅✅ DEPOIS: Traduz frases com o idioma JÁ GUARDADO  
         await traduzirFrasesFixas();
         
-        // 4. Inicia áudio
         iniciarAudio();
         
-        // 5. Carrega sons da máquina de escrever (AGORA NO TTS HÍBRIDO)
         await ttsHibrido.carregarSomDigitacao();
         
-        // 6. Solicita TODAS as permissões (câmera + microfone)
         await solicitarTodasPermissoes();
         
-        // 7. Libera interface
         if (typeof window.liberarInterface === 'function') {
             window.liberarInterface();
             console.log('✅ Interface liberada via função global');
@@ -601,10 +596,8 @@ window.onload = async () => {
             console.log('✅ Interface liberada via fallback');
         }
         
-        // 8. Inicia câmera e WebRTC (AGORA COM CameraVigilante)
         await iniciarCameraAposPermissoes();
 
-        // 🆕 9. CONFIGURA CALLBACK WEBCRTC HÍBRIDO
         configurarCallbackWebRTCHibrido();
         
         console.log('✅ Receiver iniciado com sistema híbrido!');
