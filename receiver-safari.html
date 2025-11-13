@@ -43,53 +43,54 @@
     /* =============================================
        ESTILO EXCLUSIVO DO #texto-recebido
        ============================================= */
-    #texto-recebido {
-      position: absolute;
-      bottom: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 1.2em !important;   /* força tamanho da fonte */
-      padding: 2vh 2vw;
-      margin: 2vh 0;
-      border: 0.2vh solid #4CAF50;
-      border-radius: 1vh;
-      background-color: #f8f9fa;
-      width: 90%;
-      min-height: 60px;
-      max-height: 200px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      text-align: center;
-      display: flex;
-      flex-direction: column;        /* organiza os itens em coluna */
-      align-items: flex-start;       /* alinha no topo/esquerda */
-      color: #333;
-      font-weight: bold;
-      opacity: 1;
-      visibility: visible;
-      box-sizing: border-box;
-      z-index: 30;
-    }
+   #texto-recebido {
+  position: absolute;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1em !important;   /* 🔽 reduz fonte para ficar proporcional aos ícones */
+  padding: 2vh 2vw;
+  margin: 2vh 0;
+  border: 0.2vh solid #4CAF50;
+  border-radius: 1vh;
+  background-color: #f8f9fa;
+  width: 90%;
+  min-height: 60px;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: normal;         /* 🔽 permite quebra natural de linha */
+  word-wrap: break-word;
+  text-align: left;            /* 🔽 texto alinhado à esquerda */
+  display: flex;
+  flex-direction: column;      /* organiza os itens em coluna */
+  align-items: flex-start;     /* alinha itens à esquerda */
+  color: #333;
+  font-weight: normal;         /* 🔽 evita texto muito pesado */
+  opacity: 1;
+  visibility: visible;
+  box-sizing: border-box;
+  z-index: 30;
+}
 
-    .instruction-item {
-      display: flex;
-      align-items: center;
-      gap: 3%;
-      margin-bottom: 1%;
-      line-height: 1.2;
-      font-family: 'Segoe UI', sans-serif;
-      color: #333;
-      transition: opacity 0.3s ease;
-      font-size: 1.2em !important;   /* força tamanho da fonte */
-    }
+.instruction-item {
+  display: flex;               /* 🔽 imagem + texto na mesma linha */
+  align-items: center;         /* centraliza verticalmente */
+  gap: 8px;                    /* espaço entre ícone e texto */
+  margin-bottom: 6px;
+  line-height: 1.4;
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+  transition: opacity 0.3s ease;
+  font-size: 0.95em !important; /* 🔽 fonte menor e proporcional ao ícone */
+}
 
-    .instruction-item img {
-      width: 30px !important;
-      height: 30px !important;
-      object-fit: contain;
-      flex-shrink: 0;
-    }
+.instruction-item img {
+  width: 30px !important;
+  height: 30px !important;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
   </style>
 </head>
 
