@@ -1,3 +1,37 @@
+// 🆕 CONTROLE DE ESTADOS DO TEXTO-RECEBIDO (VERSÃO SIMPLES)
+function initTextoRecebido() {
+    const textoBox = document.getElementById('texto-recebido');
+    
+    // Estado 1: Modo instruction
+    textoBox.innerHTML = `
+        <div style="text-align: center; padding: 20px;">
+            <p>Conectando... Aguarde a tradução</p>
+            <button onclick="recolherInstructionMode()" style="
+                background: #00ff00; 
+                color: black; 
+                border: none; 
+                padding: 8px 16px; 
+                margin-top: 10px; 
+                border-radius: 5px; 
+                cursor: pointer;
+            ">OK</button>
+        </div>
+    `;
+}
+
+function recolherInstructionMode() {
+    const textoBox = document.getElementById('texto-recebido');
+    
+    // Estado 2: Volta ao modo normal
+    textoBox.innerHTML = '';
+    console.log('📖 Modo instruction recolhido - pronto para receber textos');
+}
+
+// Inicializa quando a página carrega
+document.addEventListener('DOMContentLoaded', function() {
+    initTextoRecebido();
+});
+
 // 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES
 function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
