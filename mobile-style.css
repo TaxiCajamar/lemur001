@@ -596,7 +596,7 @@ body {
   background-color: #f8f9fa;
   width: 90%;
   min-height: 60px;
-  max-height: 200px;
+  max-height: none;
   overflow-y: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
