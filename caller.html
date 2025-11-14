@@ -16,7 +16,7 @@
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
 
     <!-- 🐵 Imagem do Lemur Impaciente durante conexão -->
-<img id="lemurWaiting" src="assets/images/lemurImpaciente.png" alt="Aguardando conexão" style="display: none;" />
+    <img id="lemurWaiting" src="assets/images/lemurImpaciente.png" alt="Aguardando conexão" style="display: none;" />
 
     <!-- 🌉 Imagem ponte -->
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
@@ -31,28 +31,8 @@
       Real-time translation.
     </div>
 
- <!-- 🆕 LINKS DE REDES SOCIAIS FIXOS - SIMPLIFICADO -->
-<div class="social-links-fixed">
-  <a href="https://www.linkedin.com/company/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/linke.png" alt="LinkedIn">
-  </a>
-  <a href="https://www.instagram.com/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/insta.png" alt="Instagram">
-  </a>
-  <a href="https://www.facebook.com/people/Lemur-Innovation/100063853285249/" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/face.png" alt="Facebook">
-  </a>
-  <a href="https://lemurinnovation.com/" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/redeX.png" alt="Website">
-  </a>
-  <a href="https://wa.me/5511999999999" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/wattsap.png" alt="WhatsApp">
-  </a>
-  <a href="https://t.me/lemurinnovation" target="_blank" class="social-btn-fixed">
-    <img src="assets/images/telegran.png" alt="Telegram">
-  </a>
-</div>
-
+    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS (SERÁ PREENCHIDO PELO JS) -->
+    <div class="social-links-fixed"></div>
 
     <div class="remoter-Lang">🏳️</div>
     <div class="local-Lang">🏳️</div>
@@ -87,39 +67,39 @@
   </div>
 
   <!-- 📋 Instruction box with toggle -->
-<div class="instruction-box expandido" id="instructionBox">
-  <button class="instruction-toggle" id="instructionToggle"></button>
-  <div class="instruction-content">
-    <div class="instruction-item">
-      <img src="assets/images/hello.png" alt="Hello icon" />
-      <span id="welcome-text">Welcome! Let's begin.</span>
-    </div>
-    <div class="instruction-item">
-  <img src="assets/images/realtime.png" alt="Realtime icon" />
-  <span id="translator-label-2">Real-time translation.</span>  <!-- ⬅️ MUDE PARA ID ÚNICO -->
-</div>
-    <div class="instruction-item">
-      <img src="assets/images/Ancioso.png" alt="Loading icon" />
-      <span id="wait-connection">Waiting for connection.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/juntos.png" alt="Connected icon" />
-      <span id="both-connected">Both online.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/trduz.png" alt="Message icon" />
-      <span id="check-replies">Read the message.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/mic.png" alt="Mic icon" />
-      <span id="drop-voice">Speak clearly.</span>
-    </div>
-    <div class="instruction-item">
-      <img src="assets/images/cam.png" alt="Camera icon" />
-      <span id="flip-cam">Flip the camera. Share!</span>
+  <div class="instruction-box expandido" id="instructionBox">
+    <button class="instruction-toggle" id="instructionToggle"></button>
+    <div class="instruction-content">
+      <div class="instruction-item">
+        <img src="assets/images/hello.png" alt="Hello icon" />
+        <span id="welcome-text">Welcome! Let's begin.</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/realtime.png" alt="Realtime icon" />
+        <span id="translator-label-2">Real-time translation.</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/Ancioso.png" alt="Loading icon" />
+        <span id="wait-connection">Waiting for connection.</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/juntos.png" alt="Connected icon" />
+        <span id="both-connected">Both online.</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/trduz.png" alt="Message icon" />
+        <span id="check-replies">Read the message.</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/mic.png" alt="Mic icon" />
+        <span id="drop-voice">Speak clearly.</span>
+      </div>
+      <div class="instruction-item">
+        <img src="assets/images/cam.png" alt="Camera icon" />
+        <span id="flip-cam">Flip the camera. Share!</span>
+      </div>
     </div>
   </div>
-</div>
 
   <!-- 🔄 Botão para alternar câmera (IGUAL AO RECEIVER) -->
   <button id="toggleCamera" class="camera-toggle-btn">
@@ -135,35 +115,10 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <script>
-    
-// 🆕 FUNÇÃO PARA COMPARTILHAR NAS REDES SOCIAIS
-    
-    function compartilharSocial(rede) {
-      const myId = window.qrCodeData?.myId || '';
-      const token = window.qrCodeData?.token || '';
-      const lang = window.qrCodeData?.lang || 'pt-BR';
-      
-      const callerUrl = `${window.location.origin}/caller.html?targetId=${myId}&token=${encodeURIComponent(token)}&lang=${encodeURIComponent(lang)}`;
-      
-      const texto = "Conecte-se comigo via tradução em tempo real!";
-      const urlEncoded = encodeURIComponent(callerUrl);
-      const textoEncoded = encodeURIComponent(texto);
-      
-      const urls = {
-        facebook: `https://www.facebook.com/sharer/sharer.php?u=${urlEncoded}`,
-        twitter: `https://twitter.com/intent/tweet?url=${urlEncoded}&text=${textoEncoded}`,
-        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${urlEncoded}`,
-        whatsapp: `https://api.whatsapp.com/send?text=${textoEncoded}%20${urlEncoded}`,
-        telegram: `https://t.me/share/url?url=${urlEncoded}&text=${textoEncoded}`
-      };
-      
-      window.open(urls[rede], '_blank', 'width=600,height=400');
-    }
+  <!-- 🔥 IMPORTE O ARQUIVO EXTERNO DE REDES SOCIAIS -->
+  <script src="core/redes-sociais.js"></script>
 
-  </script>
-
-   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/caller/caller-ui.js"></script>
   <script src="./js/caller/caller-trz.js"></script>
   
