@@ -1,107 +1,8 @@
-// core/instruction-box.js (VERSÃO CORRIGIDA)
+// core/instruction-box.js (VERSÃO ALTERNATIVA - MAIS SEGURA)
 
 // 🎯 DADOS DAS INSTRUÇÕES - CENTRALIZADO
 const INSTRUCOES = {
-  caller: [
-    {
-      icon: "assets/images/hello.png",
-      alt: "Hello icon",
-      textId: "welcome-text",
-      text: "Welcome! Let's begin."
-    },
-    {
-      icon: "assets/images/realtime.png", 
-      alt: "Realtime icon",
-      textId: "translator-label-2",
-      text: "Real-time translation."
-    },
-    {
-      icon: "assets/images/Ancioso.png",
-      alt: "Loading icon", 
-      textId: "wait-connection",
-      text: "Waiting for connection."
-    },
-    {
-      icon: "assets/images/juntos.png",
-      alt: "Connected icon",
-      textId: "both-connected", 
-      text: "Both online."
-    },
-    {
-      icon: "assets/images/trduz.png",
-      alt: "Message icon",
-      textId: "check-replies",
-      text: "Read the message."
-    },
-    {
-      icon: "assets/images/mic.png",
-      alt: "Mic icon",
-      textId: "drop-voice",
-      text: "Speak clearly."
-    },
-    {
-      icon: "assets/images/cam.png",
-      alt: "Camera icon",
-      textId: "flip-cam", 
-      text: "Flip the camera. Share!"
-    }
-  ],
-  receiver: [
-    {
-      icon: "assets/images/hello.png",
-      alt: "Hello icon",
-      textId: "welcome-text", 
-      text: "Welcome! Let's begin."
-    },
-    {
-      icon: "assets/images/realtime.png",
-      alt: "Realtime icon",
-      textId: "translator-label-2",
-      text: "Real-time translation."
-    },
-    {
-      icon: "assets/images/QRcode.png",
-      alt: "QR icon", 
-      textId: "tap-qr",
-      text: "Tap the QR code to start."
-    },
-    {
-      icon: "assets/images/mobil.png",
-      alt: "Mobile icon",
-      textId: "quick-scan",
-      text: "Ask to scan the QR."
-    },
-    {
-      icon: "assets/images/Ancioso.png",
-      alt: "Loading icon",
-      textId: "wait-connection",
-      text: "Waiting for connection."
-    },
-    {
-      icon: "assets/images/juntos.png",
-      alt: "Connected icon", 
-      textId: "both-connected",
-      text: "Both online."
-    },
-    {
-      icon: "assets/images/trduz.png",
-      alt: "Message icon",
-      textId: "check-replies",
-      text: "Read the message."
-    },
-    {
-      icon: "assets/images/mic.png",
-      alt: "Mic icon",
-      textId: "drop-voice",
-      text: "Speak clearly."
-    },
-    {
-      icon: "assets/images/cam.png",
-      alt: "Camera icon",
-      textId: "flip-cam",
-      text: "Flip the camera. Share!"
-    }
-  ]
+  // ... (mantém o mesmo objeto INSTRUCOES acima)
 };
 
 // 🎯 FUNÇÃO PARA CRIAR INSTRUCTION BOX (VERSÃO SIMPLIFICADA)
@@ -144,7 +45,7 @@ function criarInstructionBox(tipo) {
   return instructionBox;
 }
 
-// 🎯 INICIALIZAÇÃO AUTOMÁTICA (VERSÃO CORRIGIDA)
+// 🎯 INICIALIZAÇÃO AUTOMÁTICA (VERSÃO SIMPLIFICADA)
 document.addEventListener('DOMContentLoaded', function() {
   const instructionBoxContainer = document.getElementById('instructionBox');
   
@@ -160,26 +61,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const newInstructionBox = criarInstructionBox(tipo);
     document.querySelector('.box-principal').appendChild(newInstructionBox);
     
-    // Configura os eventos de toggle
+    // Configura o evento de toggle
     const toggleBtn = document.getElementById('instructionToggle');
     const box = document.getElementById('instructionBox');
     
     if (toggleBtn && box) {
-      // 🔥 EVENTO ORIGINAL (JÁ FUNCIONA) - MANTIDO
       toggleBtn.addEventListener('click', function() {
         const estaExpandido = box.classList.contains('expandido');
         box.classList.toggle('expandido');
-        toggleBtn.textContent = estaExpandido ? '?' : '×';
-      });
-      
-      // 🔥 NOVO EVENTO ACRESCENTADO - CLIQUE EM QUALQUER LUGAR DO BOX
-      box.addEventListener('click', function(e) {
-        // Só processa se não foi clique direto no botão X/?
-        if (e.target !== toggleBtn && !e.target.closest('.instruction-toggle')) {
-          const estaExpandido = box.classList.contains('expandido');
-          box.classList.toggle('expandido');
-          toggleBtn.textContent = estaExpandido ? '?' : '×';
-        }
+        toggleBtn.textContent = estaExpandido ? ' ' : ' ';
       });
     }
   }
