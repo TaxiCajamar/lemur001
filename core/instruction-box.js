@@ -123,33 +123,49 @@ function criarInstructionBox(tipo) {
   `;
 }
 
-// 🎯 FUNÇÃO PARA ATUALIZAR O BOTÃO TOGGLE
-function atualizarBotaoToggle() {
-  const toggleBtn = document.getElementById('instructionToggle');
-  const box = document.getElementById('instructionBox');
-  
-  if (toggleBtn && box) {
-    if (box.classList.contains('expandido')) {
-      toggleBtn.textContent = ' '; // X quando expandido
-    } else {
-      toggleBtn.textContent = ' '; // ? quando recolhido
-    }
-  }
-}
-
-// 🎯 FUNÇÃO PARA CONFIGURAR O TOGGLE
+// 🎯 FUNÇÃO PARA CONFIGURAR O TOGGLE (ÁREA TOTAL CLICÁVEL)
 function configurarToggleInstructionBox() {
-  const toggleBtn = document.getElementById('instructionToggle');
   const box = document.getElementById('instructionBox');
+  const toggleBtn = document.getElementById('instructionToggle');
   
-  if (toggleBtn && box) {
-    toggleBtn.addEventListener('click', function() {
+  if (box) {
+    // 🔥 CLIQUE EM QUALQUER LUGAR DO BOX - TOGGLE
+    box.addEventListener('click', function(e) {
+      // Impede que o clique nos itens internos feche o box
+      if (e.target.closest('.instruction-item') || e.target.closest('.instruction-content')) {
+        return; // Não faz nada se clicar no conteúdo
+      }
+      
+      // Alterna o estado expandido/recolhido
+      const estaExpandido = box.classList.contains('expandido');
       box.classList.toggle('expandido');
-      atualizarBotaoToggle(); // Atualiza o símbolo do botão
+      
+      // Atualiza o botão
+      if (toggleBtn) {
+        toggleBtn.textContent = estaExpandido ? '?' : '×';
+      }
     });
     
-    // Configura o símbolo inicial
-    atualizarBotaoToggle();
+    // 🔥 CLIQUE NO BOTÃO X - SÓ FECHA (não abre)
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function(e) {
+        e.stopPropagation(); // Impede que o clique chegue no box
+        
+        // Só fecha se estiver expandido
+        if (box.classList.contains('expandido')) {
+          box.classList.remove('expandido');
+          toggleBtn.textContent = '?';
+        }
+      });
+    }
+    
+    // 🔥 CLIQUE NO CONTEÚDO - NÃO FAZ NADA (só fecha com o X ou clique fora do conteúdo)
+    const content = box.querySelector('.instruction-content');
+    if (content) {
+      content.addEventListener('click', function(e) {
+        e.stopPropagation(); // Impede que o clique feche o box
+      });
+    }
   }
 }
 
@@ -165,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Substitui o container vazio pelo HTML completo
     instructionBoxElement.outerHTML = criarInstructionBox(tipo);
     
-    // Configura o evento de toggle
+    // Configura os eventos de clique
     configurarToggleInstructionBox();
   }
 });
