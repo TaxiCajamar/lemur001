@@ -4,81 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur EchoMe P2P Receiver</title>
-
   <link rel="stylesheet" href="mobile-style.css" />
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
- 
 </head>
 
 <body>
 
   <div class="box-principal">
 
-    <!-- ============================================= -->
-    <!-- ELEMENTOS DE MARCA E IDENTIDADE VISUAL -->
-    <!-- ============================================= -->
-
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
     <img id="click" src="assets/images/click.png" alt="Click" />
     
-    <!-- ============================================= -->
-    <!-- SISTEMA DE LOADING E INDICADORES -->
-    <!-- ============================================= -->
-
     <div id="mobileLoading" class="mobile-loader">
       <div class="loader-circle"></div>
     </div>
 
-    <!-- ============================================= -->
-    <!-- COMPONENTE DE INSTRUÇÕES INTERATIVAS -->
-    <!-- ============================================= -->
-
-    <div class="instruction-box expandido" id="instructionBox">
-      <button class="instruction-toggle" id="instructionToggle"></button>
-      <div class="instruction-content">
-        <div class="instruction-item">
-          <img src="assets/images/hello.png" alt="Hello icon" />
-          <span id="welcome-text">Welcome! Let's begin.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/realtime.png" alt="Realtime icon" />
-          <span id="translator-label-2">Real-time translation.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/QRcode.png" alt="QR icon" />
-          <span id="tap-qr">Tap the QR code to start.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/mobil.png" alt="Mobile icon" />
-          <span id="quick-scan">Ask to scan the QR.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/Ancioso.png" alt="Loading icon" />
-          <span id="wait-connection">Waiting for connection.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/juntos.png" alt="Connected icon" />
-          <span id="both-connected">Both online.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/trduz.png" alt="Message icon" />
-          <span id="check-replies">Read the message.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/mic.png" alt="Mic icon" />
-          <span id="drop-voice">Speak clearly.</span>
-        </div>
-        <div class="instruction-item">
-          <img src="assets/images/cam.png" alt="Camera icon" />
-          <span id="flip-cam">Flip the camera. Share!</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- ============================================= -->
-    <!-- BOTÕES DE CONTROLE PRINCIPAIS -->
-    <!-- ============================================= -->
+    <!-- 🆕 CONTAINER PARA INSTRUCTION BOX (SERÁ PREENCHIDO PELO JS) -->
+    <div id="instructionBox"></div>
 
     <button id="logo-traduz" class="botao-key">
       <img src="assets/images/key.png" alt="Gerar QR Code" />
@@ -88,29 +31,16 @@
       <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
     </button>
 
-    <!-- ============================================= -->
-    <!-- ELEMENTOS DE TEXTO, LABELS E REDES SOCIAIS FIXAS -->
-    <!-- ============================================= -->
-
-    <!-- 🏷️ Subtítulo de tradução -->
     <div class="translator-label" id="translator-label">
       Real-time translation.
     </div>
 
-    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS (SERÁ PREENCHIDO PELO JS) -->
+    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS -->
     <div class="social-links-fixed"></div>
-
-    <!-- ============================================= -->
-    <!-- INDICADORES DE IDIOMA E BANDEIRAS -->
-    <!-- ============================================= -->
 
     <div class="remoter-Lang">🏳️</div>
     <div class="local-Lang">🏳️</div>
     <div class="local-mic-Lang">🏳️</div>
-
-    <!-- ============================================= -->
-    <!-- SISTEMA DE VÍDEO E STREAMING -->
-    <!-- ============================================= -->
 
     <div class="video-wrapper">
       <video id="remoteVideo" autoplay playsinline></video>
@@ -119,10 +49,6 @@
       </div>
     </div>
    
-    <!-- ============================================= -->
-    <!-- OVERLAY DE QR CODE (INICIALMENTE OCULTO) -->
-    <!-- ============================================= -->
-
     <div class="info-overlay hidden">
       <h2 id="qr-modal-title">This is your online key</h2>
 
@@ -134,36 +60,19 @@
         You can ask to scan, share or print on your business card.
       </p>
 
-      <!-- 🆕 CONTAINER PARA BOTÕES DE COMPARTILHAMENTO (SERÁ PREENCHIDO PELO JS) -->
+      <!-- 🆕 CONTAINER PARA BOTÕES DE COMPARTILHAMENTO -->
       <div class="social-buttons"></div>
 
-      <!-- 🆕 BOTÃO COPIAR SIMPLES E UNIVERSAL -->
       <button id="copiarLink" class="btn-copiar-simples">🔗</button>
     </div>
 
-    <!-- ============================================= -->
-    <!-- ÁREA DE EXIBIÇÃO DE TEXTO TRADUZIDO -->
-    <!-- ============================================= -->
-
     <div id="texto-recebido"></div>
-
-    <!-- ============================================= -->
-    <!-- INDICADORES DE IDIOMA ATUAL -->
-    <!-- ============================================= -->
 
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
 
-    <!-- ============================================= -->
-    <!-- BOTÕES DE CONTROLE DE ÁUDIO -->
-    <!-- ============================================= -->
-
     <button class="record-btn" id="recordButton" disabled>🎤</button>
 
-  </div> <!-- Fim do .box-principal -->
-
-  <!-- ============================================= -->
-  <!-- MODAL DE GRAVAÇÃO (FORA DO CONTAINER PRINCIPAL) -->
-  <!-- ============================================= -->
+  </div>
 
   <div class="recording-modal hidden-until-ready" id="recordingModal">
     <div class="recording-indicator">
@@ -174,13 +83,7 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- ============================================= -->
-  <!-- SCRIPTS DE INICIALIZAÇÃO E CONFIGURAÇÃO -->
-  <!-- ============================================= -->
-
   <script>
-    // ===== FUNÇÕES GLOBAIS DE CONTROLE DE INTERFACE =====
-    
     window.liberarInterface = function () {
       console.log('✅ Interface já está visível');
     };
@@ -197,19 +100,13 @@
     });
   </script>
 
-  <!-- 🔥 IMPORTE O ARQUIVO EXTERNO DE REDES SOCIAIS -->
+  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
   <script src="core/redes-sociais.js"></script>
+  <script src="core/instruction-box.js"></script>
 
-  <!-- ============================================= -->
-  <!-- IMPORTAÇÃO DOS SCRIPTS DA APLICAÇÃO -->
-  <!-- ============================================= -->
-  
-  <!-- 📦 Scripts do receptor -->
-  
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
   <script src="./js/receiver/receiver-trz.js"></script>
-
   
 </body>
 </html>
