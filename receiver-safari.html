@@ -15,20 +15,32 @@
       background: rgba(0,0,0,0); /* invisível */
       z-index: 9999;
     }
+
+    /* Caixa de texto elevada */
     #chatInput {
       display: none;
+      position: fixed;
+      bottom: 120px;       /* altura ajustável */
+      left: 50%;
+      transform: translateX(-50%);
       width: 90%;
       padding: 8px;
-      margin: 10px auto;
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: 16px;
+      z-index: 8000;       /* acima do layout */
     }
+
+    /* Botão microfone elevado */
     #microphoneBtn {
       display: none;
-      margin: 10px auto;
-      padding: 8px;
+      position: fixed;
+      bottom: 60px;        /* logo abaixo da caixa de texto */
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
       font-size: 18px;
+      z-index: 8000;       /* mesma camada elevada */
     }
   </style>
 </head>
@@ -89,7 +101,7 @@
 
     <button class="record-btn" id="recordButton" disabled>🎤</button>
 
-    <!-- Caixa de texto e botão microfone -->
+    <!-- Caixa de texto e botão microfone elevados -->
     <input id="chatInput" type="text" placeholder="Digite ou dite sua mensagem..." />
     <button id="microphoneBtn">🎤 Microfone</button>
 
