@@ -130,9 +130,9 @@ function atualizarBotaoToggle() {
   
   if (toggleBtn && box) {
     if (box.classList.contains('expandido')) {
-      toggleBtn.textContent = '×'; // X quando expandido
+      toggleBtn.textContent = ' '; // X quando expandido
     } else {
-      toggleBtn.textContent = '?'; // ? quando recolhido
+      toggleBtn.textContent = ' '; // ? quando recolhido
     }
   }
 }
