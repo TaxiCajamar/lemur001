@@ -110,7 +110,7 @@ function criarInstructionBox(tipo) {
   
   return `
     <div class="instruction-box expandido" id="instructionBox">
-      <button class="instruction-toggle" id="instructionToggle"></button>
+      <button class="instruction-toggle" id="instructionToggle">×</button>
       <div class="instruction-content">
         ${instrucoes.map(item => `
           <div class="instruction-item">
@@ -123,6 +123,18 @@ function criarInstructionBox(tipo) {
   `;
 }
 
+// 🎯 FUNÇÃO PARA CONFIGURAR O TOGGLE
+function configurarToggleInstructionBox() {
+  const toggleBtn = document.getElementById('instructionToggle');
+  const box = document.getElementById('instructionBox');
+  
+  if (toggleBtn && box) {
+    toggleBtn.addEventListener('click', function() {
+      box.classList.toggle('expandido');
+    });
+  }
+}
+
 // 🎯 INICIALIZAÇÃO AUTOMÁTICA
 document.addEventListener('DOMContentLoaded', function() {
   const instructionBoxElement = document.getElementById('instructionBox');
@@ -132,18 +144,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const isReceiver = window.location.pathname.includes('receiver');
     const tipo = isReceiver ? 'receiver' : 'caller';
     
+    // Substitui o container vazio pelo HTML completo
     instructionBoxElement.outerHTML = criarInstructionBox(tipo);
     
-    // Reaplica o evento de toggle após injetar o HTML
-    setTimeout(() => {
-      const toggleBtn = document.getElementById('instructionToggle');
-      const box = document.getElementById('instructionBox');
-      
-      if (toggleBtn && box) {
-        toggleBtn.addEventListener('click', function() {
-          box.classList.toggle('expandido');
-        });
-      }
-    }, 100);
+    // Configura o evento de toggle
+    configurarToggleInstructionBox();
   }
 });
