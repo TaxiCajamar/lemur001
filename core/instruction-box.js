@@ -1,4 +1,4 @@
-// core/instruction-box.js
+// core/instruction-box.js (VERSÃO ALTERNATIVA - MAIS SEGURA)
 
 // 🎯 DADOS DAS INSTRUÇÕES - CENTRALIZADO
 const INSTRUCOES = {
@@ -104,67 +104,83 @@ const INSTRUCOES = {
   ]
 };
 
-// 🎯 FUNÇÃO PARA CRIAR INSTRUCTION BOX
+// 🎯 FUNÇÃO PARA CRIAR INSTRUCTION BOX (VERSÃO SIMPLIFICADA)
 function criarInstructionBox(tipo) {
   const instrucoes = INSTRUCOES[tipo] || [];
   
-  return `
-    <div class="instruction-box expandido" id="instructionBox">
-      <button class="instruction-toggle" id="instructionToggle">×</button>
-      <div class="instruction-content">
-        ${instrucoes.map(item => `
-          <div class="instruction-item">
-            <img src="${item.icon}" alt="${item.alt}" />
-            <span id="${item.textId}">${item.text}</span>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
-}
-
-// 🎯 FUNÇÃO PARA CONFIGURAR O TOGGLE (SIMPLES E DIRETO)
-function configurarToggleInstructionBox() {
-  const box = document.getElementById('instructionBox');
-  const toggleBtn = document.getElementById('instructionToggle');
+  const instructionBox = document.createElement('div');
+  instructionBox.className = 'instruction-box expandido';
+  instructionBox.id = 'instructionBox';
   
-  if (box && toggleBtn) {
-    // 🔥 CLIQUE EM QUALQUER LUGAR DO BOX - ABRE/FECHA
-    box.addEventListener('click', function(e) {
-      // Só processa se não foi clique direto no botão X
-      if (e.target !== toggleBtn) {
-        const estaExpandido = box.classList.contains('expandido');
-        box.classList.toggle('expandido');
-        toggleBtn.textContent = estaExpandido ? ' ' : ' ';
-      }
-    });
+  const toggleBtn = document.createElement('button');
+  toggleBtn.className = 'instruction-toggle';
+  toggleBtn.id = 'instructionToggle';
+  toggleBtn.textContent = '×';
+  
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'instruction-content';
+  
+  // Adiciona os itens de instrução
+  instrucoes.forEach(item => {
+    const instructionItem = document.createElement('div');
+    instructionItem.className = 'instruction-item';
     
-    // 🔥 CLIQUE NO BOTÃO X - SÓ FECHA (não abre)
-    toggleBtn.addEventListener('click', function(e) {
-      e.stopPropagation(); // Impede que o clique chegue no box
-      
-      // Só fecha se estiver expandido
-      if (box.classList.contains('expandido')) {
-        box.classList.remove('expandido');
-        toggleBtn.textContent = ' ';
-      }
-    });
-  }
+    const img = document.createElement('img');
+    img.src = item.icon;
+    img.alt = item.alt;
+    
+    const span = document.createElement('span');
+    span.id = item.textId;
+    span.textContent = item.text;
+    
+    instructionItem.appendChild(img);
+    instructionItem.appendChild(span);
+    contentDiv.appendChild(instructionItem);
+  });
+  
+  instructionBox.appendChild(toggleBtn);
+  instructionBox.appendChild(contentDiv);
+  
+  return instructionBox;
 }
 
-// 🎯 INICIALIZAÇÃO AUTOMÁTICA
+// 🎯 INICIALIZAÇÃO AUTOMÁTICA (VERSÃO SIMPLIFICADA)
 document.addEventListener('DOMContentLoaded', function() {
-  const instructionBoxElement = document.getElementById('instructionBox');
+  const instructionBoxContainer = document.getElementById('instructionBox');
   
-  if (instructionBoxElement) {
+  if (instructionBoxContainer) {
     // Detecta automaticamente o tipo pela URL
     const isReceiver = window.location.pathname.includes('receiver');
     const tipo = isReceiver ? 'receiver' : 'caller';
     
-    // Substitui o container vazio pelo HTML completo
-    instructionBoxElement.outerHTML = criarInstructionBox(tipo);
+    // Remove o container vazio
+    instructionBoxContainer.remove();
     
-    // Configura os eventos de clique
-    configurarToggleInstructionBox();
+    // Cria e adiciona o instruction box completo
+    const newInstructionBox = criarInstructionBox(tipo);
+    document.querySelector('.box-principal').appendChild(newInstructionBox);
+    
+    // Configura os eventos de toggle
+    const toggleBtn = document.getElementById('instructionToggle');
+    const box = document.getElementById('instructionBox');
+    
+    if (toggleBtn && box) {
+      // 🔥 EVENTO ORIGINAL (JÁ FUNCIONA) - MANTIDO
+      toggleBtn.addEventListener('click', function() {
+        const estaExpandido = box.classList.contains('expandido');
+        box.classList.toggle('expandido');
+        toggleBtn.textContent = estaExpandido ? '?' : '×';
+      });
+      
+      // 🔥 NOVO EVENTO ACRESCENTADO - CLIQUE EM QUALQUER LUGAR DO BOX
+      box.addEventListener('click', function(e) {
+        // Só processa se não foi clique direto no botão X/?
+        if (e.target !== toggleBtn) {
+          const estaExpandido = box.classList.contains('expandido');
+          box.classList.toggle('expandido');
+          toggleBtn.textContent = estaExpandido ? '?' : '×';
+        }
+      });
+    }
   }
 });
