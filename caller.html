@@ -5,103 +5,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur-EchoMeP2P-Caller</title>
   <link rel="stylesheet" href="mobile-style.css" />
-  
 </head>
 <body>
 
-  <!-- 🧩 Container principal -->
   <div class="box-principal">
 
-    <!-- 🐵 Logo Lemur -->
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
-
-    <!-- 🐵 Imagem do Lemur Impaciente durante conexão -->
     <img id="lemurWaiting" src="assets/images/lemurImpaciente.png" alt="Aguardando conexão" style="display: none;" />
-
-    <!-- 🌉 Imagem ponte -->
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
     
-    <!-- ⏳ Loader de carregamento (IGUAL AO RECEIVER) -->
     <div id="mobileLoading" class="mobile-loader">
       <div class="loader-circle"></div>
     </div>
 
-    <!-- 🏷️ Subtítulo de tradução -->
     <div class="translator-label" id="translator-label">
       Real-time translation.
     </div>
 
-    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS (SERÁ PREENCHIDO PELO JS) -->
+    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS -->
     <div class="social-links-fixed"></div>
 
     <div class="remoter-Lang">🏳️</div>
     <div class="local-Lang">🏳️</div>
     <div class="local-mic-Lang">🏳️</div>
 
-    <!-- 🎥 Vídeo remoto -->
     <div class="video-wrapper">
       <video id="remoteVideo" autoplay playsinline></video>
-
-      <!-- 📺 Vídeo local em PiP -->
       <div class="pip-local-wrapper">
         <video id="localVideo" autoplay muted playsinline></video>
       </div>
     </div>
 
-    <!-- 🧾 Overlay com informações (inicialmente oculto) -->
     <div class="info-overlay hidden">
       <span id="myId"></span>
     </div>
 
     <button id="callActionBtn" style="display: none;">SEND 🚀</button>
 
-    <!-- ✅ APENAS A CAIXA PRINCIPAL DE TEXTO -->
     <div id="texto-recebido"></div>
 
-    <!-- 🏳️ Bandeira do idioma atual -->
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
 
-    <!-- 🎤 Microfone -->
     <button class="record-btn" id="recordButton" disabled>🎤</button>
              
   </div>
 
-  <!-- 📋 Instruction box with toggle -->
-  <div class="instruction-box expandido" id="instructionBox">
-    <button class="instruction-toggle" id="instructionToggle"></button>
-    <div class="instruction-content">
-      <div class="instruction-item">
-        <img src="assets/images/hello.png" alt="Hello icon" />
-        <span id="welcome-text">Welcome! Let's begin.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/realtime.png" alt="Realtime icon" />
-        <span id="translator-label-2">Real-time translation.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/Ancioso.png" alt="Loading icon" />
-        <span id="wait-connection">Waiting for connection.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/juntos.png" alt="Connected icon" />
-        <span id="both-connected">Both online.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/trduz.png" alt="Message icon" />
-        <span id="check-replies">Read the message.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/mic.png" alt="Mic icon" />
-        <span id="drop-voice">Speak clearly.</span>
-      </div>
-      <div class="instruction-item">
-        <img src="assets/images/cam.png" alt="Camera icon" />
-        <span id="flip-cam">Flip the camera. Share!</span>
-      </div>
-    </div>
-  </div>
+  <!-- 🆕 CONTAINER PARA INSTRUCTION BOX (SERÁ PREENCHIDO PELO JS) -->
+  <div id="instructionBox"></div>
 
-  <!-- 🔄 Botão para alternar câmera (IGUAL AO RECEIVER) -->
   <button id="toggleCamera" class="camera-toggle-btn">
     <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
   </button>
@@ -115,8 +66,9 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- 🔥 IMPORTE O ARQUIVO EXTERNO DE REDES SOCIAIS -->
+  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
   <script src="core/redes-sociais.js"></script>
+  <script src="core/instruction-box.js"></script>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/caller/caller-ui.js"></script>
