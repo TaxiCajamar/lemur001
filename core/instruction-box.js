@@ -1,4 +1,4 @@
-// core/instruction-box.js (VERSÃO ALTERNATIVA - MAIS SEGURA)
+// core/instruction-box.js (VERSÃO CORRIGIDA)
 
 // 🎯 DADOS DAS INSTRUÇÕES - CENTRALIZADO
 const INSTRUCOES = {
@@ -144,7 +144,7 @@ function criarInstructionBox(tipo) {
   return instructionBox;
 }
 
-// 🎯 INICIALIZAÇÃO AUTOMÁTICA (VERSÃO SIMPLIFICADA)
+// 🎯 INICIALIZAÇÃO AUTOMÁTICA (VERSÃO CORRIGIDA)
 document.addEventListener('DOMContentLoaded', function() {
   const instructionBoxContainer = document.getElementById('instructionBox');
   
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // 🔥 NOVO EVENTO ACRESCENTADO - CLIQUE EM QUALQUER LUGAR DO BOX
       box.addEventListener('click', function(e) {
         // Só processa se não foi clique direto no botão X/?
-        if (e.target !== toggleBtn) {
+        if (e.target !== toggleBtn && !e.target.closest('.instruction-toggle')) {
           const estaExpandido = box.classList.contains('expandido');
           box.classList.toggle('expandido');
           toggleBtn.textContent = estaExpandido ? '?' : '×';
