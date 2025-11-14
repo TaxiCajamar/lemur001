@@ -123,49 +123,32 @@ function criarInstructionBox(tipo) {
   `;
 }
 
-// 🎯 FUNÇÃO PARA CONFIGURAR O TOGGLE (ÁREA TOTAL CLICÁVEL)
+// 🎯 FUNÇÃO PARA CONFIGURAR O TOGGLE (SIMPLES E DIRETO)
 function configurarToggleInstructionBox() {
   const box = document.getElementById('instructionBox');
   const toggleBtn = document.getElementById('instructionToggle');
   
-  if (box) {
-    // 🔥 CLIQUE EM QUALQUER LUGAR DO BOX - TOGGLE
+  if (box && toggleBtn) {
+    // 🔥 CLIQUE EM QUALQUER LUGAR DO BOX - ABRE/FECHA
     box.addEventListener('click', function(e) {
-      // Impede que o clique nos itens internos feche o box
-      if (e.target.closest('.instruction-item') || e.target.closest('.instruction-content')) {
-        return; // Não faz nada se clicar no conteúdo
-      }
-      
-      // Alterna o estado expandido/recolhido
-      const estaExpandido = box.classList.contains('expandido');
-      box.classList.toggle('expandido');
-      
-      // Atualiza o botão
-      if (toggleBtn) {
-        toggleBtn.textContent = estaExpandido ? '?' : '×';
+      // Só processa se não foi clique direto no botão X
+      if (e.target !== toggleBtn) {
+        const estaExpandido = box.classList.contains('expandido');
+        box.classList.toggle('expandido');
+        toggleBtn.textContent = estaExpandido ? ' ' : ' ';
       }
     });
     
     // 🔥 CLIQUE NO BOTÃO X - SÓ FECHA (não abre)
-    if (toggleBtn) {
-      toggleBtn.addEventListener('click', function(e) {
-        e.stopPropagation(); // Impede que o clique chegue no box
-        
-        // Só fecha se estiver expandido
-        if (box.classList.contains('expandido')) {
-          box.classList.remove('expandido');
-          toggleBtn.textContent = '?';
-        }
-      });
-    }
-    
-    // 🔥 CLIQUE NO CONTEÚDO - NÃO FAZ NADA (só fecha com o X ou clique fora do conteúdo)
-    const content = box.querySelector('.instruction-content');
-    if (content) {
-      content.addEventListener('click', function(e) {
-        e.stopPropagation(); // Impede que o clique feche o box
-      });
-    }
+    toggleBtn.addEventListener('click', function(e) {
+      e.stopPropagation(); // Impede que o clique chegue no box
+      
+      // Só fecha se estiver expandido
+      if (box.classList.contains('expandido')) {
+        box.classList.remove('expandido');
+        toggleBtn.textContent = ' ';
+      }
+    });
   }
 }
 
