@@ -123,6 +123,20 @@ function criarInstructionBox(tipo) {
   `;
 }
 
+// 🎯 FUNÇÃO PARA ATUALIZAR O BOTÃO TOGGLE
+function atualizarBotaoToggle() {
+  const toggleBtn = document.getElementById('instructionToggle');
+  const box = document.getElementById('instructionBox');
+  
+  if (toggleBtn && box) {
+    if (box.classList.contains('expandido')) {
+      toggleBtn.textContent = '×'; // X quando expandido
+    } else {
+      toggleBtn.textContent = '?'; // ? quando recolhido
+    }
+  }
+}
+
 // 🎯 FUNÇÃO PARA CONFIGURAR O TOGGLE
 function configurarToggleInstructionBox() {
   const toggleBtn = document.getElementById('instructionToggle');
@@ -131,7 +145,11 @@ function configurarToggleInstructionBox() {
   if (toggleBtn && box) {
     toggleBtn.addEventListener('click', function() {
       box.classList.toggle('expandido');
+      atualizarBotaoToggle(); // Atualiza o símbolo do botão
     });
+    
+    // Configura o símbolo inicial
+    atualizarBotaoToggle();
   }
 }
 
