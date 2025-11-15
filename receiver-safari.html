@@ -11,32 +11,16 @@
     /* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) */
     #tecladoTrigger {
       position: absolute;
-      background-color: rgba(0, 150, 255, 0.3); /* Azul claro para ver durante teste */
+      background-color: rgba(0, 150, 255, 0.3);
       border: 2px dashed #0096FF;
       cursor: pointer;
-      z-index: 10000; /* Fica acima de tudo */
+      z-index: 10000;
       border-radius: 50%;
       transition: all 0.3s ease;
     }
     
     #tecladoTrigger:hover {
-      background-color: rgba(0, 150, 255, 0.5); /* Azul mais forte no hover */
-    }
-    
-    /* Input oculto para abrir teclado */
-    #inputOculto {
-      position: absolute;
-      left: -9999px;
-      opacity: 0;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-    }
-    
-    /* Feedback visual quando teclado está ativo */
-    .teclado-ativo {
-      background-color: rgba(0, 255, 0, 0.3) !important;
-      border: 2px solid #00FF00 !important;
+      background-color: rgba(0, 150, 255, 0.5);
     }
 
     /* 🆕 CAIXA DE TEXTO CENTRALIZADA */
@@ -46,8 +30,8 @@
       left: 50%;
       transform: translate(-50%, -50%);
       width: 80%;
-      max-width: 200px;
-      height: 200px;
+      max-width: 400px;
+      height: 400px;
       background: white;
       border: 2px solid #0096FF;
       border-radius: 15px;
@@ -63,7 +47,7 @@
       border: 1px solid #ccc;
       border-radius: 10px;
       padding: 15px;
-      font-size: 18px;
+      font-size: 16px;
       resize: none;
       margin-bottom: 15px;
     }
@@ -103,7 +87,6 @@
       <div class="loader-circle"></div>
     </div>
 
-    <!-- 🆕 CONTAINER PARA INSTRUCTION BOX (DENTRO do box-principal) -->
     <div id="instructionBox"></div>
 
     <button id="logo-traduz" class="botao-key">
@@ -118,7 +101,6 @@
       Real-time translation.
     </div>
 
-    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS -->
     <div class="social-links-fixed"></div>
 
     <div class="remoter-Lang">🏳️</div>
@@ -143,7 +125,6 @@
         You can ask to scan, share or print on your business card.
       </p>
 
-      <!-- 🆕 CONTAINER PARA BOTÕES DE COMPARTILHAMENTO -->
       <div class="social-buttons"></div>
 
       <button id="copiarLink" class="btn-copiar-simples">🔗</button>
@@ -153,14 +134,9 @@
 
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
 
-    <!-- 🎤 BOTÃO MICROFONE ORIGINAL (será coberto pelo botão invisível) -->
     <button class="record-btn" id="recordButton">🎤</button>
 
-    <!-- 🆕 BOTÃO INVISÍVEL PARA ATIVAR TECLADO (sobre o microfone) -->
     <button id="tecladoTrigger" title="Abrir teclado nativo"></button>
-    
-    <!-- 🆕 INPUT OCULTO PARA CAPTURAR TEXTO DO TECLADO -->
-    <input type="text" id="inputOculto" placeholder="Fale ou digite...">
 
   </div>
 
@@ -180,6 +156,19 @@
     </div>
     <button class="send-button" id="sendButton">📤</button>
   </div>
+
+  <!-- 🔥 PRIMEIRO IMPORTE O SEU SISTEMA TTS HÍBRIDO -->
+  <script type="module">
+    import { ttsHibrido } from './core/tts-hibrido.js';
+    // Deixa o TTS Híbrido disponível globalmente
+    window.ttsHibrido = ttsHibrido;
+    
+    // Carrega o som de digitação quando a página carregar
+    document.addEventListener('DOMContentLoaded', function() {
+      ttsHibrido.carregarSomDigitacao();
+      console.log('✅ Sistema TTS Híbrido carregado');
+    });
+  </script>
 
   <script>
     window.liberarInterface = function () {
@@ -204,7 +193,6 @@
         if (recordButton && tecladoTrigger) {
           const rect = recordButton.getBoundingClientRect();
           
-          // Posicionar exatamente sobre o botão do microfone
           tecladoTrigger.style.position = 'fixed';
           tecladoTrigger.style.left = rect.left + 'px';
           tecladoTrigger.style.top = rect.top + 'px';
@@ -215,10 +203,7 @@
         }
       }
       
-      // Posicionar quando a página carregar
       posicionarBotaoTeclado();
-      
-      // Reposicionar se a janela for redimensionada
       window.addEventListener('resize', posicionarBotaoTeclado);
       
       // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
@@ -232,14 +217,10 @@
         tecladoTrigger.addEventListener('click', function() {
           console.log('🎹 Abrindo teclado nativo...');
           
-          // Dar feedback visual
           tecladoTrigger.classList.add('teclado-ativo');
-          
-          // Abrir a caixa de texto centralizada
           caixaTexto.style.display = 'flex';
-          areaTexto.focus(); // Abre o teclado automaticamente
+          areaTexto.focus();
           
-          // Remover feedback visual após 1 segundo
           setTimeout(() => {
             tecladoTrigger.classList.remove('teclado-ativo');
           }, 1000);
@@ -251,29 +232,28 @@
           areaTexto.value = '';
         });
 
-        // 🆕 ENVIAR TEXTO PARA TRADUÇÃO
+        // 🆕 ENVIAR TEXTO DIRETAMENTE PARA O TTS HÍBRIDO
         botaoEnviar.addEventListener('click', function() {
           const texto = areaTexto.value.trim();
           
           if (texto !== '') {
-            console.log('📝 Texto para tradução:', texto);
+            console.log('📝 Enviando para TTS Híbrido:', texto);
             
-            // 🎯 CHAMAR FUNÇÃO DE TRADUÇÃO EXISTENTE
-            if (typeof window.iniciarTraducao === 'function') {
-              window.iniciarTraducao(texto);
-            } else if (typeof window.startTranslation === 'function') {
-              window.startTranslation(texto);
-            } else {
-              console.log('✅ Texto capturado (chame sua função de tradução):', texto);
-            }
+            // 🎯 USA DIRETAMENTE O SEU SISTEMA TTS HÍBRIDO
+            window.ttsHibrido.falarTextoSistemaHibrido(
+              texto,      // A mensagem que o usuário digitou
+              null,       // elemento (não precisa)
+              null,       // imagemImpaciente (não precisa) 
+              'pt-BR'     // idioma (usa o mesmo do seu sistema)
+            );
             
-            // Fechar caixa e limpar
+            // Fechar caixa
             caixaTexto.style.display = 'none';
             areaTexto.value = '';
           }
         });
 
-        // 🆕 ENVIAR COM ENTER (mas manter quebra de linha com Shift+Enter)
+        // 🆕 ENVIAR COM ENTER
         areaTexto.addEventListener('keydown', function(event) {
           if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
@@ -284,7 +264,7 @@
     });
   </script>
 
-  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
+  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS QUE JÁ EXISTEM -->
   <script src="core/redes-sociais.js"></script>
   <script src="core/instruction-box.js"></script>
 
