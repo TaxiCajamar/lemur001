@@ -8,35 +8,23 @@
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
   
   <style>
-    /* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) - MANTIDO IGUAL */
+    /* 🎯 BOTÃO AZUL SOBRE O MICROFONE */
     #tecladoTrigger {
       position: absolute;
-      background-color: rgba(0, 150, 255, 0.3); /* Azul claro para ver durante teste */
+      background-color: rgba(0, 150, 255, 0.3);
       border: 2px dashed #0096FF;
       cursor: pointer;
-      z-index: 10000; /* Fica acima de tudo */
+      z-index: 10000;
       border-radius: 50%;
-      transition: all 0.3s ease;
     }
     
-    #tecladoTrigger:hover {
-      background-color: rgba(0, 150, 255, 0.5); /* Azul mais forte no hover */
-    }
-    
-    /* Input oculto para abrir teclado */
+    /* INPUT OCULTO */
     #inputOculto {
       position: absolute;
       left: -9999px;
       opacity: 0;
       width: 1px;
       height: 1px;
-      overflow: hidden;
-    }
-    
-    /* Feedback visual quando teclado está ativo */
-    .teclado-ativo {
-      background-color: rgba(0, 255, 0, 0.3) !important;
-      border: 2px solid #00FF00 !important;
     }
   </style>
 </head>
@@ -53,7 +41,6 @@
       <div class="loader-circle"></div>
     </div>
 
-    <!-- 🆕 CONTAINER PARA INSTRUCTION BOX (DENTRO do box-principal) -->
     <div id="instructionBox"></div>
 
     <button id="logo-traduz" class="botao-key">
@@ -68,7 +55,6 @@
       Real-time translation.
     </div>
 
-    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS -->
     <div class="social-links-fixed"></div>
 
     <div class="remoter-Lang">🏳️</div>
@@ -84,32 +70,26 @@
    
     <div class="info-overlay hidden">
       <h2 id="qr-modal-title">This is your online key</h2>
-
       <div class="qrcode-container">
         <div id="qrcode"></div>
       </div>
-
       <p class="qr-modal-description" id="qr-modal-description">
         You can ask to scan, share or print on your business card.
       </p>
-
-      <!-- 🆕 CONTAINER PARA BOTÕES DE COMPARTILHAMENTO -->
       <div class="social-buttons"></div>
-
       <button id="copiarLink" class="btn-copiar-simples">🔗</button>
     </div>
 
     <div id="texto-recebido"></div>
-
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
 
-    <!-- 🎤 BOTÃO MICROFONE ORIGINAL (será coberto pelo botão invisível) -->
+    <!-- 🎤 MICROFONE ORIGINAL -->
     <button class="record-btn" id="recordButton">🎤</button>
 
-    <!-- 🆕 BOTÃO INVISÍVEL PARA ATIVAR TECLADO (sobre o microfone) -->
+    <!-- 🔵 BOTÃO AZUL SOBRE O MICROFONE -->
     <button id="tecladoTrigger" title="Abrir teclado nativo"></button>
     
-    <!-- 🆕 INPUT OCULTO PARA CAPTURAR TEXTO DO TECLADO -->
+    <!-- 📝 INPUT OCULTO -->
     <input type="text" id="inputOculto" placeholder="Fale ou digite...">
 
   </div>
@@ -124,111 +104,63 @@
   </div>
 
   <script>
-    window.liberarInterface = function () {
-      console.log('✅ Interface já está visível');
-    };
-
-    window.mostrarErroCarregamento = function (mensagem) {
-      alert('Erro: ' + mensagem);
-    };
-
+    // 🎯 CONFIGURAÇÃO SIMPLES DO BOTÃO AZUL
     document.addEventListener('DOMContentLoaded', function () {
-      const overlay = document.querySelector('.info-overlay');
-      if (overlay) {
-        overlay.classList.add('hidden');
-      }
       
-      // 🆕 POSICIONAR O BOTÃO INVISÍVEL SOBRE O MICROFONE - MANTIDO IGUAL
-      function posicionarBotaoTeclado() {
-        const recordButton = document.getElementById('recordButton');
-        const tecladoTrigger = document.getElementById('tecladoTrigger');
-        
-        if (recordButton && tecladoTrigger) {
-          const rect = recordButton.getBoundingClientRect();
-          
-          // Posicionar exatamente sobre o botão do microfone
-          tecladoTrigger.style.position = 'fixed';
-          tecladoTrigger.style.left = rect.left + 'px';
-          tecladoTrigger.style.top = rect.top + 'px';
-          tecladoTrigger.style.width = rect.width + 'px';
-          tecladoTrigger.style.height = rect.height + 'px';
-          
-          console.log('✅ Botão teclado posicionado sobre o microfone');
+      // Posicionar botão azul sobre o microfone
+      function posicionarBotao() {
+        const microfone = document.getElementById('recordButton');
+        const botaoAzul = document.getElementById('tecladoTrigger');
+        if (microfone && botaoAzul) {
+          const pos = microfone.getBoundingClientRect();
+          botaoAzul.style.position = 'fixed';
+          botaoAzul.style.left = pos.left + 'px';
+          botaoAzul.style.top = pos.top + 'px';
+          botaoAzul.style.width = pos.width + 'px';
+          botaoAzul.style.height = pos.height + 'px';
         }
       }
       
-      // Posicionar quando a página carregar
-      posicionarBotaoTeclado();
+      posicionarBotao();
+      window.addEventListener('resize', posicionarBotao);
       
-      // Reposicionar se a janela for redimensionada
-      window.addEventListener('resize', posicionarBotaoTeclado);
-      
-      // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL - MANTIDO IGUAL
-      const tecladoTrigger = document.getElementById('tecladoTrigger');
+      // Quando clicar no botão azul
+      const botaoAzul = document.getElementById('tecladoTrigger');
       const inputOculto = document.getElementById('inputOculto');
       
-      if (tecladoTrigger && inputOculto) {
-        tecladoTrigger.addEventListener('click', function() {
-          console.log('🎹 Abrindo teclado nativo...');
-          
-          // Dar feedback visual
-          tecladoTrigger.classList.add('teclado-ativo');
-          
-          // Focar no input oculto para abrir teclado
-          inputOculto.focus();
-          
-          // Remover feedback visual após 1 segundo
-          setTimeout(() => {
-            tecladoTrigger.classList.remove('teclado-ativo');
-          }, 1000);
+      if (botaoAzul && inputOculto) {
+        botaoAzul.addEventListener('click', function() {
+          inputOculto.focus(); // Abre teclado
         });
         
-        // 🆕 CAPTURAR TEXTO DIGITADO/FALADO NO TECLADO - AGORA COM startTranslation
+        // Quando teclado gerar texto (do microfone ou digitação)
         inputOculto.addEventListener('input', function(event) {
           const texto = event.target.value.trim();
           if (texto !== '') {
-            console.log('📝 Texto do teclado nativo:', texto);
-            
-            // 🎯 CHAMAR A FUNÇÃO EXATA DO SEU SISTEMA - startTranslation
-            if (typeof startTranslation === 'function') {
-              console.log('✅ Chamando startTranslation() com texto:', texto);
-              startTranslation(texto);
-            } else {
-              console.log('❌ startTranslation não encontrada');
-              // Fallback: mostrar no console para debug
-              console.log('🔍 Texto que seria enviado:', texto);
-            }
-            
-            // Limpar input para próxima uso
+            // 🚀 Enviar para tradução
+            startTranslation(texto);
+            // Limpar input
             setTimeout(() => {
               inputOculto.value = '';
             }, 100);
           }
         });
-        
-        // 🆕 Também capturar quando usuário pressiona Enter
-        inputOculto.addEventListener('keypress', function(event) {
-          if (event.key === 'Enter') {
-            const texto = inputOculto.value.trim();
-            if (texto !== '') {
-              console.log('📝 Texto do teclado (Enter):', texto);
-              
-              if (typeof startTranslation === 'function') {
-                startTranslation(texto);
-              }
-              
-              inputOculto.value = '';
-            }
-          }
-        });
       }
     });
+
+    // Funções existentes do seu projeto
+    window.liberarInterface = function () {
+      console.log('✅ Interface liberada');
+    };
+
+    window.mostrarErroCarregamento = function (mensagem) {
+      alert('Erro: ' + mensagem);
+    };
   </script>
 
-  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
+  <!-- Seus scripts existentes -->
   <script src="core/redes-sociais.js"></script>
   <script src="core/instruction-box.js"></script>
-
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
   <script src="./js/receiver/receiver-trz.js"></script>
