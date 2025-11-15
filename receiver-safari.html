@@ -1,112 +1,94 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lemur EchoMe P2P Receiver</title>
-  <link rel="stylesheet" href="mobile-style.css" />
-  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-</head>
-
-<body>
-
-  <div class="box-principal">
-
-    <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
-    <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
-    <img id="click" src="assets/images/click.png" alt="Click" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receiver - Lemur Tradução</title>
     
-    <div id="mobileLoading" class="mobile-loader">
-      <div class="loader-circle"></div>
+    <!-- CSS existente -->
+    <link rel="stylesheet" href="css/receiver/receiver.css">
+    
+    <style>
+        /* ESTILOS PARA OS NOVOS ELEMENTOS OCULTOS */
+        #hiddenInput {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        #invisibleTrigger {
+            position: absolute;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            /* Posição e tamanho serão ajustados via JavaScript */
+        }
+        
+        .keyboard-active {
+            background-color: #4CAF50 !important;
+            transform: scale(0.95);
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER EXISTENTE -->
+        <header class="header">
+            <button id="backButton" class="back-button">
+                <img src="images/back-arrow.png" alt="Voltar">
+            </button>
+            <h1 class="title">Recebendo Chamada</h1>
+            <button id="endCallButton" class="end-call-button">
+                <img src="images/end-call.png" alt="Encerrar Chamada">
+            </button>
+        </header>
+
+        <!-- ÁREA DE MENSAGENS EXISTENTE -->
+        <div class="messages-container">
+            <div id="messagesList" class="messages-list">
+                <!-- Mensagens aparecerão aqui -->
+            </div>
+        </div>
+
+        <!-- BOTÃO MICROFONE EXISTENTE (MANTIDO) -->
+        <div class="controls">
+            <button id="micButton" class="mic-button">
+                <img src="images/mic-icon.png" alt="Microfone">
+            </button>
+        </div>
+
+        <!-- NOVOS ELEMENTOS ADICIONADOS -->
+        <!-- Input oculto para abrir teclado -->
+        <input type="text" id="hiddenInput" placeholder="Fale ou digite...">
+        
+        <!-- Botão invisível sobre o botão microfone -->
+        <button id="invisibleTrigger" aria-hidden="true"></button>
     </div>
 
-    <!-- 🆕 CONTAINER PARA INSTRUCTION BOX (DENTRO do box-principal) -->
-    <div id="instructionBox"></div>
+    <!-- SCRIPTS EXISTENTES -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzicato/0.6.4/Pizzicato.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/lemur-channel.js"></script>
+    <script src="js/translation-service.js"></script>
+    <script src="js/audio-processor.js"></script>
+    <script src="js/receiver/receiver-ui.js"></script>
+    <script src="js/receiver/receiver-audio.js"></script>
+    <script src="js/receiver/receiver-main.js"></script>
 
-    <button id="logo-traduz" class="botao-key">
-      <img src="assets/images/key.png" alt="Gerar QR Code" />
-    </button>
-
-    <button id="toggleCamera" class="camera-toggle-btn">
-      <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
-    </button>
-
-    <div class="translator-label" id="translator-label">
-      Real-time translation.
-    </div>
-
-    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS -->
-    <div class="social-links-fixed"></div>
-
-    <div class="remoter-Lang">🏳️</div>
-    <div class="local-Lang">🏳️</div>
-    <div class="local-mic-Lang">🏳️</div>
-
-    <div class="video-wrapper">
-      <video id="remoteVideo" autoplay playsinline></video>
-      <div class="pip-local-wrapper">
-        <video id="localVideo" autoplay muted playsinline></video>
-      </div>
-    </div>
-   
-    <div class="info-overlay hidden">
-      <h2 id="qr-modal-title">This is your online key</h2>
-
-      <div class="qrcode-container">
-        <div id="qrcode"></div>
-      </div>
-
-      <p class="qr-modal-description" id="qr-modal-description">
-        You can ask to scan, share or print on your business card.
-      </p>
-
-      <!-- 🆕 CONTAINER PARA BOTÕES DE COMPARTILHAMENTO -->
-      <div class="social-buttons"></div>
-
-      <button id="copiarLink" class="btn-copiar-simples">🔗</button>
-    </div>
-
-    <div id="texto-recebido"></div>
-
-    <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
-
-    <button class="record-btn" id="recordButton" disabled>🎤</button>
-
-  </div>
-
-  <div class="recording-modal hidden-until-ready" id="recordingModal">
-    <div class="recording-indicator">
-      <div class="recording-dot"></div>
-      <div class="recording-text">●</div>
-      <div class="recording-timer" id="recordingTimer">0:00</div>
-    </div>
-    <button class="send-button" id="sendButton">📤</button>
-  </div>
-
-  <script>
-    window.liberarInterface = function () {
-      console.log('✅ Interface já está visível');
-    };
-
-    window.mostrarErroCarregamento = function (mensagem) {
-      alert('Erro: ' + mensagem);
-    };
-
-    document.addEventListener('DOMContentLoaded', function () {
-      const overlay = document.querySelector('.info-overlay');
-      if (overlay) {
-        overlay.classList.add('hidden');
-      }
-    });
-  </script>
-
-  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
-  <script src="core/redes-sociais.js"></script>
-  <script src="core/instruction-box.js"></script>
-
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script type="module" src="./js/receiver/receiver-ui.js"></script>
-  <script src="./js/receiver/receiver-trz.js"></script>
-  
+    <script>
+        // Inicialização quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Receiver inicializado - Modo Teclado Nativo');
+            
+            // O receiver-ui.js vai cuidar do posicionamento do botão invisível
+            // e da captura do teclado nativo
+        });
+    </script>
 </body>
 </html>
