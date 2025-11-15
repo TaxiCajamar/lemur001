@@ -6,43 +6,6 @@
   <title>Lemur EchoMe P2P Receiver</title>
   <link rel="stylesheet" href="mobile-style.css" />
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-  <style>
-    /* Overlay transparente cobrindo toda a tela */
-    #startupOverlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0); /* invisível */
-      z-index: 9999;
-    }
-
-    /* Caixa de texto elevada */
-    #chatInput {
-      display: none;
-      position: fixed;
-      bottom: 120px;       /* altura ajustável */
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 16px;
-      z-index: 8000;       /* acima do layout */
-    }
-
-    /* Botão microfone elevado */
-    #microphoneBtn {
-      display: none;
-      position: fixed;
-      bottom: 60px;        /* logo abaixo da caixa de texto */
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 10px 20px;
-      font-size: 18px;
-      z-index: 8000;       /* mesma camada elevada */
-    }
-  </style>
 </head>
 
 <body>
@@ -57,6 +20,7 @@
       <div class="loader-circle"></div>
     </div>
 
+    <!-- 🆕 CONTAINER PARA INSTRUCTION BOX (DENTRO do box-principal) -->
     <div id="instructionBox"></div>
 
     <button id="logo-traduz" class="botao-key">
@@ -71,6 +35,7 @@
       Real-time translation.
     </div>
 
+    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS -->
     <div class="social-links-fixed"></div>
 
     <div class="remoter-Lang">🏳️</div>
@@ -86,24 +51,26 @@
    
     <div class="info-overlay hidden">
       <h2 id="qr-modal-title">This is your online key</h2>
+
       <div class="qrcode-container">
         <div id="qrcode"></div>
       </div>
+
       <p class="qr-modal-description" id="qr-modal-description">
         You can ask to scan, share or print on your business card.
       </p>
+
+      <!-- 🆕 CONTAINER PARA BOTÕES DE COMPARTILHAMENTO -->
       <div class="social-buttons"></div>
+
       <button id="copiarLink" class="btn-copiar-simples">🔗</button>
     </div>
 
     <div id="texto-recebido"></div>
+
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
 
     <button class="record-btn" id="recordButton" disabled>🎤</button>
-
-    <!-- Caixa de texto e botão microfone elevados -->
-    <input id="chatInput" type="text" placeholder="Digite ou dite sua mensagem..." />
-    <button id="microphoneBtn">🎤 Microfone</button>
 
   </div>
 
@@ -116,78 +83,30 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- Overlay transparente -->
-  <div id="startupOverlay"></div>
-
   <script>
-    let audioCtx, oscillator, gainNode;
+    window.liberarInterface = function () {
+      console.log('✅ Interface já está visível');
+    };
 
-    function startRadio() {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      oscillator = audioCtx.createOscillator();
-      gainNode = audioCtx.createGain();
+    window.mostrarErroCarregamento = function (mensagem) {
+      alert('Erro: ' + mensagem);
+    };
 
-      oscillator.frequency.value = 20; // frequência baixa
-      gainNode.gain.value = 0.001;     // volume mínimo
-
-      oscillator.connect(gainNode).connect(audioCtx.destination);
-      oscillator.start();
-    }
-
-    document.getElementById("startupOverlay").addEventListener("click", () => {
-      const inputBox = document.getElementById("chatInput");
-      const micBtn = document.getElementById("microphoneBtn");
-
-      // 1. Mostrar caixa de texto e botão microfone
-      inputBox.style.display = "block";
-      micBtn.style.display = "inline-block";
-
-      // 2. Iniciar radinho
-      startRadio();
-
-      // 3. Focar input (abre teclado)
-      inputBox.focus();
-
-      // 4. Após 1s, desfocar (fecha teclado)
-      setTimeout(() => inputBox.blur(), 1000);
-
-      // 5. Remover overlay
-      document.getElementById("startupOverlay").remove();
-
-      // 6. Liberar áudio remoto
-      const remoteVideo = document.getElementById("remoteVideo");
-      if (remoteVideo) {
-        remoteVideo.muted = false;
-        remoteVideo.play().catch(() => {});
+    document.addEventListener('DOMContentLoaded', function () {
+      const overlay = document.querySelector('.info-overlay');
+      if (overlay) {
+        overlay.classList.add('hidden');
       }
     });
-
-    // Botão microfone → foca input para abrir teclado/ditado
-    document.getElementById("microphoneBtn").addEventListener("click", () => {
-      const inputBox = document.getElementById("chatInput");
-      inputBox.focus();
-    });
-
-    // Exemplo: falar mensagens recebidas
-    function speakMessage(text) {
-      if (!audioCtx) return;
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'pt-BR';
-      speechSynthesis.speak(utter);
-    }
-
-    // Simulação: mensagem recebida após 5s
-    setTimeout(() => {
-      document.getElementById("texto-recebido").innerText = "Mensagem de teste recebida.";
-      speakMessage("Mensagem de teste recebida.");
-    }, 5000);
   </script>
 
-  <!-- 🔥 IMPORTA SCRIPTS EXISTENTES -->
+  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
   <script src="core/redes-sociais.js"></script>
   <script src="core/instruction-box.js"></script>
+
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
   <script src="./js/receiver/receiver-trz.js"></script>
+  
 </body>
 </html>
