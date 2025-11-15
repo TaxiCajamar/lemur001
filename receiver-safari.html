@@ -18,7 +18,7 @@
 
     #texto-recebido {
       position: relative;
-      z-index: 7000; /* todo o box fica acima do layout */
+      z-index: 7000; /* mantém o box acima do layout */
       padding: 10px;
       border-top: 1px solid #ccc;
     }
@@ -28,18 +28,21 @@
     }
 
     #chatInput {
-      display: none;
+      display: none;       /* só aparece após o clique inicial */
       width: 90%;
       padding: 8px;
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: 16px;
-      z-index: 8000;
+      z-index: 8000;       /* caixa elevada */
     }
 
     #microphoneBtn {
       display: none;
-      margin-top: 10px;
+      position: fixed;     /* fora do texto-recebido */
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
       padding: 8px 20px;
       font-size: 18px;
       z-index: 8000;
@@ -98,11 +101,10 @@
       <button id="copiarLink" class="btn-copiar-simples">🔗</button>
     </div>
 
-    <!-- Box de mensagens + input + microfone -->
+    <!-- Box de mensagens + input -->
     <div id="texto-recebido">
       <div id="mensagens"></div>
       <input id="chatInput" type="text" placeholder="Digite ou dite sua mensagem..." />
-      <button id="microphoneBtn">🎤 Microfone</button>
     </div>
 
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
@@ -118,6 +120,9 @@
     </div>
     <button class="send-button" id="sendButton">📤</button>
   </div>
+
+  <!-- Botão microfone fora do texto-recebido -->
+  <button id="microphoneBtn">🎤 Microfone</button>
 
   <!-- Overlay transparente -->
   <div id="startupOverlay"></div>
