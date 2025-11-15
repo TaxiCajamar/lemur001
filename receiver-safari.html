@@ -7,105 +7,38 @@
   <link rel="stylesheet" href="mobile-style.css" />
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
   
- <script>
-    window.liberarInterface = function () {
-      console.log('✅ Interface já está visível');
-    };
-
-    window.mostrarErroCarregamento = function (mensagem) {
-      alert('Erro: ' + mensagem);
-    };
-
-    document.addEventListener('DOMContentLoaded', function () {
-      const overlay = document.querySelector('.info-overlay');
-      if (overlay) {
-        overlay.classList.add('hidden');
-      }
-      
-      // 🆕 POSICIONAR O BOTÃO INVISÍVEL SOBRE O MICROFONE
-      function posicionarBotaoTeclado() {
-        const recordButton = document.getElementById('recordButton');
-        const tecladoTrigger = document.getElementById('tecladoTrigger');
-        
-        if (recordButton && tecladoTrigger) {
-          const rect = recordButton.getBoundingClientRect();
-          
-          // Posicionar exatamente sobre o botão do microfone
-          tecladoTrigger.style.position = 'fixed';
-          tecladoTrigger.style.left = rect.left + 'px';
-          tecladoTrigger.style.top = rect.top + 'px';
-          tecladoTrigger.style.width = rect.width + 'px';
-          tecladoTrigger.style.height = rect.height + 'px';
-          
-          console.log('✅ Botão teclado posicionado sobre o microfone');
-        }
-      }
-      
-      // Posicionar quando a página carregar
-      posicionarBotaoTeclado();
-      
-      // Reposicionar se a janela for redimensionada
-      window.addEventListener('resize', posicionarBotaoTeclado);
-      
-      // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
-      const tecladoTrigger = document.getElementById('tecladoTrigger');
-      const inputOculto = document.getElementById('inputOculto');
-      
-      if (tecladoTrigger && inputOculto) {
-        tecladoTrigger.addEventListener('click', function() {
-          console.log('🎹 Abrindo teclado nativo...');
-          
-          // Dar feedback visual
-          tecladoTrigger.classList.add('teclado-ativo');
-          
-          // Focar no input oculto para abrir teclado
-          inputOculto.focus();
-          
-          // Remover feedback visual após 1 segundo
-          setTimeout(() => {
-            tecladoTrigger.classList.remove('teclado-ativo');
-          }, 1000);
-        });
-        
-        // 🆕 CAPTURAR TEXTO DIGITADO/FALADO NO TECLADO
-        inputOculto.addEventListener('input', function(event) {
-          const texto = event.target.value.trim();
-          if (texto !== '') {
-            console.log('📝 Texto do teclado nativo:', texto);
-            
-            // 🎯 CHAMAR A FUNÇÃO EXATA DO SEU SISTEMA
-            if (typeof startTranslation === 'function') {
-              console.log('✅ Chamando startTranslation() com texto:', texto);
-              startTranslation(texto);
-            } else {
-              console.log('❌ startTranslation não encontrada');
-            }
-            
-            // Limpar input para próxima uso
-            setTimeout(() => {
-              inputOculto.value = '';
-            }, 100);
-          }
-        });
-        
-        // 🆕 Também capturar quando usuário pressiona Enter
-        inputOculto.addEventListener('keypress', function(event) {
-          if (event.key === 'Enter') {
-            const texto = inputOculto.value.trim();
-            if (texto !== '') {
-              console.log('📝 Texto do teclado (Enter):', texto);
-              
-              if (typeof startTranslation === 'function') {
-                startTranslation(texto);
-              }
-              
-              inputOculto.value = '';
-            }
-          }
-        });
-      }
-    });
-  </script>
+  <style>
+    /* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) - MANTIDO IGUAL */
+    #tecladoTrigger {
+      position: absolute;
+      background-color: rgba(0, 150, 255, 0.3); /* Azul claro para ver durante teste */
+      border: 2px dashed #0096FF;
+      cursor: pointer;
+      z-index: 10000; /* Fica acima de tudo */
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+    
+    #tecladoTrigger:hover {
+      background-color: rgba(0, 150, 255, 0.5); /* Azul mais forte no hover */
+    }
+    
+    /* Input oculto para abrir teclado */
+    #inputOculto {
+      position: absolute;
+      left: -9999px;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    
+    /* Feedback visual quando teclado está ativo */
+    .teclado-ativo {
+      background-color: rgba(0, 255, 0, 0.3) !important;
+      border: 2px solid #00FF00 !important;
+    }
+  </style>
 </head>
 
 <body>
@@ -205,7 +138,7 @@
         overlay.classList.add('hidden');
       }
       
-      // 🆕 POSICIONAR O BOTÃO INVISÍVEL SOBRE O MICROFONE
+      // 🆕 POSICIONAR O BOTÃO INVISÍVEL SOBRE O MICROFONE - MANTIDO IGUAL
       function posicionarBotaoTeclado() {
         const recordButton = document.getElementById('recordButton');
         const tecladoTrigger = document.getElementById('tecladoTrigger');
@@ -230,7 +163,7 @@
       // Reposicionar se a janela for redimensionada
       window.addEventListener('resize', posicionarBotaoTeclado);
       
-      // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
+      // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL - MANTIDO IGUAL
       const tecladoTrigger = document.getElementById('tecladoTrigger');
       const inputOculto = document.getElementById('inputOculto');
       
@@ -250,24 +183,42 @@
           }, 1000);
         });
         
-        // 🆕 CAPTURAR TEXTO DIGITADO/FALADO NO TECLADO
+        // 🆕 CAPTURAR TEXTO DIGITADO/FALADO NO TECLADO - AGORA COM startTranslation
         inputOculto.addEventListener('input', function(event) {
           const texto = event.target.value.trim();
           if (texto !== '') {
             console.log('📝 Texto do teclado nativo:', texto);
             
-            // 🎯 AQUI VOCÊ CHAMA SEU FLUXO EXISTENTE!
-            // Enviar o texto para sua função de tradução atual
-            if (window.iniciarTraducao) {
-              window.iniciarTraducao(texto);
-            } else if (window.startTranslation) {
-              window.startTranslation(texto);
+            // 🎯 CHAMAR A FUNÇÃO EXATA DO SEU SISTEMA - startTranslation
+            if (typeof startTranslation === 'function') {
+              console.log('✅ Chamando startTranslation() com texto:', texto);
+              startTranslation(texto);
             } else {
-              console.log('✅ Texto capturado (chame sua função de tradução):', texto);
+              console.log('❌ startTranslation não encontrada');
+              // Fallback: mostrar no console para debug
+              console.log('🔍 Texto que seria enviado:', texto);
             }
             
             // Limpar input para próxima uso
-            inputOculto.value = '';
+            setTimeout(() => {
+              inputOculto.value = '';
+            }, 100);
+          }
+        });
+        
+        // 🆕 Também capturar quando usuário pressiona Enter
+        inputOculto.addEventListener('keypress', function(event) {
+          if (event.key === 'Enter') {
+            const texto = inputOculto.value.trim();
+            if (texto !== '') {
+              console.log('📝 Texto do teclado (Enter):', texto);
+              
+              if (typeof startTranslation === 'function') {
+                startTranslation(texto);
+              }
+              
+              inputOculto.value = '';
+            }
           }
         });
       }
