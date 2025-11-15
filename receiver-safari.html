@@ -16,36 +16,31 @@
       z-index: 9999;
     }
 
-    #texto-recebido {
-      position: relative;
-      z-index: 7000; /* mantém o box acima do layout */
-      padding: 10px;
-      border-top: 1px solid #ccc;
-    }
-
-    #mensagens {
-      margin-bottom: 20px;
-    }
-
+    /* Caixa de texto elevada */
     #chatInput {
-      display: none;       /* só aparece após o clique inicial */
+      display: none;
+      position: fixed;
+      bottom: 120px;       /* altura ajustável */
+      left: 50%;
+      transform: translateX(-50%);
       width: 90%;
       padding: 8px;
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: 16px;
-      z-index: 8000;       /* caixa elevada */
+      z-index: 8000;       /* acima do layout */
     }
 
+    /* Botão microfone elevado */
     #microphoneBtn {
       display: none;
-      position: fixed;     /* fora do texto-recebido */
-      bottom: 60px;
+      position: fixed;
+      bottom: 60px;        /* logo abaixo da caixa de texto */
       left: 50%;
       transform: translateX(-50%);
-      padding: 8px 20px;
+      padding: 10px 20px;
       font-size: 18px;
-      z-index: 8000;
+      z-index: 8000;       /* mesma camada elevada */
     }
   </style>
 </head>
@@ -101,14 +96,14 @@
       <button id="copiarLink" class="btn-copiar-simples">🔗</button>
     </div>
 
-    <!-- Box de mensagens + input -->
-    <div id="texto-recebido">
-      <div id="mensagens"></div>
-      <input id="chatInput" type="text" placeholder="Digite ou dite sua mensagem..." />
-    </div>
-
+    <div id="texto-recebido"></div>
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
+
     <button class="record-btn" id="recordButton" disabled>🎤</button>
+
+    <!-- Caixa de texto e botão microfone elevados -->
+    <input id="chatInput" type="text" placeholder="Digite ou dite sua mensagem..." />
+    <button id="microphoneBtn">🎤 Microfone</button>
 
   </div>
 
@@ -120,9 +115,6 @@
     </div>
     <button class="send-button" id="sendButton">📤</button>
   </div>
-
-  <!-- Botão microfone fora do texto-recebido -->
-  <button id="microphoneBtn">🎤 Microfone</button>
 
   <!-- Overlay transparente -->
   <div id="startupOverlay"></div>
@@ -146,23 +138,23 @@
       const inputBox = document.getElementById("chatInput");
       const micBtn = document.getElementById("microphoneBtn");
 
-      // Mostrar caixa de texto e botão microfone
+      // 1. Mostrar caixa de texto e botão microfone
       inputBox.style.display = "block";
       micBtn.style.display = "inline-block";
 
-      // Iniciar radinho
+      // 2. Iniciar radinho
       startRadio();
 
-      // Focar input (abre teclado)
+      // 3. Focar input (abre teclado)
       inputBox.focus();
 
-      // Após 1s, desfocar (fecha teclado)
+      // 4. Após 1s, desfocar (fecha teclado)
       setTimeout(() => inputBox.blur(), 1000);
 
-      // Remover overlay
+      // 5. Remover overlay
       document.getElementById("startupOverlay").remove();
 
-      // Liberar áudio remoto
+      // 6. Liberar áudio remoto
       const remoteVideo = document.getElementById("remoteVideo");
       if (remoteVideo) {
         remoteVideo.muted = false;
@@ -176,15 +168,7 @@
       inputBox.focus();
     });
 
-    // Exibir mensagens recebidas dentro de #mensagens
-    function showMessage(text) {
-      const container = document.getElementById("mensagens");
-      const p = document.createElement("p");
-      p.textContent = text;
-      container.appendChild(p);
-    }
-
-    // Falar mensagens recebidas
+    // Exemplo: falar mensagens recebidas
     function speakMessage(text) {
       if (!audioCtx) return;
       const utter = new SpeechSynthesisUtterance(text);
@@ -194,7 +178,7 @@
 
     // Simulação: mensagem recebida após 5s
     setTimeout(() => {
-      showMessage("Mensagem de teste recebida.");
+      document.getElementById("texto-recebido").innerText = "Mensagem de teste recebida.";
       speakMessage("Mensagem de teste recebida.");
     }, 5000);
   </script>
