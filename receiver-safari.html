@@ -8,23 +8,85 @@
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
   
   <style>
-    /* 🎯 BOTÃO AZUL SOBRE O MICROFONE */
+    /* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) */
     #tecladoTrigger {
       position: absolute;
-      background-color: rgba(0, 150, 255, 0.3);
+      background-color: rgba(0, 150, 255, 0.3); /* Azul claro para ver durante teste */
       border: 2px dashed #0096FF;
       cursor: pointer;
-      z-index: 10000;
+      z-index: 10000; /* Fica acima de tudo */
       border-radius: 50%;
+      transition: all 0.3s ease;
     }
     
-    /* INPUT OCULTO */
+    #tecladoTrigger:hover {
+      background-color: rgba(0, 150, 255, 0.5); /* Azul mais forte no hover */
+    }
+    
+    /* Input oculto para abrir teclado */
     #inputOculto {
       position: absolute;
       left: -9999px;
       opacity: 0;
       width: 1px;
       height: 1px;
+      overflow: hidden;
+    }
+    
+    /* Feedback visual quando teclado está ativo */
+    .teclado-ativo {
+      background-color: rgba(0, 255, 0, 0.3) !important;
+      border: 2px solid #00FF00 !important;
+    }
+
+    /* 🆕 CAIXA DE TEXTO CENTRALIZADA */
+    #caixaTexto {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 500px;
+      height: 700px;
+      background: white;
+      border: 2px solid #0096FF;
+      border-radius: 15px;
+      padding: 20px;
+      z-index: 10001;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    #areaTexto {
+      flex: 1;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 18px;
+      resize: none;
+      margin-bottom: 15px;
+    }
+
+    #botaoEnviar {
+      background: #0096FF;
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    #botaoFechar {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
     }
   </style>
 </head>
@@ -41,6 +103,7 @@
       <div class="loader-circle"></div>
     </div>
 
+    <!-- 🆕 CONTAINER PARA INSTRUCTION BOX (DENTRO do box-principal) -->
     <div id="instructionBox"></div>
 
     <button id="logo-traduz" class="botao-key">
@@ -55,6 +118,7 @@
       Real-time translation.
     </div>
 
+    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS -->
     <div class="social-links-fixed"></div>
 
     <div class="remoter-Lang">🏳️</div>
@@ -70,28 +134,42 @@
    
     <div class="info-overlay hidden">
       <h2 id="qr-modal-title">This is your online key</h2>
+
       <div class="qrcode-container">
         <div id="qrcode"></div>
       </div>
+
       <p class="qr-modal-description" id="qr-modal-description">
         You can ask to scan, share or print on your business card.
       </p>
+
+      <!-- 🆕 CONTAINER PARA BOTÕES DE COMPARTILHAMENTO -->
       <div class="social-buttons"></div>
+
       <button id="copiarLink" class="btn-copiar-simples">🔗</button>
     </div>
 
     <div id="texto-recebido"></div>
+
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
 
-    <!-- 🎤 MICROFONE ORIGINAL -->
+    <!-- 🎤 BOTÃO MICROFONE ORIGINAL (será coberto pelo botão invisível) -->
     <button class="record-btn" id="recordButton">🎤</button>
 
-    <!-- 🔵 BOTÃO AZUL SOBRE O MICROFONE -->
+    <!-- 🆕 BOTÃO INVISÍVEL PARA ATIVAR TECLADO (sobre o microfone) -->
     <button id="tecladoTrigger" title="Abrir teclado nativo"></button>
     
-    <!-- 📝 INPUT OCULTO -->
+    <!-- 🆕 INPUT OCULTO PARA CAPTURAR TEXTO DO TECLADO -->
     <input type="text" id="inputOculto" placeholder="Fale ou digite...">
 
+  </div>
+
+  <!-- 🆕 CAIXA DE TEXTO CENTRALIZADA -->
+  <div id="caixaTexto">
+    <button id="botaoFechar">×</button>
+    <h3>Digite ou use microfone do teclado:</h3>
+    <textarea id="areaTexto" placeholder="Digite aqui ou use o microfone do teclado..."></textarea>
+    <button id="botaoEnviar">Enviar para Tradução</button>
   </div>
 
   <div class="recording-modal hidden-until-ready" id="recordingModal">
@@ -104,63 +182,112 @@
   </div>
 
   <script>
-    // 🎯 CONFIGURAÇÃO SIMPLES DO BOTÃO AZUL
-    document.addEventListener('DOMContentLoaded', function () {
-      
-      // Posicionar botão azul sobre o microfone
-      function posicionarBotao() {
-        const microfone = document.getElementById('recordButton');
-        const botaoAzul = document.getElementById('tecladoTrigger');
-        if (microfone && botaoAzul) {
-          const pos = microfone.getBoundingClientRect();
-          botaoAzul.style.position = 'fixed';
-          botaoAzul.style.left = pos.left + 'px';
-          botaoAzul.style.top = pos.top + 'px';
-          botaoAzul.style.width = pos.width + 'px';
-          botaoAzul.style.height = pos.height + 'px';
-        }
-      }
-      
-      posicionarBotao();
-      window.addEventListener('resize', posicionarBotao);
-      
-      // Quando clicar no botão azul
-      const botaoAzul = document.getElementById('tecladoTrigger');
-      const inputOculto = document.getElementById('inputOculto');
-      
-      if (botaoAzul && inputOculto) {
-        botaoAzul.addEventListener('click', function() {
-          inputOculto.focus(); // Abre teclado
-        });
-        
-        // Quando teclado gerar texto (do microfone ou digitação)
-        inputOculto.addEventListener('input', function(event) {
-          const texto = event.target.value.trim();
-          if (texto !== '') {
-            // 🚀 Enviar para tradução
-            startTranslation(texto);
-            // Limpar input
-            setTimeout(() => {
-              inputOculto.value = '';
-            }, 100);
-          }
-        });
-      }
-    });
-
-    // Funções existentes do seu projeto
     window.liberarInterface = function () {
-      console.log('✅ Interface liberada');
+      console.log('✅ Interface já está visível');
     };
 
     window.mostrarErroCarregamento = function (mensagem) {
       alert('Erro: ' + mensagem);
     };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const overlay = document.querySelector('.info-overlay');
+      if (overlay) {
+        overlay.classList.add('hidden');
+      }
+      
+      // 🆕 POSICIONAR O BOTÃO INVISÍVEL SOBRE O MICROFONE
+      function posicionarBotaoTeclado() {
+        const recordButton = document.getElementById('recordButton');
+        const tecladoTrigger = document.getElementById('tecladoTrigger');
+        
+        if (recordButton && tecladoTrigger) {
+          const rect = recordButton.getBoundingClientRect();
+          
+          // Posicionar exatamente sobre o botão do microfone
+          tecladoTrigger.style.position = 'fixed';
+          tecladoTrigger.style.left = rect.left + 'px';
+          tecladoTrigger.style.top = rect.top + 'px';
+          tecladoTrigger.style.width = rect.width + 'px';
+          tecladoTrigger.style.height = rect.height + 'px';
+          
+          console.log('✅ Botão teclado posicionado sobre o microfone');
+        }
+      }
+      
+      // Posicionar quando a página carregar
+      posicionarBotaoTeclado();
+      
+      // Reposicionar se a janela for redimensionada
+      window.addEventListener('resize', posicionarBotaoTeclado);
+      
+      // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
+      const tecladoTrigger = document.getElementById('tecladoTrigger');
+      const caixaTexto = document.getElementById('caixaTexto');
+      const areaTexto = document.getElementById('areaTexto');
+      const botaoEnviar = document.getElementById('botaoEnviar');
+      const botaoFechar = document.getElementById('botaoFechar');
+      
+      if (tecladoTrigger && caixaTexto) {
+        tecladoTrigger.addEventListener('click', function() {
+          console.log('🎹 Abrindo teclado nativo...');
+          
+          // Dar feedback visual
+          tecladoTrigger.classList.add('teclado-ativo');
+          
+          // Abrir a caixa de texto centralizada
+          caixaTexto.style.display = 'flex';
+          areaTexto.focus(); // Abre o teclado automaticamente
+          
+          // Remover feedback visual após 1 segundo
+          setTimeout(() => {
+            tecladoTrigger.classList.remove('teclado-ativo');
+          }, 1000);
+        });
+        
+        // 🆕 FECHAR CAIXA
+        botaoFechar.addEventListener('click', function() {
+          caixaTexto.style.display = 'none';
+          areaTexto.value = '';
+        });
+
+        // 🆕 ENVIAR TEXTO PARA TRADUÇÃO
+        botaoEnviar.addEventListener('click', function() {
+          const texto = areaTexto.value.trim();
+          
+          if (texto !== '') {
+            console.log('📝 Texto para tradução:', texto);
+            
+            // 🎯 CHAMAR FUNÇÃO DE TRADUÇÃO EXISTENTE
+            if (typeof window.iniciarTraducao === 'function') {
+              window.iniciarTraducao(texto);
+            } else if (typeof window.startTranslation === 'function') {
+              window.startTranslation(texto);
+            } else {
+              console.log('✅ Texto capturado (chame sua função de tradução):', texto);
+            }
+            
+            // Fechar caixa e limpar
+            caixaTexto.style.display = 'none';
+            areaTexto.value = '';
+          }
+        });
+
+        // 🆕 ENVIAR COM ENTER (mas manter quebra de linha com Shift+Enter)
+        areaTexto.addEventListener('keydown', function(event) {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            botaoEnviar.click();
+          }
+        });
+      }
+    });
   </script>
 
-  <!-- Seus scripts existentes -->
+  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
   <script src="core/redes-sociais.js"></script>
   <script src="core/instruction-box.js"></script>
+
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
   <script src="./js/receiver/receiver-trz.js"></script>
