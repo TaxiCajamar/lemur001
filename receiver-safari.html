@@ -31,7 +31,7 @@
       transform: translate(-50%, -50%);
       width: 80%;
       max-width: 200px;
-      height: 200px;
+      height: 400px;
       background: white;
       border: 2px solid #0096FF;
       border-radius: 15px;
@@ -222,59 +222,83 @@
       posicionarBotaoTeclado();
       window.addEventListener('resize', posicionarBotaoTeclado);
       
-      // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
-      const tecladoTrigger = document.getElementById('tecladoTrigger');
-      const caixaTexto = document.getElementById('caixaTexto');
-      const areaTexto = document.getElementById('areaTexto');
-      const botaoEnviar = document.getElementById('botaoEnviar');
-      const botaoFechar = document.getElementById('botaoFechar');
-      
-      if (tecladoTrigger && caixaTexto) {
-        tecladoTrigger.addEventListener('click', function() {
-          console.log('🎹 Abrindo teclado nativo...');
-          
-          tecladoTrigger.classList.add('teclado-ativo');
-          caixaTexto.style.display = 'flex';
-          areaTexto.focus();
-          
-          setTimeout(() => {
-            tecladoTrigger.classList.remove('teclado-ativo');
-          }, 1000);
-        });
+// 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
+        const tecladoTrigger = document.getElementById('tecladoTrigger');
+        const caixaTexto = document.getElementById('caixaTexto');
+        const areaTexto = document.getElementById('areaTexto');
+        const botaoEnviar = document.getElementById('botaoEnviar');
+        const botaoFechar = document.getElementById('botaoFechar');
         
-        // 🆕 FECHAR CAIXA
-        botaoFechar.addEventListener('click', function() {
-          caixaTexto.style.display = 'none';
-          areaTexto.value = '';
-        });
-
-        // 🆕 ENVIAR TEXTO - USA A PONTE GLOBAL
-        botaoEnviar.addEventListener('click', function() {
-          const texto = areaTexto.value.trim();
-          
-          if (texto !== '') {
-            console.log('📝 Texto do teclado:', texto);
+        // 🆕 🆕 🆕 DECLARAR A VARIÁVEL DO TIMER
+        let timerEnvio = null;
+        
+        if (tecladoTrigger && caixaTexto) {
+            tecladoTrigger.addEventListener('click', function() {
+                console.log('🎹 Abrindo teclado nativo...');
+                
+                tecladoTrigger.classList.add('teclado-ativo');
+                caixaTexto.style.display = 'flex';
+                areaTexto.focus();
+                
+                setTimeout(() => {
+                    tecladoTrigger.classList.remove('teclado-ativo');
+                }, 1000);
+            });
             
-            // 🎯 USA A PONTE GLOBAL que replica o fluxo do microfone
-            window.processarTextoTeclado(texto);
-            
-            // Fechar caixa
-            caixaTexto.style.display = 'none';
-            areaTexto.value = '';
-          }
-        });
+            // 🆕 FECHAR CAIXA
+            botaoFechar.addEventListener('click', function() {
+                caixaTexto.style.display = 'none';
+                areaTexto.value = '';
+                // 🆕 CANCELAR TIMER AO FECHAR
+                if (timerEnvio) clearTimeout(timerEnvio);
+            });
 
-        // 🆕 ENVIAR COM ENTER
-        areaTexto.addEventListener('keydown', function(event) {
-          if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            botaoEnviar.click();
-          }
-        });
-      }
+            // 🆕 ENVIAR TEXTO - USA A PONTE GLOBAL
+            botaoEnviar.addEventListener('click', function() {
+                const texto = areaTexto.value.trim();
+                
+                if (texto !== '') {
+                    console.log('📝 Texto do teclado:', texto);
+                    
+                    // 🎯 USA A PONTE GLOBAL que replica o fluxo do microfone
+                    window.processarTextoTeclado(texto);
+                    
+                    // Fechar caixa
+                    caixaTexto.style.display = 'none';
+                    areaTexto.value = '';
+                    
+                    // 🆕 CANCELAR TIMER AO ENVIAR MANUALMENTE
+                    if (timerEnvio) clearTimeout(timerEnvio);
+                }
+            });
+
+            // 🆕 ENVIAR COM ENTER
+            areaTexto.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    botaoEnviar.click();
+                }
+            });
+
+            // 🆕 🆕 🆕 ENVIO AUTOMÁTICO - SIMPLES (AGORA DENTRO DO IF)
+            areaTexto.addEventListener('input', function() {
+                // Cancelar timer anterior
+                if (timerEnvio) clearTimeout(timerEnvio);
+                
+                // Iniciar novo timer
+                timerEnvio = setTimeout(function() {
+                    const texto = areaTexto.value.trim();
+                    if (texto !== '') {
+                        console.log('⏰ Envio automático');
+                        window.processarTextoTeclado(texto);
+                        caixaTexto.style.display = 'none';
+                        areaTexto.value = '';
+                    }
+                }, 1500); // 1.5 segundos
+            });
+        }
     });
-  </script>
-
+</script>
   <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS QUE JÁ EXISTEM -->
   <script src="core/redes-sociais.js"></script>
   <script src="core/instruction-box.js"></script>
