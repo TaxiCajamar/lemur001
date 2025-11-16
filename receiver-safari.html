@@ -157,19 +157,6 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <!-- 🔥 PRIMEIRO IMPORTE O SEU SISTEMA TTS HÍBRIDO -->
-  <script type="module">
-    import { ttsHibrido } from './core/tts-hibrido.js';
-    // Deixa o TTS Híbrido disponível globalmente
-    window.ttsHibrido = ttsHibrido;
-    
-    // Carrega o som de digitação quando a página carregar
-    document.addEventListener('DOMContentLoaded', function() {
-      ttsHibrido.carregarSomDigitacao();
-      console.log('✅ Sistema TTS Híbrido carregado');
-    });
-  </script>
-
   <script>
     window.liberarInterface = function () {
       console.log('✅ Interface já está visível');
@@ -232,20 +219,28 @@
           areaTexto.value = '';
         });
 
-        // 🆕 ENVIAR TEXTO DIRETAMENTE PARA O TTS HÍBRIDO
+        // 🆕 ENVIAR TEXTO PARA O SISTEMA DE TRADUÇÃO EXISTENTE
         botaoEnviar.addEventListener('click', function() {
           const texto = areaTexto.value.trim();
           
           if (texto !== '') {
-            console.log('📝 Enviando para TTS Híbrido:', texto);
+            console.log('📝 Texto para tradução:', texto);
             
-            // 🎯 USA DIRETAMENTE O SEU SISTEMA TTS HÍBRIDO
-            window.ttsHibrido.falarTextoSistemaHibrido(
-              texto,      // A mensagem que o usuário digitou
-              null,       // elemento (não precisa)
-              null,       // imagemImpaciente (não precisa) 
-              'pt-BR'     // idioma (usa o mesmo do seu sistema)
-            );
+            // 🎯 USA O MESMO SISTEMA QUE O MICROFONE ORIGINAL USA
+            // Chama a função de tradução que já existe no receiver-trz.js
+            if (window.translateText) {
+              // Usa a função de tradução do sistema existente
+              window.translateText(texto).then(translatedText => {
+                console.log('🌐 Texto traduzido:', translatedText);
+                
+                // Envia para o outro celular usando a função existente
+                if (window.enviarParaOutroCelular) {
+                  window.enviarParaOutroCelular(translatedText);
+                }
+              });
+            } else {
+              console.log('✅ Texto capturado (sistema de tradução irá processar):', texto);
+            }
             
             // Fechar caixa
             caixaTexto.style.display = 'none';
