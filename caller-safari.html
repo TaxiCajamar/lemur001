@@ -5,84 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur-EchoMeP2P-Caller</title>
   <link rel="stylesheet" href="mobile-style.css" />
-  
-  <style>
-    /* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) - MESMO DO RECEIVER */
-    #tecladoTrigger {
-      position: absolute;
-      background-color: rgba(0, 150, 255, 0.3);
-      border: 2px dashed #0096FF;
-      cursor: pointer;
-      z-index: 10000;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-    }
-    
-    #tecladoTrigger:hover {
-      background-color: rgba(0, 150, 255, 0.5);
-    }
-
-    /* 🆕 CAIXA DE TEXTO CENTRALIZADA - MESMA DO RECEIVER */
-    #caixaTexto {
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80%;
-      max-width: 400px;
-      height: 400px;
-      background: white;
-      border: 2px solid #0096FF;
-      border-radius: 15px;
-      padding: 20px;
-      z-index: 10001;
-      display: none;
-      flex-direction: column;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-
-    #areaTexto {
-      flex: 1;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 15px;
-      font-size: 16px;
-      resize: none;
-      margin-bottom: 15px;
-    }
-
-    #botaoEnviar {
-      background: #0096FF;
-      color: white;
-      border: none;
-      padding: 15px;
-      border-radius: 10px;
-      font-size: 18px;
-      cursor: pointer;
-    }
-
-    #botaoFechar {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: #666;
-    }
-
-    /* Feedback visual quando teclado está ativo */
-    .teclado-ativo {
-      background-color: rgba(0, 255, 0, 0.3) !important;
-      border: 2px solid #00FF00 !important;
-    }
-  </style>
 </head>
 <body>
 
   <div class="box-principal">
-
+    <!-- SEU CONTEÚDO ORIGINAL (igual) -->
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
     <img id="lemurWaiting" src="assets/images/lemurImpaciente.png" alt="Aguardando conexão" style="display: none;" />
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
@@ -95,10 +22,7 @@
       Real-time translation.
     </div>
 
-    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS -->
     <div class="social-links-fixed"></div>
-
-    <!-- 🆕 CONTAINER PARA INSTRUCTION BOX (DENTRO do box-principal) -->
     <div id="instructionBox"></div>
 
     <div class="remoter-Lang">🏳️</div>
@@ -117,24 +41,9 @@
     </div>
 
     <button id="callActionBtn" style="display: none;">SEND 🚀</button>
-
     <div id="texto-recebido"></div>
-
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
-
     <button class="record-btn" id="recordButton" disabled>🎤</button>
-    
-    <!-- 🆕 BOTÃO INVISÍVEL PARA ATIVAR TECLADO (sobre o microfone) - MESMO DO RECEIVER -->
-    <button id="tecladoTrigger" title="Abrir teclado nativo"></button>
-             
-  </div>
-
-  <!-- 🆕 CAIXA DE TEXTO CENTRALIZADA - MESMA DO RECEIVER -->
-  <div id="caixaTexto">
-    <button id="botaoFechar">×</button>
-    <h3>Digite ou use microfone do teclado:</h3>
-    <textarea id="areaTexto" placeholder="Digite aqui ou use o microfone do teclado..."></textarea>
-    <button id="botaoEnviar">Enviar para Tradução</button>
   </div>
 
   <button id="toggleCamera" class="camera-toggle-btn">
@@ -150,126 +59,18 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
+  <!-- 🔥 AGORA SÓ PRECISA DESTE ARQUIVO -->
+  <script src="core/teclado-nativo.js"></script>
   <script>
-    // 🎯 PONTE GLOBAL PARA CALLER - Mesma lógica do receiver
-    window.processarTextoTecladoCaller = async function(texto) {
-      console.log('🎹 Caller - Processando texto do teclado:', texto);
-      
-      try {
-        // 🎯 SOLUÇÃO DIRETA: Simula o mesmo fluxo do microfone do caller
-        if (window.rtcCore && window.rtcCore.dataChannel && 
-            window.rtcCore.dataChannel.readyState === 'open') {
-          
-          // 1. Traduz o texto (usando a mesma API)
-          const response = await fetch('https://chat-tradutor-7umw.onrender.com/translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              text: texto,
-              targetLang: window.meuIdiomaRemoto || 'en'
-            })
-          });
-
-          const result = await response.json();
-          const translatedText = result.translatedText || texto;
-          
-          console.log('🌐 Caller - Texto traduzido:', translatedText);
-          
-          // 2. Envia via WebRTC (igual ao microfone do caller)
-          window.rtcCore.dataChannel.send(translatedText);
-          console.log('✅ Caller - Texto enviado para receiver via WebRTC');
-          
-        } else {
-          console.log('❌ Caller - WebRTC não está pronto. Tentando novamente...');
-          setTimeout(() => window.processarTextoTecladoCaller(texto), 500);
-        }
-      } catch (error) {
-        console.error('❌ Caller - Erro ao processar texto do teclado:', error);
-      }
-    };
-
-    document.addEventListener('DOMContentLoaded', function () {
-      // 🆕 POSICIONAR O BOTÃO INVISÍVEL SOBRE O MICROFONE DO CALLER
-      function posicionarBotaoTecladoCaller() {
-        const recordButton = document.getElementById('recordButton');
-        const tecladoTrigger = document.getElementById('tecladoTrigger');
-        
-        if (recordButton && tecladoTrigger) {
-          const rect = recordButton.getBoundingClientRect();
-          
-          tecladoTrigger.style.position = 'fixed';
-          tecladoTrigger.style.left = rect.left + 'px';
-          tecladoTrigger.style.top = rect.top + 'px';
-          tecladoTrigger.style.width = rect.width + 'px';
-          tecladoTrigger.style.height = rect.height + 'px';
-          
-          console.log('✅ Caller - Botão teclado posicionado sobre o microfone');
-        }
-      }
-      
-      // Aguarda um pouco para garantir que o DOM esteja pronto
-      setTimeout(() => {
-        posicionarBotaoTecladoCaller();
-        window.addEventListener('resize', posicionarBotaoTecladoCaller);
-      }, 1000);
-      
-      // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL DO CALLER
-      const tecladoTrigger = document.getElementById('tecladoTrigger');
-      const caixaTexto = document.getElementById('caixaTexto');
-      const areaTexto = document.getElementById('areaTexto');
-      const botaoEnviar = document.getElementById('botaoEnviar');
-      const botaoFechar = document.getElementById('botaoFechar');
-      
-      if (tecladoTrigger && caixaTexto) {
-        tecladoTrigger.addEventListener('click', function() {
-          console.log('🎹 Caller - Abrindo teclado nativo...');
-          
-          tecladoTrigger.classList.add('teclado-ativo');
-          caixaTexto.style.display = 'flex';
-          areaTexto.focus();
-          
-          setTimeout(() => {
-            tecladoTrigger.classList.remove('teclado-ativo');
-          }, 1000);
-        });
-        
-        // 🆕 FECHAR CAIXA
-        botaoFechar.addEventListener('click', function() {
-          caixaTexto.style.display = 'none';
-          areaTexto.value = '';
-        });
-
-        // 🆕 ENVIAR TEXTO - USA A PONTE GLOBAL DO CALLER
-        botaoEnviar.addEventListener('click', function() {
-          const texto = areaTexto.value.trim();
-          
-          if (texto !== '') {
-            console.log('📝 Caller - Texto do teclado:', texto);
-            
-            // 🎯 USA A PONTE GLOBAL do caller
-            window.processarTextoTecladoCaller(texto);
-            
-            // Fechar caixa
-            caixaTexto.style.display = 'none';
-            areaTexto.value = '';
-          }
-        });
-
-        // 🆕 ENVIAR COM ENTER
-        areaTexto.addEventListener('keydown', function(event) {
-          if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            botaoEnviar.click();
-          }
-        });
-      }
+    // 🎯 INICIALIZAR TECLADO NATIVO PARA CALLER
+    document.addEventListener('DOMContentLoaded', function() {
+      TecladoNativo.inicializar('caller');
     });
   </script>
 
-  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
+  <!-- SEUS OUTROS ARQUIVOS -->
   <script src="core/redes-sociais.js"></script>
   <script src="core/instruction-box.js"></script>
-
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script type="module" src="./js/caller/caller-ui.js"></script>
   <script src="./js/caller/caller-trz.js"></script>
