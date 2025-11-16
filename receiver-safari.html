@@ -78,7 +78,7 @@
 <body>
 
   <div class="box-principal">
-
+    <!-- SEU CONTEÚDO ORIGINAL -->
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
     <img id="click" src="assets/images/click.png" alt="Click" />
@@ -116,28 +116,20 @@
    
     <div class="info-overlay hidden">
       <h2 id="qr-modal-title">This is your online key</h2>
-
       <div class="qrcode-container">
         <div id="qrcode"></div>
       </div>
-
       <p class="qr-modal-description" id="qr-modal-description">
         You can ask to scan, share or print on your business card.
       </p>
-
       <div class="social-buttons"></div>
-
       <button id="copiarLink" class="btn-copiar-simples">🔗</button>
     </div>
 
     <div id="texto-recebido"></div>
-
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
-
     <button class="record-btn" id="recordButton">🎤</button>
-
     <button id="tecladoTrigger" title="Abrir teclado nativo"></button>
-
   </div>
 
   <!-- 🆕 CAIXA DE TEXTO CENTRALIZADA -->
@@ -219,27 +211,31 @@
           areaTexto.value = '';
         });
 
-        // 🆕 ENVIAR TEXTO PARA O SISTEMA DE TRADUÇÃO EXISTENTE
+        // 🆕 ENVIAR TEXTO - USA O MESMO FLUXO DO MICROFONE VIRTUAL
         botaoEnviar.addEventListener('click', function() {
           const texto = areaTexto.value.trim();
           
           if (texto !== '') {
-            console.log('📝 Texto para tradução:', texto);
+            console.log('📝 Texto do teclado para tradução:', texto);
             
-            // 🎯 USA O MESMO SISTEMA QUE O MICROFONE ORIGINAL USA
-            // Chama a função de tradução que já existe no receiver-trz.js
-            if (window.translateText) {
-              // Usa a função de tradução do sistema existente
+            // 🎯 USA O MESMO PROCESSO QUE O MICROFONE VIRTUAL
+            // 1. Primeiro traduz o texto
+            if (typeof window.translateText === 'function') {
               window.translateText(texto).then(translatedText => {
                 console.log('🌐 Texto traduzido:', translatedText);
                 
-                // Envia para o outro celular usando a função existente
-                if (window.enviarParaOutroCelular) {
+                // 2. Depois envia para o outro celular
+                if (typeof window.enviarParaOutroCelular === 'function') {
                   window.enviarParaOutroCelular(translatedText);
+                  console.log('✅ Texto enviado para outro celular via WebRTC');
+                } else {
+                  console.log('❌ Função enviarParaOutroCelular não encontrada');
                 }
+              }).catch(error => {
+                console.error('❌ Erro na tradução:', error);
               });
             } else {
-              console.log('✅ Texto capturado (sistema de tradução irá processar):', texto);
+              console.log('❌ Função translateText não encontrada');
             }
             
             // Fechar caixa
