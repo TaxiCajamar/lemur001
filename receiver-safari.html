@@ -78,7 +78,7 @@
 <body>
 
   <div class="box-principal">
-    <!-- SEU CONTEÚDO ORIGINAL -->
+    <!-- SEU CONTEÚDO ORIGINAL (igual ao receiver.html) -->
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
     <img id="click" src="assets/images/click.png" alt="Click" />
@@ -150,6 +150,43 @@
   </div>
 
   <script>
+    // 🎯 PONTE GLOBAL - Para acessar as funções do receiver-trz.js
+    window.processarTextoTeclado = async function(texto) {
+      console.log('🎹 Processando texto do teclado:', texto);
+      
+      try {
+        // 🎯 SOLUÇÃO DIRETA: Simula o mesmo fluxo do microfone
+        if (window.rtcCore && window.rtcCore.dataChannel && 
+            window.rtcCore.dataChannel.readyState === 'open') {
+          
+          // 1. Traduz o texto (usando a mesma API do receiver-trz.js)
+          const response = await fetch('https://chat-tradutor-7umw.onrender.com/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              text: texto,
+              targetLang: window.meuIdiomaRemoto || 'en'
+            })
+          });
+
+          const result = await response.json();
+          const translatedText = result.translatedText || texto;
+          
+          console.log('🌐 Texto traduzido:', translatedText);
+          
+          // 2. Envia via WebRTC (igual ao microfone)
+          window.rtcCore.dataChannel.send(translatedText);
+          console.log('✅ Texto enviado para outro celular via WebRTC');
+          
+        } else {
+          console.log('❌ WebRTC não está pronto. Tentando novamente...');
+          setTimeout(() => window.processarTextoTeclado(texto), 500);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao processar texto do teclado:', error);
+      }
+    };
+
     window.liberarInterface = function () {
       console.log('✅ Interface já está visível');
     };
@@ -211,32 +248,15 @@
           areaTexto.value = '';
         });
 
-        // 🆕 ENVIAR TEXTO - USA O MESMO FLUXO DO MICROFONE VIRTUAL
+        // 🆕 ENVIAR TEXTO - USA A PONTE GLOBAL
         botaoEnviar.addEventListener('click', function() {
           const texto = areaTexto.value.trim();
           
           if (texto !== '') {
-            console.log('📝 Texto do teclado para tradução:', texto);
+            console.log('📝 Texto do teclado:', texto);
             
-            // 🎯 USA O MESMO PROCESSO QUE O MICROFONE VIRTUAL
-            // 1. Primeiro traduz o texto
-            if (typeof window.translateText === 'function') {
-              window.translateText(texto).then(translatedText => {
-                console.log('🌐 Texto traduzido:', translatedText);
-                
-                // 2. Depois envia para o outro celular
-                if (typeof window.enviarParaOutroCelular === 'function') {
-                  window.enviarParaOutroCelular(translatedText);
-                  console.log('✅ Texto enviado para outro celular via WebRTC');
-                } else {
-                  console.log('❌ Função enviarParaOutroCelular não encontrada');
-                }
-              }).catch(error => {
-                console.error('❌ Erro na tradução:', error);
-              });
-            } else {
-              console.log('❌ Função translateText não encontrada');
-            }
+            // 🎯 USA A PONTE GLOBAL que replica o fluxo do microfone
+            window.processarTextoTeclado(texto);
             
             // Fechar caixa
             caixaTexto.style.display = 'none';
