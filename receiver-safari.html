@@ -8,6 +8,31 @@
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
   
   <style>
+    /* 🆕 TELA VERDE TRANSPARENTE FULLSCREEN */
+    #canalAudioVerde {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 255, 0, 0.1); /* Verde quase transparente */
+      z-index: 99999; /* Acima de TUDO */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    
+    #canalAudioVerde .texto-instrucao {
+      color: rgba(0, 100, 0, 0.8);
+      font-size: 24px;
+      text-align: center;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 15px;
+      border: 2px solid #00FF00;
+    }
+
     /* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) */
     #tecladoTrigger {
       position: absolute;
@@ -67,6 +92,14 @@
 </head>
 
 <body>
+
+  <!-- 🆕 TELA VERDE FULLSCREEN - ACIMA DE TUDO -->
+  <div id="canalAudioVerde">
+    <div class="texto-instrucao">
+      👆 Toque para ativar som ambiente<br>
+      🎵 Máquina de escrever constante
+    </div>
+  </div>
 
   <div class="box-principal">
     <!-- SEU CONTEÚDO ORIGINAL (igual ao receiver.html) -->
@@ -138,6 +171,13 @@
   </div>
 
   <script>
+    // 🎵 SISTEMA DE ÁUDIO CONSTANTE
+    let audioContext = null;
+    let somConstanteSource = null;
+    let somConstanteBuffer = null;
+    let gainNode = null;
+    let audioAtivado = false;
+
     // 🎯 PONTE GLOBAL - Para acessar as funções do receiver-trz.js
     window.processarTextoTeclado = async function(texto) {
       console.log('🎹 Processando texto do teclado:', texto);
@@ -198,6 +238,63 @@
       }
     };
 
+    // 🆕 FUNÇÕES PARA CONTROLE DO ÁUDIO CONSTANTE
+    async function carregarSomConstante() {
+      try {
+        const response = await fetch('assets/audio/keyboard.mp3');
+        const arrayBuffer = await response.arrayBuffer();
+        somConstanteBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        console.log('✅ Som constante carregado');
+        return true;
+      } catch (error) {
+        console.error('❌ Erro ao carregar som constante:', error);
+        return false;
+      }
+    }
+
+    function iniciarSomConstante() {
+      if (!somConstanteBuffer || !audioContext) {
+        console.log('❌ Som constante não carregado');
+        return;
+      }
+      
+      try {
+        somConstanteSource = audioContext.createBufferSource();
+        gainNode = audioContext.createGain();
+        
+        somConstanteSource.buffer = somConstanteBuffer;
+        somConstanteSource.loop = true; // 🔁 LOOP CONSTANTE
+        
+        // 🔊 VOLUME BAIXINHO
+        gainNode.gain.value = 0.1;
+        
+        somConstanteSource.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        somConstanteSource.start(0);
+        
+        audioAtivado = true;
+        console.log('🎵 Som constante iniciado (volume baixo)');
+        
+      } catch (error) {
+        console.error('❌ Erro ao iniciar som constante:', error);
+      }
+    }
+
+    // 🆕 CONTROLES DE VOLUME
+    window.aumentarVolumeMaquina = function() {
+      if (gainNode && audioAtivado) {
+        gainNode.gain.value = 0.5; // 🔊 VOLUME ALTO
+        console.log('🔊 Volume aumentado para mensagem');
+      }
+    };
+
+    window.abaixarVolumeMaquina = function() {
+      if (gainNode && audioAtivado) {
+        gainNode.gain.value = 0.1; // 🔇 VOLUME BAIXO
+        console.log('🔇 Volume abaixado (normal)');
+      }
+    };
+
     window.liberarInterface = function () {
       console.log('✅ Interface já está visível');
     };
@@ -207,10 +304,27 @@
     };
 
     document.addEventListener('DOMContentLoaded', function () {
+      // 🎵 INICIALIZAR AUDIO CONTEXT
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
       const overlay = document.querySelector('.info-overlay');
       if (overlay) {
         overlay.classList.add('hidden');
       }
+      
+      // 🆕 CONFIGURAR TELA VERDE
+      const canalAudioVerde = document.getElementById('canalAudioVerde');
+      
+      canalAudioVerde.addEventListener('click', async function() {
+        console.log('🟢 Tela verde clicada - ativando áudio constante');
+        
+        // 👆 UM TOQUE: Some a tela e ativa áudio
+        canalAudioVerde.style.display = 'none';
+        
+        // 🎵 CARREGAR E INICIAR SOM CONSTANTE
+        await carregarSomConstante();
+        iniciarSomConstante();
+      });
       
       // 🆕 INICIALIZAR BOTÃO TECLADO COMO DESABILITADO
       window.desabilitarTeclado();
@@ -277,7 +391,7 @@
               caixaTexto.style.display = 'none';
               areaTexto.value = '';
             }
-          }, 3000); // 3 segundos
+          }, 2000); // 2 segundos
         });
 
         // 🆕 ENVIAR COM ENTER
