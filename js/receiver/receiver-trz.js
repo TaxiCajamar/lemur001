@@ -249,18 +249,27 @@ function initializeTranslator() {
             isSpeechPlaying = true;
             if (speakerButton) speakerButton.textContent = '⏹';
             console.log('🔊 Iniciando fala do texto');
+            
+            // 🆕 ABAIXA VOLUME DA MÁQUINA DE ESCREVER DURANTE FALA
+            if (window.abaixarVolumeMaquina) window.abaixarVolumeMaquina();
         };
         
         utterance.onend = function() {
             isSpeechPlaying = false;
             if (speakerButton) speakerButton.textContent = '🔊';
             console.log('🔊 Fala terminada');
+            
+            // 🆕 VOLTA VOLUME NORMAL DA MÁQUINA DE ESCREVER
+            if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
         };
         
         utterance.onerror = function(event) {
             isSpeechPlaying = false;
             if (speakerButton) speakerButton.textContent = '🔊';
             console.error('❌ Erro na fala:', event.error);
+            
+            // 🆕 VOLTA VOLUME NORMAL DA MÁQUINA DE ESCREVER MESMO COM ERRO
+            if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
         };
         
         window.speechSynthesis.speak(utterance);
@@ -277,6 +286,9 @@ function initializeTranslator() {
             isSpeechPlaying = false;
             if (speakerButton) speakerButton.textContent = '🔊';
             console.log('⏹ Fala cancelada');
+            
+            // 🆕 VOLTA VOLUME NORMAL DA MÁQUINA DE ESCREVER AO CANCELAR
+            if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
         } else {
             if (textoRecebido && textoRecebido.textContent) {
                 const textToSpeak = textoRecebido.textContent.trim();
@@ -435,10 +447,10 @@ function initializeTranslator() {
         dataChannel: window.rtcCore ? window.rtcCore.dataChannel?.readyState : 'não disponível'
     });
 
-recordButton.disabled = false;
+    recordButton.disabled = false;
 
-// 🆕 ADICIONE ESTA LINHA AQUI - Habilita o botão teclado também
-if (window.habilitarTeclado) window.habilitarTeclado();
+    // 🆕 ADICIONE ESTA LINHA AQUI - Habilita o botão teclado também
+    if (window.habilitarTeclado) window.habilitarTeclado();
 }
 
 // ✅ INICIALIZAÇÃO ROBUSTA COM VERIFICAÇÃO
@@ -457,6 +469,44 @@ function startTranslatorSafely() {
     }
 }
 
+// 🆕 CONFIGURAÇÃO DO WEBRTC COM SISTEMA DE MIXAGEM
+if (window.rtcCore) {
+    window.rtcCore.setDataChannelCallback(async (mensagem) => {
+        // 🎵 SISTEMA ANTIGO (COMENTADO PARA VOLTAR SE PRECISAR)
+        // ttsHibrido.iniciarSomDigitacao(); // 🎵 MP3 ANTIGO - DESATIVADO
+        
+        // 🎵 SISTEMA NOVO DE MIXAGEM
+        if (window.aumentarVolumeMaquina) {
+            window.aumentarVolumeMaquina(); // 🆕 AUMENTA VOLUME DO SOM CONSTANTE
+        }
+        
+        console.log('📩 Mensagem recebida:', mensagem);
+
+        const elemento = document.getElementById('texto-recebido');
+        const imagemImpaciente = document.getElementById('lemurFixed');
+        
+        if (elemento) {
+            elemento.textContent = "";
+            elemento.style.opacity = '1';
+            elemento.style.transition = 'opacity 0.5s ease';
+            
+            elemento.style.animation = 'pulsar-flutuar-intenso 0.8s infinite ease-in-out';
+            elemento.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+            elemento.style.border = '2px solid #ff0000';
+        }
+
+        if (imagemImpaciente) {
+            imagemImpaciente.style.display = 'block';
+        }
+
+        const idiomaExato = window.meuIdiomaLocal || 'pt-BR';
+        
+        console.log(`🎯 TTS Receiver: Idioma guardado = ${idiomaExato}`);
+        
+        // 🎵 O VOLUME SERÁ CONTROLADO DENTRO DA FUNÇÃO speakText()
+        await ttsHibrido.falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idiomaExato);
+    });
+}
+
 // Inicia o tradutor de forma segura
 startTranslatorSafely();
-
