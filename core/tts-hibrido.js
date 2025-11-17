@@ -43,8 +43,7 @@ export class TTSHibrido {
                 
                 // EVENTO: FALA COMEÇOU
                 utterance.onstart = () => {
-                    // 🆕 USA SISTEMA NOVO DE CONTROLE DE VOLUME
-                    if (window.abaixarVolumeMaquina) window.abaixarVolumeMaquina();
+                    // ❌ REMOVIDO: Controle de volume aqui - já foi feito ANTES
                     
                     if (elemento) {
                         elemento.style.animation = 'none';
@@ -62,8 +61,10 @@ export class TTSHibrido {
                 // EVENTO: FALA TERMINOU
                 utterance.onend = () => {
                     console.log('🔚 Áudio Navegador TTS terminado');
-                    // 🆕 VOLTA VOLUME NORMAL
+                    
+                    // ✅ GATILHO 3: TTS TERMINOU - VOLTA VOLUME NORMAL
                     if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
+                    
                     if (imagemImpaciente) {
                         imagemImpaciente.style.display = 'none';
                     }
@@ -72,9 +73,11 @@ export class TTSHibrido {
                 
                 // EVENTO: ERRO NA FALA
                 utterance.onerror = (error) => {
-                    // 🆕 VOLTA VOLUME NORMAL MESMO COM ERRO
-                    if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
                     console.log('❌ Erro no áudio Navegador TTS:', error);
+                    
+                    // ✅ GATILHO 3: TTS COM ERRO - VOLTA VOLUME NORMAL
+                    if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
+                    
                     if (elemento) {
                         elemento.style.animation = 'none';
                         elemento.style.backgroundColor = '';
@@ -90,6 +93,10 @@ export class TTSHibrido {
                 
             } catch (error) {
                 console.error('❌ Erro no Navegador TTS:', error);
+                
+                // ✅ GATILHO 3: TTS COM ERRO - VOLTA VOLUME NORMAL
+                if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
+                
                 resolve(false);
             }
         });
@@ -139,8 +146,7 @@ export class TTSHibrido {
             
             // EVENTO: ÁUDIO COMEÇOU
             audio.onplay = () => {
-                // 🆕 USA SISTEMA NOVO DE CONTROLE DE VOLUME
-                if (window.abaixarVolumeMaquina) window.abaixarVolumeMaquina();
+                // ❌ REMOVIDO: Controle de volume aqui - já foi feito ANTES
                 
                 if (elemento) {
                     elemento.style.animation = 'none';
@@ -158,8 +164,10 @@ export class TTSHibrido {
             // EVENTO: ÁUDIO TERMINOU
             audio.onended = () => {
                 console.log('🔚 Áudio Google TTS terminado');
-                // 🆕 VOLTA VOLUME NORMAL
+                
+                // ✅ GATILHO 3: TTS TERMINOU - VOLTA VOLUME NORMAL
                 if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
+                
                 if (imagemImpaciente) {
                     imagemImpaciente.style.display = 'none';
                 }
@@ -167,9 +175,11 @@ export class TTSHibrido {
             
             // EVENTO: ERRO NO ÁUDIO
             audio.onerror = () => {
-                // 🆕 VOLTA VOLUME NORMAL MESMO COM ERRO
-                if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
                 console.log('❌ Erro no áudio Google TTS');
+                
+                // ✅ GATILHO 3: TTS COM ERRO - VOLTA VOLUME NORMAL
+                if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
+                
                 if (elemento) {
                     elemento.style.animation = 'none';
                     elemento.style.backgroundColor = '';
@@ -184,6 +194,10 @@ export class TTSHibrido {
             
         } catch (error) {
             console.error('❌ Erro no Google TTS:', error);
+            
+            // ✅ GATILHO 3: TTS COM ERRO - VOLTA VOLUME NORMAL
+            if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
+            
             throw error; // Repassa o erro para o fallback
         }
     }
@@ -192,6 +206,9 @@ export class TTSHibrido {
     async falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idioma) {
         try {
             console.log(`🎯 TTS Híbrido: "${mensagem.substring(0, 50)}..." em ${idioma}`);
+            
+            // 🆕 ✅ GATILHO 2: TTS VAI COMEÇAR - ABAIXA VOLUME
+            if (window.abaixarVolumeMaquina) window.abaixarVolumeMaquina();
             
             // Atualiza último idioma usado
             this.ultimoIdiomaTTS = idioma;
@@ -225,6 +242,9 @@ export class TTSHibrido {
             
         } catch (error) {
             console.error('❌ Erro no sistema híbrido TTS:', error);
+            
+            // ✅ GATILHO 3: TTS COM ERRO - VOLTA VOLUME NORMAL
+            if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
             
             // ✅ FALLBACK FINAL: Tenta navegador como última opção
             console.log('🔄 Tentando fallback final com navegador TTS...');
