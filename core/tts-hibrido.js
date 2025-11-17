@@ -8,65 +8,24 @@ export class TTSHibrido {
         this.audioCarregado = false;
     }
 
-    // 🎵 CARREGAR SOM DE DIGITAÇÃO
+    // 🎵 CARREGAR SOM DE DIGITAÇÃO (MANTIDO PARA COMPATIBILIDADE)
     async carregarSomDigitacao() {
         return new Promise((resolve) => {
-            try {
-                this.somDigitacao = new Audio('assets/audio/keyboard.mp3');
-                this.somDigitacao.volume = 0.3;
-                this.somDigitacao.preload = 'auto';
-                
-                this.somDigitacao.addEventListener('canplaythrough', () => {
-                    console.log('🎵 Áudio de digitação carregado');
-                    this.audioCarregado = true;
-                    resolve(true);
-                });
-                
-                this.somDigitacao.addEventListener('error', () => {
-                    console.log('❌ Erro ao carregar áudio');
-                    resolve(false);
-                });
-                
-                this.somDigitacao.load();
-                
-            } catch (error) {
-                console.log('❌ Erro no áudio:', error);
-                resolve(false);
-            }
+            console.log('🎵 Sistema de áudio antigo desativado - usando mixagem constante');
+            resolve(true); // ✅ SEMPRE RETORNA TRUE PARA NÃO QUEBRAR CÓDIGO
         });
     }
 
-    // 🎵 INICIAR LOOP DE DIGITAÇÃO
+    // 🎵 INICIAR LOOP DE DIGITAÇÃO (COMENTADO - USA SISTEMA NOVO)
     iniciarSomDigitacao() {
-        if (!this.audioCarregado || !this.somDigitacao) return;
-        
-        this.pararSomDigitacao();
-        
-        try {
-            this.somDigitacao.loop = true;
-            this.somDigitacao.currentTime = 0;
-            this.somDigitacao.play().catch(error => {
-                console.log('🔇 Navegador bloqueou áudio automático');
-            });
-            
-            console.log('🎵 Som de digitação iniciado');
-        } catch (error) {
-            console.log('❌ Erro ao tocar áudio:', error);
-        }
+        console.log('🎵 Sistema antigo desativado - usando controle de volume constante');
+        // ✅ NÃO FAZ NADA - O VOLUME É CONTROLADO PELO SISTEMA NOVO
     }
 
-    // 🎵 PARAR SOM DE DIGITAÇÃO
+    // 🎵 PARAR SOM DE DIGITAÇÃO (COMENTADO - USA SISTEMA NOVO)
     pararSomDigitacao() {
-        if (this.somDigitacao) {
-            try {
-                this.somDigitacao.pause();
-                this.somDigitacao.currentTime = 0;
-                this.somDigitacao.loop = false;
-                console.log('🎵 Som de digitação parado');
-            } catch (error) {
-                console.log('❌ Erro ao parar áudio:', error);
-            }
-        }
+        console.log('🎵 Sistema antigo desativado - usando controle de volume constante');
+        // ✅ NÃO FAZ NADA - O VOLUME É CONTROLADO PELO SISTEMA NOVO
     }
 
     // 🎤 FUNÇÃO TTS DO NAVEGADOR (GRÁTIS) - OTIMIZADA
@@ -84,7 +43,8 @@ export class TTSHibrido {
                 
                 // EVENTO: FALA COMEÇOU
                 utterance.onstart = () => {
-                    this.pararSomDigitacao();
+                    // 🆕 USA SISTEMA NOVO DE CONTROLE DE VOLUME
+                    if (window.abaixarVolumeMaquina) window.abaixarVolumeMaquina();
                     
                     if (elemento) {
                         elemento.style.animation = 'none';
@@ -102,6 +62,8 @@ export class TTSHibrido {
                 // EVENTO: FALA TERMINOU
                 utterance.onend = () => {
                     console.log('🔚 Áudio Navegador TTS terminado');
+                    // 🆕 VOLTA VOLUME NORMAL
+                    if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
                     if (imagemImpaciente) {
                         imagemImpaciente.style.display = 'none';
                     }
@@ -110,7 +72,8 @@ export class TTSHibrido {
                 
                 // EVENTO: ERRO NA FALA
                 utterance.onerror = (error) => {
-                    this.pararSomDigitacao();
+                    // 🆕 VOLTA VOLUME NORMAL MESMO COM ERRO
+                    if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
                     console.log('❌ Erro no áudio Navegador TTS:', error);
                     if (elemento) {
                         elemento.style.animation = 'none';
@@ -176,7 +139,8 @@ export class TTSHibrido {
             
             // EVENTO: ÁUDIO COMEÇOU
             audio.onplay = () => {
-                this.pararSomDigitacao();
+                // 🆕 USA SISTEMA NOVO DE CONTROLE DE VOLUME
+                if (window.abaixarVolumeMaquina) window.abaixarVolumeMaquina();
                 
                 if (elemento) {
                     elemento.style.animation = 'none';
@@ -194,6 +158,8 @@ export class TTSHibrido {
             // EVENTO: ÁUDIO TERMINOU
             audio.onended = () => {
                 console.log('🔚 Áudio Google TTS terminado');
+                // 🆕 VOLTA VOLUME NORMAL
+                if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
                 if (imagemImpaciente) {
                     imagemImpaciente.style.display = 'none';
                 }
@@ -201,7 +167,8 @@ export class TTSHibrido {
             
             // EVENTO: ERRO NO ÁUDIO
             audio.onerror = () => {
-                this.pararSomDigitacao();
+                // 🆕 VOLTA VOLUME NORMAL MESMO COM ERRO
+                if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
                 console.log('❌ Erro no áudio Google TTS');
                 if (elemento) {
                     elemento.style.animation = 'none';
