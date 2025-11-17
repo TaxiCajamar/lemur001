@@ -435,6 +435,9 @@ function initializeTranslator() {
     });
     
     recordButton.disabled = false;
+
+    // 🆕 ADICIONE ESTA LINHA AQUI - Habilita o botão teclado também - MESMO DO RECEIVER
+    if (window.habilitarTeclado) window.habilitarTeclado();
 }
 
 // ✅ INICIALIZAÇÃO ROBUSTA COM VERIFICAÇÃO
@@ -455,4 +458,3 @@ function startTranslatorSafely() {
 
 // Inicia o tradutor de forma segura
 startTranslatorSafely();
-
