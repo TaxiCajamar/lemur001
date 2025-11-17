@@ -266,7 +266,7 @@
         somConstanteSource.loop = true; // 🔁 LOOP CONSTANTE
         
         // 🔊 VOLUME BAIXINHO
-        gainNode.gain.value = 0.1;
+        gainNode.gain.value = 0.05;
         
         somConstanteSource.connect(gainNode);
         gainNode.connect(audioContext.destination);
