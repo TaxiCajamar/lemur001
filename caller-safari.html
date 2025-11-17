@@ -1,14 +1,14 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lemur EchoMe P2P Receiver</title>
+  <title>Lemur-EchoMeP2P-Caller</title>
   <link rel="stylesheet" href="mobile-style.css" />
-  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
   
   <style>
-    /* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) */
+    /* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) - MESMO DO RECEIVER */
     #tecladoTrigger {
       position: absolute;
       background-color: rgba(0, 150, 255, 0.3);
@@ -17,26 +17,13 @@
       z-index: 10000;
       border-radius: 50%;
       transition: all 0.3s ease;
-      opacity: 0.5;
-      cursor: not-allowed;
     }
     
     #tecladoTrigger:hover {
       background-color: rgba(0, 150, 255, 0.5);
     }
 
-    /* 🆕 ESTILO QUANDO BOTÃO ESTÁ ATIVO */
-    #tecladoTrigger.ativo {
-      background-color: rgba(0, 150, 255, 0.3);
-      opacity: 1;
-      cursor: pointer;
-    }
-
-    #tecladoTrigger.ativo:hover {
-      background-color: rgba(0, 150, 255, 0.5);
-    }
-
-    /* 🆕 CAIXA DE TEXTO CENTRALIZADA */
+    /* 🆕 CAIXA DE TEXTO CENTRALIZADA - MESMA DO RECEIVER */
     #caixaTexto {
       position: fixed;
       top: 20%;
@@ -63,36 +50,35 @@
       font-size: 16px;
       resize: none;
     }
+
+    /* Feedback visual quando teclado está ativo */
+    .teclado-ativo {
+      background-color: rgba(0, 255, 0, 0.3) !important;
+      border: 2px solid #00FF00 !important;
+    }
   </style>
 </head>
-
 <body>
 
   <div class="box-principal">
-    <!-- SEU CONTEÚDO ORIGINAL (igual ao receiver.html) -->
+
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
+    <img id="lemurWaiting" src="assets/images/lemurImpaciente.png" alt="Aguardando conexão" style="display: none;" />
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
-    <img id="click" src="assets/images/click.png" alt="Click" />
     
     <div id="mobileLoading" class="mobile-loader">
       <div class="loader-circle"></div>
     </div>
 
-    <div id="instructionBox"></div>
-
-    <button id="logo-traduz" class="botao-key">
-      <img src="assets/images/key.png" alt="Gerar QR Code" />
-    </button>
-
-    <button id="toggleCamera" class="camera-toggle-btn">
-      <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
-    </button>
-
     <div class="translator-label" id="translator-label">
       Real-time translation.
     </div>
 
+    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS -->
     <div class="social-links-fixed"></div>
+
+    <!-- 🆕 CONTAINER PARA INSTRUCTION BOX (DENTRO do box-principal) -->
+    <div id="instructionBox"></div>
 
     <div class="remoter-Lang">🏳️</div>
     <div class="local-Lang">🏳️</div>
@@ -104,23 +90,22 @@
         <video id="localVideo" autoplay muted playsinline></video>
       </div>
     </div>
-   
+
     <div class="info-overlay hidden">
-      <h2 id="qr-modal-title">This is your online key</h2>
-      <div class="qrcode-container">
-        <div id="qrcode"></div>
-      </div>
-      <p class="qr-modal-description" id="qr-modal-description">
-        You can ask to scan, share or print on your business card.
-      </p>
-      <div class="social-buttons"></div>
-      <button id="copiarLink" class="btn-copiar-simples">🔗</button>
+      <span id="myId"></span>
     </div>
 
+    <button id="callActionBtn" style="display: none;">SEND 🚀</button>
+
     <div id="texto-recebido"></div>
+
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
-    <button class="record-btn" id="recordButton">🎤</button>
-    <button id="tecladoTrigger" title="Abrir teclado nativo" disabled></button>
+
+    <button class="record-btn" id="recordButton" disabled>🎤</button>
+    
+    <!-- 🆕 BOTÃO INVISÍVEL PARA ATIVAR TECLADO (sobre o microfone) - MESMO DO RECEIVER -->
+    <button id="tecladoTrigger" title="Abrir teclado nativo"></button>
+             
   </div>
 
   <!-- 🆕 CAIXA DE TEXTO CENTRALIZADA - SIMPLIFICADA -->
@@ -128,7 +113,11 @@
     <textarea id="areaTexto"></textarea>
   </div>
 
-  <div class="recording-modal hidden-until-ready" id="recordingModal">
+  <button id="toggleCamera" class="camera-toggle-btn">
+    <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
+  </button>
+
+  <div class="recording-modal" id="recordingModal">
     <div class="recording-indicator">
       <div class="recording-dot"></div>
       <div class="recording-text">●</div>
@@ -138,16 +127,16 @@
   </div>
 
   <script>
-    // 🎯 PONTE GLOBAL - Para acessar as funções do receiver-trz.js
-    window.processarTextoTeclado = async function(texto) {
-      console.log('🎹 Processando texto do teclado:', texto);
+    // 🎯 PONTE GLOBAL PARA CALLER - Mesma lógica do receiver
+    window.processarTextoTecladoCaller = async function(texto) {
+      console.log('🎹 Caller - Processando texto do teclado:', texto);
       
       try {
-        // 🎯 SOLUÇÃO DIRETA: Simula o mesmo fluxo do microfone
+        // 🎯 SOLUÇÃO DIRETA: Simula o mesmo fluxo do microfone do caller
         if (window.rtcCore && window.rtcCore.dataChannel && 
             window.rtcCore.dataChannel.readyState === 'open') {
           
-          // 1. Traduz o texto (usando a mesma API do receiver-trz.js)
+          // 1. Traduz o texto (usando a mesma API)
           const response = await fetch('https://chat-tradutor-7umw.onrender.com/translate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -160,64 +149,24 @@
           const result = await response.json();
           const translatedText = result.translatedText || texto;
           
-          console.log('🌐 Texto traduzido:', translatedText);
+          console.log('🌐 Caller - Texto traduzido:', translatedText);
           
-          // 2. Envia via WebRTC (igual ao microfone)
+          // 2. Envia via WebRTC (igual ao microfone do caller)
           window.rtcCore.dataChannel.send(translatedText);
-          console.log('✅ Texto enviado para outro celular via WebRTC');
+          console.log('✅ Caller - Texto enviado para receiver via WebRTC');
           
         } else {
-          console.log('❌ WebRTC não está pronto. Tentando novamente...');
-          setTimeout(() => window.processarTextoTeclado(texto), 500);
+          console.log('❌ Caller - WebRTC não está pronto. Tentando novamente...');
+          setTimeout(() => window.processarTextoTecladoCaller(texto), 500);
         }
       } catch (error) {
-        console.error('❌ Erro ao processar texto do teclado:', error);
+        console.error('❌ Caller - Erro ao processar texto do teclado:', error);
       }
-    };
-
-    // 🆕 FUNÇÃO PARA HABILITAR O BOTÃO TECLADO (igual ao microfone)
-    window.habilitarTeclado = function() {
-      const tecladoTrigger = document.getElementById('tecladoTrigger');
-      if (tecladoTrigger) {
-        tecladoTrigger.disabled = false;
-        tecladoTrigger.style.opacity = '1';
-        tecladoTrigger.style.cursor = 'pointer';
-        tecladoTrigger.classList.add('ativo');
-        console.log('✅ Botão teclado habilitado - WebRTC conectado');
-      }
-    };
-
-    // 🆕 FUNÇÃO PARA DESABILITAR O BOTÃO TECLADO
-    window.desabilitarTeclado = function() {
-      const tecladoTrigger = document.getElementById('tecladoTrigger');
-      if (tecladoTrigger) {
-        tecladoTrigger.disabled = true;
-        tecladoTrigger.style.opacity = '0.5';
-        tecladoTrigger.style.cursor = 'not-allowed';
-        tecladoTrigger.classList.remove('ativo');
-        console.log('❌ Botão teclado desabilitado');
-      }
-    };
-
-    window.liberarInterface = function () {
-      console.log('✅ Interface já está visível');
-    };
-
-    window.mostrarErroCarregamento = function (mensagem) {
-      alert('Erro: ' + mensagem);
     };
 
     document.addEventListener('DOMContentLoaded', function () {
-      const overlay = document.querySelector('.info-overlay');
-      if (overlay) {
-        overlay.classList.add('hidden');
-      }
-      
-      // 🆕 INICIALIZAR BOTÃO TECLADO COMO DESABILITADO
-      window.desabilitarTeclado();
-      
-      // 🆕 POSICIONAR O BOTÃO INVISÍVEL SOBRE O MICROFONE
-      function posicionarBotaoTeclado() {
+      // 🆕 POSICIONAR O BOTÃO INVISÍVEL SOBRE O MICROFONE DO CALLER
+      function posicionarBotaoTecladoCaller() {
         const recordButton = document.getElementById('recordButton');
         const tecladoTrigger = document.getElementById('tecladoTrigger');
         
@@ -230,14 +179,17 @@
           tecladoTrigger.style.width = rect.width + 'px';
           tecladoTrigger.style.height = rect.height + 'px';
           
-          console.log('✅ Botão teclado posicionado sobre o microfone');
+          console.log('✅ Caller - Botão teclado posicionado sobre o microfone');
         }
       }
       
-      posicionarBotaoTeclado();
-      window.addEventListener('resize', posicionarBotaoTeclado);
+      // Aguarda um pouco para garantir que o DOM esteja pronto
+      setTimeout(() => {
+        posicionarBotaoTecladoCaller();
+        window.addEventListener('resize', posicionarBotaoTecladoCaller);
+      }, 1000);
       
-      // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
+      // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL DO CALLER
       const tecladoTrigger = document.getElementById('tecladoTrigger');
       const caixaTexto = document.getElementById('caixaTexto');
       const areaTexto = document.getElementById('areaTexto');
@@ -247,13 +199,7 @@
       
       if (tecladoTrigger && caixaTexto) {
         tecladoTrigger.addEventListener('click', function() {
-          // 🆕 VERIFICAR SE O BOTÃO ESTÁ HABILITADO
-          if (tecladoTrigger.disabled) {
-            console.log('❌ Botão teclado desabilitado - WebRTC não conectado');
-            return;
-          }
-          
-          console.log('🎹 Abrindo teclado nativo...');
+          console.log('🎹 Caller - Abrindo teclado nativo...');
           
           tecladoTrigger.classList.add('teclado-ativo');
           caixaTexto.style.display = 'flex';
@@ -264,7 +210,7 @@
           }, 1000);
         });
         
-        // 🆕 ENVIO AUTOMÁTICO - SIMPLES
+        // 🆕 ENVIO AUTOMÁTICO - MESMA LÓGICA DO RECEIVER
         areaTexto.addEventListener('input', function() {
           // Cancelar timer anterior
           if (timerEnvio) clearTimeout(timerEnvio);
@@ -273,8 +219,8 @@
           timerEnvio = setTimeout(function() {
             const texto = areaTexto.value.trim();
             if (texto !== '') {
-              console.log('⏰ Envio automático');
-              window.processarTextoTeclado(texto);
+              console.log('⏰ Caller - Envio automático');
+              window.processarTextoTecladoCaller(texto);
               caixaTexto.style.display = 'none';
               areaTexto.value = '';
             }
@@ -287,8 +233,8 @@
             event.preventDefault();
             const texto = areaTexto.value.trim();
             if (texto !== '') {
-              console.log('📝 Texto do teclado (Enter):', texto);
-              window.processarTextoTeclado(texto);
+              console.log('📝 Caller - Texto do teclado (Enter):', texto);
+              window.processarTextoTecladoCaller(texto);
               caixaTexto.style.display = 'none';
               areaTexto.value = '';
             }
@@ -297,13 +243,14 @@
       }
     });
   </script>
-  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS QUE JÁ EXISTEM -->
+
+  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
   <script src="core/redes-sociais.js"></script>
   <script src="core/instruction-box.js"></script>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script type="module" src="./js/receiver/receiver-ui.js"></script>
-  <script src="./js/receiver/receiver-trz.js"></script>
+  <script type="module" src="./js/caller/caller-ui.js"></script>
+  <script src="./js/caller/caller-trz.js"></script>
   
 </body>
 </html>
