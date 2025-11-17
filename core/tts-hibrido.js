@@ -1,4 +1,3 @@
-
 // 🎤 SISTEMA HÍBRIDO TTS AVANÇADO - CENTRALIZADO
 export class TTSHibrido {
     constructor() {
@@ -85,7 +84,12 @@ export class TTSHibrido {
                 
                 // EVENTO: FALA COMEÇOU
                 utterance.onstart = () => {
-                    this.pararSomDigitacao();
+                    // 🎵 MUDANÇA: Em vez de parar som, usa audioAmbiente se disponível
+                    if (window.audioAmbiente && window.audioAmbiente.ativo) {
+                        window.audioAmbiente.desligar();
+                    } else {
+                        this.pararSomDigitacao();
+                    }
                     
                     if (elemento) {
                         elemento.style.animation = 'none';
@@ -111,7 +115,13 @@ export class TTSHibrido {
                 
                 // EVENTO: ERRO NA FALA
                 utterance.onerror = (error) => {
-                    this.pararSomDigitacao();
+                    // 🎵 MUDANÇA: Mesma lógica aqui
+                    if (window.audioAmbiente && window.audioAmbiente.ativo) {
+                        window.audioAmbiente.desligar();
+                    } else {
+                        this.pararSomDigitacao();
+                    }
+                    
                     console.log('❌ Erro no áudio Navegador TTS:', error);
                     if (elemento) {
                         elemento.style.animation = 'none';
@@ -177,7 +187,12 @@ export class TTSHibrido {
             
             // EVENTO: ÁUDIO COMEÇOU
             audio.onplay = () => {
-                this.pararSomDigitacao();
+                // 🎵 MUDANÇA: Em vez de parar som, usa audioAmbiente se disponível
+                if (window.audioAmbiente && window.audioAmbiente.ativo) {
+                    window.audioAmbiente.desligar();
+                } else {
+                    this.pararSomDigitacao();
+                }
                 
                 if (elemento) {
                     elemento.style.animation = 'none';
@@ -202,7 +217,13 @@ export class TTSHibrido {
             
             // EVENTO: ERRO NO ÁUDIO
             audio.onerror = () => {
-                this.pararSomDigitacao();
+                // 🎵 MUDANÇA: Mesma lógica aqui
+                if (window.audioAmbiente && window.audioAmbiente.ativo) {
+                    window.audioAmbiente.desligar();
+                } else {
+                    this.pararSomDigitacao();
+                }
+                
                 console.log('❌ Erro no áudio Google TTS');
                 if (elemento) {
                     elemento.style.animation = 'none';
