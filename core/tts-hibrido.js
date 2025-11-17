@@ -1,3 +1,4 @@
+
 // 🎤 SISTEMA HÍBRIDO TTS AVANÇADO - CENTRALIZADO
 export class TTSHibrido {
     constructor() {
@@ -8,24 +9,65 @@ export class TTSHibrido {
         this.audioCarregado = false;
     }
 
-    // 🎵 CARREGAR SOM DE DIGITAÇÃO (MANTIDO PARA COMPATIBILIDADE)
+    // 🎵 CARREGAR SOM DE DIGITAÇÃO
     async carregarSomDigitacao() {
         return new Promise((resolve) => {
-            console.log('🎵 Sistema de áudio antigo desativado - usando mixagem constante');
-            resolve(true); // ✅ SEMPRE RETORNA TRUE PARA NÃO QUEBRAR CÓDIGO
+            try {
+                this.somDigitacao = new Audio('assets/audio/keyboard.mp3');
+                this.somDigitacao.volume = 0.3;
+                this.somDigitacao.preload = 'auto';
+                
+                this.somDigitacao.addEventListener('canplaythrough', () => {
+                    console.log('🎵 Áudio de digitação carregado');
+                    this.audioCarregado = true;
+                    resolve(true);
+                });
+                
+                this.somDigitacao.addEventListener('error', () => {
+                    console.log('❌ Erro ao carregar áudio');
+                    resolve(false);
+                });
+                
+                this.somDigitacao.load();
+                
+            } catch (error) {
+                console.log('❌ Erro no áudio:', error);
+                resolve(false);
+            }
         });
     }
 
-    // 🎵 INICIAR LOOP DE DIGITAÇÃO (COMENTADO - USA SISTEMA NOVO)
+    // 🎵 INICIAR LOOP DE DIGITAÇÃO
     iniciarSomDigitacao() {
-        console.log('🎵 Sistema antigo desativado - usando controle de volume constante');
-        // ✅ NÃO FAZ NADA - O VOLUME É CONTROLADO PELO SISTEMA NOVO
+        if (!this.audioCarregado || !this.somDigitacao) return;
+        
+        this.pararSomDigitacao();
+        
+        try {
+            this.somDigitacao.loop = true;
+            this.somDigitacao.currentTime = 0;
+            this.somDigitacao.play().catch(error => {
+                console.log('🔇 Navegador bloqueou áudio automático');
+            });
+            
+            console.log('🎵 Som de digitação iniciado');
+        } catch (error) {
+            console.log('❌ Erro ao tocar áudio:', error);
+        }
     }
 
-    // 🎵 PARAR SOM DE DIGITAÇÃO (COMENTADO - USA SISTEMA NOVO)
+    // 🎵 PARAR SOM DE DIGITAÇÃO
     pararSomDigitacao() {
-        console.log('🎵 Sistema antigo desativado - usando controle de volume constante');
-        // ✅ NÃO FAZ NADA - O VOLUME É CONTROLADO PELO SISTEMA NOVO
+        if (this.somDigitacao) {
+            try {
+                this.somDigitacao.pause();
+                this.somDigitacao.currentTime = 0;
+                this.somDigitacao.loop = false;
+                console.log('🎵 Som de digitação parado');
+            } catch (error) {
+                console.log('❌ Erro ao parar áudio:', error);
+            }
+        }
     }
 
     // 🎤 FUNÇÃO TTS DO NAVEGADOR (GRÁTIS) - OTIMIZADA
@@ -43,7 +85,7 @@ export class TTSHibrido {
                 
                 // EVENTO: FALA COMEÇOU
                 utterance.onstart = () => {
-                    // ❌ REMOVIDO: Controle de volume aqui - já foi feito ANTES
+                    this.pararSomDigitacao();
                     
                     if (elemento) {
                         elemento.style.animation = 'none';
@@ -61,10 +103,6 @@ export class TTSHibrido {
                 // EVENTO: FALA TERMINOU
                 utterance.onend = () => {
                     console.log('🔚 Áudio Navegador TTS terminado');
-                    
-                    // ✅ GATILHO 3: TTS TERMINOU - VOLTA VOLUME NORMAL
-                    if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
-                    
                     if (imagemImpaciente) {
                         imagemImpaciente.style.display = 'none';
                     }
@@ -73,11 +111,8 @@ export class TTSHibrido {
                 
                 // EVENTO: ERRO NA FALA
                 utterance.onerror = (error) => {
+                    this.pararSomDigitacao();
                     console.log('❌ Erro no áudio Navegador TTS:', error);
-                    
-                    // ✅ GATILHO 3: TTS COM ERRO - VOLTA VOLUME NORMAL
-                    if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
-                    
                     if (elemento) {
                         elemento.style.animation = 'none';
                         elemento.style.backgroundColor = '';
@@ -93,10 +128,6 @@ export class TTSHibrido {
                 
             } catch (error) {
                 console.error('❌ Erro no Navegador TTS:', error);
-                
-                // ✅ GATILHO 3: TTS COM ERRO - VOLTA VOLUME NORMAL
-                if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
-                
                 resolve(false);
             }
         });
@@ -146,7 +177,7 @@ export class TTSHibrido {
             
             // EVENTO: ÁUDIO COMEÇOU
             audio.onplay = () => {
-                // ❌ REMOVIDO: Controle de volume aqui - já foi feito ANTES
+                this.pararSomDigitacao();
                 
                 if (elemento) {
                     elemento.style.animation = 'none';
@@ -164,10 +195,6 @@ export class TTSHibrido {
             // EVENTO: ÁUDIO TERMINOU
             audio.onended = () => {
                 console.log('🔚 Áudio Google TTS terminado');
-                
-                // ✅ GATILHO 3: TTS TERMINOU - VOLTA VOLUME NORMAL
-                if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
-                
                 if (imagemImpaciente) {
                     imagemImpaciente.style.display = 'none';
                 }
@@ -175,11 +202,8 @@ export class TTSHibrido {
             
             // EVENTO: ERRO NO ÁUDIO
             audio.onerror = () => {
+                this.pararSomDigitacao();
                 console.log('❌ Erro no áudio Google TTS');
-                
-                // ✅ GATILHO 3: TTS COM ERRO - VOLTA VOLUME NORMAL
-                if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
-                
                 if (elemento) {
                     elemento.style.animation = 'none';
                     elemento.style.backgroundColor = '';
@@ -194,10 +218,6 @@ export class TTSHibrido {
             
         } catch (error) {
             console.error('❌ Erro no Google TTS:', error);
-            
-            // ✅ GATILHO 3: TTS COM ERRO - VOLTA VOLUME NORMAL
-            if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
-            
             throw error; // Repassa o erro para o fallback
         }
     }
@@ -206,9 +226,6 @@ export class TTSHibrido {
     async falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idioma) {
         try {
             console.log(`🎯 TTS Híbrido: "${mensagem.substring(0, 50)}..." em ${idioma}`);
-            
-            // 🆕 ✅ GATILHO 2: TTS VAI COMEÇAR - ABAIXA VOLUME
-            if (window.abaixarVolumeMaquina) window.abaixarVolumeMaquina();
             
             // Atualiza último idioma usado
             this.ultimoIdiomaTTS = idioma;
@@ -242,9 +259,6 @@ export class TTSHibrido {
             
         } catch (error) {
             console.error('❌ Erro no sistema híbrido TTS:', error);
-            
-            // ✅ GATILHO 3: TTS COM ERRO - VOLTA VOLUME NORMAL
-            if (window.aumentarVolumeMaquina) window.aumentarVolumeMaquina();
             
             // ✅ FALLBACK FINAL: Tenta navegador como última opção
             console.log('🔄 Tentando fallback final com navegador TTS...');
