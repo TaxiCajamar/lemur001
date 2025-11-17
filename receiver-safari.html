@@ -283,7 +283,7 @@
     // 🆕 CONTROLES DE VOLUME
     window.aumentarVolumeMaquina = function() {
       if (gainNode && audioAtivado) {
-        gainNode.gain.value = 1; // 🔊 VOLUME ALTO
+        gainNode.gain.value = 0.1; // 🔊 VOLUME ALTO
         console.log('🔊 Volume aumentado para mensagem');
       }
     };
