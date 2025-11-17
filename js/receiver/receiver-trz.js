@@ -434,8 +434,11 @@ function initializeTranslator() {
         rtcCore: !!window.rtcCore,
         dataChannel: window.rtcCore ? window.rtcCore.dataChannel?.readyState : 'não disponível'
     });
-    
-    recordButton.disabled = false;
+
+recordButton.disabled = false;
+
+// 🆕 ADICIONE ESTA LINHA AQUI - Habilita o botão teclado também
+if (window.habilitarTeclado) window.habilitarTeclado();
 }
 
 // ✅ INICIALIZAÇÃO ROBUSTA COM VERIFICAÇÃO
