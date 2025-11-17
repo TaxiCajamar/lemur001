@@ -266,7 +266,7 @@
         somConstanteSource.loop = true; // 🔁 LOOP CONSTANTE
         
         // 🔊 VOLUME BAIXINHO
-        gainNode.gain.value = 0.05;
+        gainNode.gain.value = 0.01;
         
         somConstanteSource.connect(gainNode);
         gainNode.connect(audioContext.destination);
@@ -283,7 +283,7 @@
     // 🆕 CONTROLES DE VOLUME
     window.aumentarVolumeMaquina = function() {
       if (gainNode && audioAtivado) {
-        gainNode.gain.value = 0.5; // 🔊 VOLUME ALTO
+        gainNode.gain.value = 1; // 🔊 VOLUME ALTO
         console.log('🔊 Volume aumentado para mensagem');
       }
     };
