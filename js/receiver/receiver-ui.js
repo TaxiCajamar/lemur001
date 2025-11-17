@@ -393,10 +393,9 @@ async function iniciarCameraAposPermissoes() {
 
         // ✅ 6. CONFIGURA CALLBACK PARA MENSAGENS (AGORA COM TTS HÍBRIDO)
         window.rtcCore.setDataChannelCallback(async (mensagem) => {
-    // ❌ COMENTAR ESTA LINHA:
-    // ttsHibrido.iniciarSomDigitacao(); // 🚨 SISTEMA ANTIGO - DESATIVAR
-    
-    console.log('📩 Mensagem recebida:', mensagem);
+            ttsHibrido.iniciarSomDigitacao();
+
+            console.log('📩 Mensagem recebida:', mensagem);
 
             const elemento = document.getElementById('texto-recebido');
             const imagemImpaciente = document.getElementById('lemurFixed');
