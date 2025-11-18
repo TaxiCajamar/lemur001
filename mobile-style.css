@@ -29,6 +29,7 @@ body {
   position: relative;
   overflow-y: auto;
 }
+
 /* 🎵 MESA DE MIXAGEM WEB AUDIO API */
 .mixer-controls {
   position: fixed;
@@ -71,6 +72,7 @@ body {
   margin-top: 5px;
   font-family: Arial, sans-serif;
 }
+
 /* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) - MESMO DO RECEIVER */
 #tecladoTrigger {
   position: absolute;
