@@ -4,68 +4,28 @@ export class TTSHibrido {
         this.primeiraFraseTTS = true;
         this.navegadorTTSPreparado = false;
         this.ultimoIdiomaTTS = 'pt-BR';
-        this.somDigitacao = null;
-        this.audioCarregado = false;
+        // REMOVIDO: this.somDigitacao e this.audioCarregado
+        // Agora usamos a mesaMix global
     }
 
-    // 🎵 CARREGAR SOM DE DIGITAÇÃO
-    async carregarSomDigitacao() {
-        return new Promise((resolve) => {
-            try {
-                this.somDigitacao = new Audio('assets/audio/keyboard.mp3');
-                this.somDigitacao.volume = 0.3;
-                this.somDigitacao.preload = 'auto';
-                
-                this.somDigitacao.addEventListener('canplaythrough', () => {
-                    console.log('🎵 Áudio de digitação carregado');
-                    this.audioCarregado = true;
-                    resolve(true);
-                });
-                
-                this.somDigitacao.addEventListener('error', () => {
-                    console.log('❌ Erro ao carregar áudio');
-                    resolve(false);
-                });
-                
-                this.somDigitacao.load();
-                
-            } catch (error) {
-                console.log('❌ Erro no áudio:', error);
-                resolve(false);
-            }
-        });
-    }
+    // 🎵 REMOVIDA: função carregarSomDigitacao()
+    // O áudio agora é carregado pelo usuário via botão
 
-    // 🎵 INICIAR LOOP DE DIGITAÇÃO
+    // 🎵 INICIAR SOM DE DIGITAÇÃO (AGORA CONTROLA MESA DE SOM)
     iniciarSomDigitacao() {
-        if (!this.audioCarregado || !this.somDigitacao) return;
-        
-        this.pararSomDigitacao();
-        
-        try {
-            this.somDigitacao.loop = true;
-            this.somDigitacao.currentTime = 0;
-            this.somDigitacao.play().catch(error => {
-                console.log('🔇 Navegador bloqueou áudio automático');
-            });
-            
-            console.log('🎵 Som de digitação iniciado');
-        } catch (error) {
-            console.log('❌ Erro ao tocar áudio:', error);
+        // Em vez de tocar áudio, aumenta volume para 80%
+        if (window.mesaMix && window.mesaMix.audioPronto) {
+            window.mesaMix.aumentarVolume(); // 80% - processando
+            console.log('🎵 Som digitação: Volume 80% (processando)');
         }
     }
 
-    // 🎵 PARAR SOM DE DIGITAÇÃO
+    // 🎵 PARAR SOM DE DIGITAÇÃO (AGORA CONTROLA MESA DE SOM)
     pararSomDigitacao() {
-        if (this.somDigitacao) {
-            try {
-                this.somDigitacao.pause();
-                this.somDigitacao.currentTime = 0;
-                this.somDigitacao.loop = false;
-                console.log('🎵 Som de digitação parado');
-            } catch (error) {
-                console.log('❌ Erro ao parar áudio:', error);
-            }
+        // Em vez de parar áudio, volta volume para 10%
+        if (window.mesaMix && window.mesaMix.audioPronto) {
+            window.mesaMix.diminuirVolume(); // 10% - falando/concluído
+            console.log('🎵 Som digitação: Volume 10% (falando)');
         }
     }
 
@@ -84,7 +44,7 @@ export class TTSHibrido {
                 
                 // EVENTO: FALA COMEÇOU
                 utterance.onstart = () => {
-                    this.pararSomDigitacao();
+                    this.pararSomDigitacao(); // ✅ Muda para 10%
                     
                     if (elemento) {
                         elemento.style.animation = 'none';
@@ -110,7 +70,7 @@ export class TTSHibrido {
                 
                 // EVENTO: ERRO NA FALA
                 utterance.onerror = (error) => {
-                    this.pararSomDigitacao();
+                    this.pararSomDigitacao(); // ✅ Muda para 10%
                     console.log('❌ Erro no áudio Navegador TTS:', error);
                     if (elemento) {
                         elemento.style.animation = 'none';
@@ -176,7 +136,7 @@ export class TTSHibrido {
             
             // EVENTO: ÁUDIO COMEÇOU
             audio.onplay = () => {
-                this.pararSomDigitacao();
+                this.pararSomDigitacao(); // ✅ Muda para 10%
                 
                 if (elemento) {
                     elemento.style.animation = 'none';
@@ -201,7 +161,7 @@ export class TTSHibrido {
             
             // EVENTO: ERRO NO ÁUDIO
             audio.onerror = () => {
-                this.pararSomDigitacao();
+                this.pararSomDigitacao(); // ✅ Muda para 10%
                 console.log('❌ Erro no áudio Google TTS');
                 if (elemento) {
                     elemento.style.animation = 'none';
@@ -225,6 +185,9 @@ export class TTSHibrido {
     async falarTextoSistemaHibrido(mensagem, elemento, imagemImpaciente, idioma) {
         try {
             console.log(`🎯 TTS Híbrido: "${mensagem.substring(0, 50)}..." em ${idioma}`);
+            
+            // ✅ ANTES DE FALAR: Aumenta volume para 80% (processando)
+            this.iniciarSomDigitacao(); // 🎵 Muda para 80%
             
             // Atualiza último idioma usado
             this.ultimoIdiomaTTS = idioma;
