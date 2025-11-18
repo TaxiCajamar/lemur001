@@ -1,91 +1,228 @@
-
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lemur EchoMe P2P Receiver</title>
-  <link rel="stylesheet" href="mobile-style.css" />
-  <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesa de Mixagem - Web Audio API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .audio-mixer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            color: white;
+            text-align: center;
+        }
+
+        .mixer-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .mixer-subtitle {
+            font-size: 14px;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        .volume-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .volume-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .volume-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .volume-btn:active {
+            transform: translateY(0);
+        }
+
+        .volume-display {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            font-size: 18px;
+        }
+
+        .volume-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .volume-level {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 10%;
+            transition: width 0.5s ease;
+        }
+
+        .status {
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+    </style>
 </head>
-
 <body>
+    <div class="audio-mixer">
+        <div class="mixer-title">🎛️ MESA DE MIXAGEM WEB AUDIO API</div>
+        <div class="mixer-subtitle">Controle de Áudio com Web Audio API</div>
+        
+        <div class="volume-controls">
+            <button class="volume-btn" id="startBtn">▶️ Iniciar Áudio</button>
+            <button class="volume-btn" id="lowVolumeBtn">🔈 Volume Baixo (10%)</button>
+            <button class="volume-btn" id="highVolumeBtn">🔊 Volume Alto (80%)</button>
+        </div>
 
-  <div class="box-principal">
-    <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
-    <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
-    <img id="click" src="assets/images/click.png" alt="Click" />
-    
-    <div id="mobileLoading" class="mobile-loader">
-      <div class="loader-circle"></div>
+        <div class="volume-display">
+            <div>Volume Atual: <span id="volumeValue">0%</span></div>
+            <div class="volume-bar">
+                <div class="volume-level" id="volumeBar"></div>
+            </div>
+            <div class="status" id="status">Áudio não iniciado</div>
+        </div>
     </div>
 
-    <div id="instructionBox"></div>
+    <script>
+        class AudioMixer {
+            constructor() {
+                this.audioContext = null;
+                this.audioSource = null;
+                this.gainNode = null;
+                this.isPlaying = false;
+                
+                // Elementos da interface
+                this.startBtn = document.getElementById('startBtn');
+                this.lowVolumeBtn = document.getElementById('lowVolumeBtn');
+                this.highVolumeBtn = document.getElementById('highVolumeBtn');
+                this.volumeValue = document.getElementById('volumeValue');
+                this.volumeBar = document.getElementById('volumeBar');
+                this.status = document.getElementById('status');
+                
+                this.setupEventListeners();
+            }
 
-    <button id="logo-traduz" class="botao-key">
-      <img src="assets/images/key.png" alt="Gerar QR Code" />
-    </button>
+            setupEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startAudio());
+                this.lowVolumeBtn.addEventListener('click', () => this.setLowVolume());
+                this.highVolumeBtn.addEventListener('click', () => this.setHighVolume());
+            }
 
-    <button id="toggleCamera" class="camera-toggle-btn">
-      <img src="assets/images/girar-camera.png" alt="Alternar Câmera" />
-    </button>
+            async startAudio() {
+                try {
+                    // Criar o contexto de áudio
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Carregar o arquivo de áudio
+                    const response = await fetch('assets/audio/keyboard.mp3');
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    
+                    // Criar o nó de origem (source)
+                    this.audioSource = this.audioContext.createBufferSource();
+                    this.audioSource.buffer = audioBuffer;
+                    this.audioSource.loop = true; // Fazer loop contínuo
+                    
+                    // Criar o nó de ganho (controle de volume)
+                    this.gainNode = this.audioContext.createGain();
+                    
+                    // Conectar os nós: Source -> Gain -> Destination
+                    this.audioSource.connect(this.gainNode);
+                    this.gainNode.connect(this.audioContext.destination);
+                    
+                    // Iniciar a reprodução
+                    this.audioSource.start();
+                    this.isPlaying = true;
+                    
+                    // Configurar volume inicial em 10%
+                    this.setLowVolume();
+                    
+                    this.updateStatus('Áudio rodando em volume baixo (10%)');
+                    this.startBtn.disabled = true;
+                    this.startBtn.textContent = '✅ Áudio Iniciado';
+                    
+                } catch (error) {
+                    console.error('Erro ao carregar áudio:', error);
+                    this.updateStatus('Erro ao carregar o áudio. Verifique o caminho do arquivo.');
+                }
+            }
 
-    <div class="translator-label" id="translator-label">
-      Real-time translation.
-    </div>
+            setLowVolume() {
+                if (!this.isPlaying) return;
+                
+                // Configurar volume para 10% usando curva de suavização
+                this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, this.audioContext.currentTime);
+                this.gainNode.gain.exponentialRampToValueAtTime(0.1, this.audioContext.currentTime + 0.3);
+                
+                this.updateVolumeDisplay(10);
+                this.updateStatus('Volume ajustado para baixo (10%) - Música de fundo');
+            }
 
-    <div class="social-links-fixed"></div>
+            setHighVolume() {
+                if (!this.isPlaying) return;
+                
+                // Configurar volume para 80% usando curva de suavização
+                this.gainNode.gain.setValueAtTime(this.gainNode.gain.value, this.audioContext.currentTime);
+                this.gainNode.gain.exponentialRampToValueAtTime(0.8, this.audioContext.currentTime + 0.3);
+                
+                this.updateVolumeDisplay(80);
+                this.updateStatus('Volume aumentado para alto (80%) - Destaque!');
+            }
 
-    <div class="remoter-Lang">🏳️</div>
-    <div class="local-Lang">🏳️</div>
-    <div class="local-mic-Lang">🏳️</div>
+            updateVolumeDisplay(percentage) {
+                this.volumeValue.textContent = `${percentage}%`;
+                this.volumeBar.style.width = `${percentage}%`;
+                
+                // Mudar cor baseada no volume
+                if (percentage <= 10) {
+                    this.volumeBar.style.background = 'linear-gradient(90deg, #4CAF50, #8BC34A)';
+                } else if (percentage <= 50) {
+                    this.volumeBar.style.background = 'linear-gradient(90deg, #FF9800, #FFC107)';
+                } else {
+                    this.volumeBar.style.background = 'linear-gradient(90deg, #F44336, #FF5722)';
+                }
+            }
 
-    <div class="video-wrapper">
-      <video id="remoteVideo" autoplay playsinline></video>
-      <div class="pip-local-wrapper">
-        <video id="localVideo" autoplay muted playsinline></video>
-      </div>
-    </div>
-   
-    <div class="info-overlay hidden">
-      <h2 id="qr-modal-title">This is your online key</h2>
-      <div class="qrcode-container">
-        <div id="qrcode"></div>
-      </div>
-      <p class="qr-modal-description" id="qr-modal-description">
-        You can ask to scan, share or print on your business card.
-      </p>
-      <div class="social-buttons"></div>
-      <button id="copiarLink" class="btn-copiar-simples">🔗</button>
-    </div>
+            updateStatus(message) {
+                this.status.textContent = message;
+            }
+        }
 
-    <div id="texto-recebido"></div>
-    <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
-    <button class="record-btn" id="recordButton">🎤</button>
-    <button id="tecladoTrigger" title="Abrir teclado nativo" disabled></button>
-  </div>
-
-  <div id="caixaTexto">
-    <textarea id="areaTexto"></textarea>
-  </div>
-
-  <div class="recording-modal hidden-until-ready" id="recordingModal">
-    <div class="recording-indicator">
-      <div class="recording-dot"></div>
-      <div class="recording-text">●</div>
-      <div class="recording-timer" id="recordingTimer">0:00</div>
-    </div>
-    <button class="send-button" id="sendButton">📤</button>
-  </div>
-
-  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
-  <script src="core/teclado-nativo.js"></script>
-  <script src="core/redes-sociais.js"></script>
-  <script src="core/instruction-box.js"></script>
-
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <script type="module" src="./js/receiver/receiver-ui.js"></script>
-  <script src="./js/receiver/receiver-trz.js"></script>
-  
+        // Inicializar a mesa de mixagem quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            new AudioMixer();
+        });
+    </script>
 </body>
 </html>
