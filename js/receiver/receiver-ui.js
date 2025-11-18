@@ -1,3 +1,4 @@
+
 // 🎯 CONTROLE DO TOGGLE DAS INSTRUÇÕES
 function setupInstructionToggle() {
     const instructionBox = document.getElementById('instructionBox');
@@ -390,14 +391,9 @@ async function iniciarCameraAposPermissoes() {
         window.rtcCore.initialize(myId);
         window.rtcCore.setupSocketHandlers();
 
-        // ✅ 6. CONFIGURA CALLBACK PARA MENSAGENS (SISTEMA HÍBRIDO)
+        // ✅ 6. CONFIGURA CALLBACK PARA MENSAGENS (AGORA COM TTS HÍBRIDO)
         window.rtcCore.setDataChannelCallback(async (mensagem) => {
-            // 🎵 MUDANÇA: Sistema híbrido - usa audioAmbiente se disponível
-            if (window.audioAmbiente && window.audioAmbiente.ativo) {
-                window.audioAmbiente.ligar(); // ↑ Volume aumenta
-            } else {
-                ttsHibrido.iniciarSomDigitacao(); // ⬅️ Comportamento original
-            }
+            ttsHibrido.iniciarSomDigitacao();
 
             console.log('📩 Mensagem recebida:', mensagem);
 
