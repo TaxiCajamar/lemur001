@@ -9,7 +9,6 @@
 <body>
 
   <div class="box-principal">
-
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
     <img id="lemurWaiting" src="assets/images/lemurImpaciente.png" alt="Aguardando conexão" style="display: none;" />
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
@@ -22,10 +21,7 @@
       Real-time translation.
     </div>
 
-    <!-- 🆕 CONTAINER PARA REDES SOCIAIS FIXAS -->
     <div class="social-links-fixed"></div>
-
-    <!-- 🆕 CONTAINER PARA INSTRUCTION BOX (DENTRO do box-principal) -->
     <div id="instructionBox"></div>
 
     <div class="remoter-Lang">🏳️</div>
@@ -44,19 +40,12 @@
     </div>
 
     <button id="callActionBtn" style="display: none;">SEND 🚀</button>
-
     <div id="texto-recebido"></div>
-
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
-
     <button class="record-btn" id="recordButton" disabled>🎤</button>
-    
-    <!-- 🆕 BOTÃO INVISÍVEL PARA ATIVAR TECLADO (sobre o microfone) - MESMO DO RECEIVER -->
     <button id="tecladoTrigger" title="Abrir teclado nativo" disabled></button>
-             
   </div>
 
-  <!-- 🆕 CAIXA DE TEXTO CENTRALIZADA - SIMPLIFICADA -->
   <div id="caixaTexto">
     <textarea id="areaTexto"></textarea>
   </div>
@@ -74,157 +63,8 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
-  <script>
-    // 🎯 PONTE GLOBAL PARA CALLER - Mesma lógica do receiver
-    window.processarTextoTecladoCaller = async function(texto) {
-      console.log('🎹 Caller - Processando texto do teclado:', texto);
-      
-      try {
-        // 🎯 SOLUÇÃO DIRETA: Simula o mesmo fluxo do microfone do caller
-        if (window.rtcCore && window.rtcCore.dataChannel && 
-            window.rtcCore.dataChannel.readyState === 'open') {
-          
-          // 1. Traduz o texto (usando a mesma API)
-          const response = await fetch('https://chat-tradutor-7umw.onrender.com/translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              text: texto,
-              targetLang: window.meuIdiomaRemoto || 'en'
-            })
-          });
-
-          const result = await response.json();
-          const translatedText = result.translatedText || texto;
-          
-          console.log('🌐 Caller - Texto traduzido:', translatedText);
-          
-          // 2. Envia via WebRTC (igual ao microfone do caller)
-          window.rtcCore.dataChannel.send(translatedText);
-          console.log('✅ Caller - Texto enviado para receiver via WebRTC');
-          
-        } else {
-          console.log('❌ Caller - WebRTC não está pronto. Tentando novamente...');
-          setTimeout(() => window.processarTextoTecladoCaller(texto), 500);
-        }
-      } catch (error) {
-        console.error('❌ Caller - Erro ao processar texto do teclado:', error);
-      }
-    };
-
-    // 🆕 FUNÇÕES PARA CONTROLE DO BOTÃO TECLADO - MESMAS DO RECEIVER
-    window.habilitarTeclado = function() {
-      const tecladoTrigger = document.getElementById('tecladoTrigger');
-      if (tecladoTrigger) {
-        tecladoTrigger.disabled = false;
-        tecladoTrigger.style.opacity = '1';
-        tecladoTrigger.style.cursor = 'pointer';
-        tecladoTrigger.classList.add('ativo');
-        console.log('✅ Caller - Botão teclado habilitado - WebRTC conectado');
-      }
-    };
-
-    window.desabilitarTeclado = function() {
-      const tecladoTrigger = document.getElementById('tecladoTrigger');
-      if (tecladoTrigger) {
-        tecladoTrigger.disabled = true;
-        tecladoTrigger.style.opacity = '0.5';
-        tecladoTrigger.style.cursor = 'not-allowed';
-        tecladoTrigger.classList.remove('ativo');
-        console.log('❌ Caller - Botão teclado desabilitado');
-      }
-    };
-
-    document.addEventListener('DOMContentLoaded', function () {
-      // 🆕 INICIALIZAR BOTÃO TECLADO COMO DESABILITADO
-      window.desabilitarTeclado();
-      
-      // 🆕 POSICIONAR O BOTÃO INVISÍVEL SOBRE O MICROFONE DO CALLER
-      function posicionarBotaoTecladoCaller() {
-        const recordButton = document.getElementById('recordButton');
-        const tecladoTrigger = document.getElementById('tecladoTrigger');
-        
-        if (recordButton && tecladoTrigger) {
-          const rect = recordButton.getBoundingClientRect();
-          
-          tecladoTrigger.style.position = 'fixed';
-          tecladoTrigger.style.left = rect.left + 'px';
-          tecladoTrigger.style.top = rect.top + 'px';
-          tecladoTrigger.style.width = rect.width + 'px';
-          tecladoTrigger.style.height = rect.height + 'px';
-          
-          console.log('✅ Caller - Botão teclado posicionado sobre o microfone');
-        }
-      }
-      
-      // Aguarda um pouco para garantir que o DOM esteja pronto
-      setTimeout(() => {
-        posicionarBotaoTecladoCaller();
-        window.addEventListener('resize', posicionarBotaoTecladoCaller);
-      }, 1000);
-      
-      // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL DO CALLER
-      const tecladoTrigger = document.getElementById('tecladoTrigger');
-      const caixaTexto = document.getElementById('caixaTexto');
-      const areaTexto = document.getElementById('areaTexto');
-      
-      // 🆕 🆕 🆕 DECLARAR A VARIÁVEL DO TIMER
-      let timerEnvio = null;
-      
-      if (tecladoTrigger && caixaTexto) {
-        tecladoTrigger.addEventListener('click', function() {
-          // 🆕 VERIFICAR SE O BOTÃO ESTÁ HABILITADO - MESMO DO RECEIVER
-          if (tecladoTrigger.disabled) {
-            console.log('❌ Caller - Botão teclado desabilitado - WebRTC não conectado');
-            return;
-          }
-          
-          console.log('🎹 Caller - Abrindo teclado nativo...');
-          
-          tecladoTrigger.classList.add('teclado-ativo');
-          caixaTexto.style.display = 'flex';
-          areaTexto.focus();
-          
-          setTimeout(() => {
-            tecladoTrigger.classList.remove('teclado-ativo');
-          }, 1000);
-        });
-        
-        // 🆕 ENVIO AUTOMÁTICO - MESMA LÓGICA DO RECEIVER
-        areaTexto.addEventListener('input', function() {
-          // Cancelar timer anterior
-          if (timerEnvio) clearTimeout(timerEnvio);
-          
-          // Iniciar novo timer
-          timerEnvio = setTimeout(function() {
-            const texto = areaTexto.value.trim();
-            if (texto !== '') {
-              console.log('⏰ Caller - Envio automático');
-              window.processarTextoTecladoCaller(texto);
-              caixaTexto.style.display = 'none';
-              areaTexto.value = '';
-            }
-          }, 3000); // 3 segundos
-        });
-
-        // 🆕 ENVIAR COM ENTER
-        areaTexto.addEventListener('keydown', function(event) {
-          if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            const texto = areaTexto.value.trim();
-            if (texto !== '') {
-              console.log('📝 Caller - Texto do teclado (Enter):', texto);
-              window.processarTextoTecladoCaller(texto);
-              caixaTexto.style.display = 'none';
-              areaTexto.value = '';
-            }
-          }
-        });
-      }
-    });
-  </script>
-
   <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
+  <script src="core/teclado-nativo.js"></script>
   <script src="core/redes-sociais.js"></script>
   <script src="core/instruction-box.js"></script>
 
