@@ -6,6 +6,63 @@
   <title>Lemur EchoMe P2P Receiver</title>
   <link rel="stylesheet" href="mobile-style.css" />
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+  
+  <style>
+    /* 🎵 MESA DE MIXAGEM - CSS INLINE */
+    .mixer-controls {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.95);
+      padding: 15px;
+      border-radius: 15px;
+      border: 3px solid #0096FF;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 0 25px rgba(0, 150, 255, 0.7);
+    }
+
+    .mixer-btn {
+      background: linear-gradient(45deg, #0096FF, #00D4FF);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      margin: 5px;
+      cursor: pointer;
+      font-size: 20px;
+      color: white;
+      box-shadow: 0 4px 15px rgba(0, 150, 255, 0.3);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mixer-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 150, 255, 0.6);
+    }
+
+    .mixer-btn:active {
+      transform: scale(0.95);
+    }
+
+    .volume-display {
+      color: white;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 8px;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 5px 10px;
+      border-radius: 10px;
+      min-width: 80px;
+    }
+  </style>
 </head>
 
 <body>
@@ -76,8 +133,8 @@
     </div>
     <button class="send-button" id="sendButton">📤</button>
   </div>
-  
-  <!-- 🎵 MESA DE MIXAGEM WEB AUDIO API -->
+
+  <!-- 🎵 MESA DE MIXAGEM WEB AUDIO API - HTML -->
   <div class="mixer-controls">
     <button id="startAudio" class="mixer-btn" title="Iniciar Áudio de Fundo">🎵</button>
     <button id="volumeUp" class="mixer-btn" title="Aumentar Volume (80%)">🔊</button>
@@ -85,16 +142,155 @@
     <div id="volumeDisplay" class="volume-display">Volume: 0%</div>
   </div>
 
-  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
-  <!-- ORDEM CORRETA: audio-mixer primeiro, depois os outros -->
-  <script src="core/audio-mixer.js"></script>
+  <!-- 🎵 MESA DE MIXAGEM - JAVASCRIPT INLINE -->
+  <script>
+    // 🎵 MESA DE MIXAGEM WEB AUDIO API - SIMPLES E DIRETO
+    console.log('🎵 Inicializando Mesa de Mixagem...');
+    
+    let audioContext, audioSource, gainNode;
+    let isPlaying = false;
+    let currentVolume = 0;
+
+    // 🎯 ELEMENTOS DA INTERFACE
+    const startBtn = document.getElementById('startAudio');
+    const volUpBtn = document.getElementById('volumeUp');
+    const volDownBtn = document.getElementById('volumeDown');
+    const volumeDisplay = document.getElementById('volumeDisplay');
+
+    // 🎯 INICIALIZAR WEB AUDIO API
+    function inicializarAudio() {
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        gainNode = audioContext.createGain();
+        gainNode.connect(audioContext.destination);
+        
+        console.log('✅ Web Audio API inicializada!');
+        console.log('🎛️ Mesa de mixagem PRONTA - Experimente os botões!');
+        
+      } catch (error) {
+        console.error('❌ Erro ao inicializar áudio:', error);
+      }
+    }
+
+    // 🎯 INICIAR ÁUDIO DE FUNDO
+    async function iniciarAudio() {
+      if (isPlaying) {
+        console.log('⚠️ Áudio já está tocando');
+        return;
+      }
+
+      try {
+        // Carregar o arquivo MP3
+        const response = await fetch('assets/audio/keyboard2.mp3');
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        
+        // Criar fonte de áudio
+        audioSource = audioContext.createBufferSource();
+        audioSource.buffer = audioBuffer;
+        audioSource.loop = true;
+        
+        // Conectar: Fonte → Volume → Saída
+        audioSource.connect(gainNode);
+        
+        // Volume inicial 10%
+        setVolume(0.1);
+        
+        // Iniciar reprodução
+        audioSource.start();
+        isPlaying = true;
+        
+        console.log('🎵 Áudio iniciado (10% volume)');
+        volumeDisplay.textContent = 'Volume: 10%';
+        volumeDisplay.style.color = '#FFFFFF';
+        
+      } catch (error) {
+        console.error('❌ Erro ao carregar áudio:', error);
+        // Fallback - usar áudio online se o local falhar
+        usarAudioOnline();
+      }
+    }
+
+    // 🎯 FALLBACK - ÁUDIO ONLINE (se o local não funcionar)
+    function usarAudioOnline() {
+      console.log('🔄 Tentando áudio online...');
+      // Podemos adicionar um áudio online de fallback aqui se necessário
+      alert('Arquivo de áudio não encontrado. Verifique se assets/audio/keyboard2.mp3 existe.');
+    }
+
+    // 🎯 CONTROLAR VOLUME
+    function setVolume(novoVolume) {
+      if (!gainNode || !isPlaying) {
+        console.log('⚠️ Inicie o áudio primeiro clicando em 🎵');
+        return;
+      }
+
+      currentVolume = novoVolume;
+      gainNode.gain.value = novoVolume;
+      
+      // Atualizar display
+      const percentual = Math.round(novoVolume * 100);
+      volumeDisplay.textContent = `Volume: ${percentual}%`;
+      
+      // Mudar cor baseada no volume
+      if (novoVolume >= 0.8) {
+        volumeDisplay.style.color = '#00FF00'; // Verde (alto)
+      } else if (novoVolume >= 0.4) {
+        volumeDisplay.style.color = '#FFFF00'; // Amarelo (médio)
+      } else {
+        volumeDisplay.style.color = '#FFFFFF'; // Branco (baixo)
+      }
+      
+      console.log(`🎚️ Volume ajustado para: ${percentual}%`);
+    }
+
+    // 🎯 CONFIGURAR EVENTOS DOS BOTÕES
+    function configurarEventos() {
+      startBtn.addEventListener('click', iniciarAudio);
+      volUpBtn.addEventListener('click', () => setVolume(0.8));
+      volDownBtn.addEventListener('click', () => setVolume(0.1));
+      
+      console.log('✅ Botões configurados:', {
+        start: startBtn,
+        volumeUp: volUpBtn,
+        volumeDown: volDownBtn
+      });
+    }
+
+    // 🎯 INICIALIZAR TUDO QUANDO A PÁGINA CARREGAR
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 Página carregada - Iniciando mesa de mixagem...');
+      
+      // Verificar se os elementos existem
+      if (!startBtn || !volUpBtn || !volDownBtn || !volumeDisplay) {
+        console.error('❌ Elementos da mesa de mixagem não encontrados!');
+        return;
+      }
+      
+      console.log('✅ Todos os elementos encontrados!');
+      inicializarAudio();
+      configurarEventos();
+      
+      // Mensagem final no console
+      console.log(`
+      🎵 MESA DE MIXAGEM WEB AUDIO API - PRONTA!
+      ========================================
+      🎵 Clique em 🎵 para iniciar o áudio
+      🔊 Clique em 🔊 para volume 80%
+      🔈 Clique em 🔈 para volume 10%
+      
+      Experimente e veja o Web Audio API em ação!
+      `);
+    });
+
+  </script>
+
+  <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS ORIGINAIS -->
   <script src="core/teclado-nativo.js"></script>
   <script src="core/redes-sociais.js"></script>
   <script src="core/instruction-box.js"></script>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  
-  <!-- ❌ CORRIGIDO: Agora importando scripts do RECEIVER (não do caller) -->
   <script type="module" src="./js/receiver/receiver-ui.js"></script>
   <script src="./js/receiver/receiver-trz.js"></script>
   
