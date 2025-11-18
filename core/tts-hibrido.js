@@ -84,12 +84,7 @@ export class TTSHibrido {
                 
                 // EVENTO: FALA COMEÇOU
                 utterance.onstart = () => {
-                    // 🎵 MUDANÇA: Em vez de parar som, usa audioAmbiente se disponível
-                    if (window.audioAmbiente && window.audioAmbiente.ativo) {
-                        window.audioAmbiente.desligar();
-                    } else {
-                        this.pararSomDigitacao();
-                    }
+                    this.pararSomDigitacao();
                     
                     if (elemento) {
                         elemento.style.animation = 'none';
@@ -115,13 +110,7 @@ export class TTSHibrido {
                 
                 // EVENTO: ERRO NA FALA
                 utterance.onerror = (error) => {
-                    // 🎵 MUDANÇA: Mesma lógica aqui
-                    if (window.audioAmbiente && window.audioAmbiente.ativo) {
-                        window.audioAmbiente.desligar();
-                    } else {
-                        this.pararSomDigitacao();
-                    }
-                    
+                    this.pararSomDigitacao();
                     console.log('❌ Erro no áudio Navegador TTS:', error);
                     if (elemento) {
                         elemento.style.animation = 'none';
@@ -187,12 +176,7 @@ export class TTSHibrido {
             
             // EVENTO: ÁUDIO COMEÇOU
             audio.onplay = () => {
-                // 🎵 MUDANÇA: Em vez de parar som, usa audioAmbiente se disponível
-                if (window.audioAmbiente && window.audioAmbiente.ativo) {
-                    window.audioAmbiente.desligar();
-                } else {
-                    this.pararSomDigitacao();
-                }
+                this.pararSomDigitacao();
                 
                 if (elemento) {
                     elemento.style.animation = 'none';
@@ -217,13 +201,7 @@ export class TTSHibrido {
             
             // EVENTO: ERRO NO ÁUDIO
             audio.onerror = () => {
-                // 🎵 MUDANÇA: Mesma lógica aqui
-                if (window.audioAmbiente && window.audioAmbiente.ativo) {
-                    window.audioAmbiente.desligar();
-                } else {
-                    this.pararSomDigitacao();
-                }
-                
+                this.pararSomDigitacao();
                 console.log('❌ Erro no áudio Google TTS');
                 if (elemento) {
                     elemento.style.animation = 'none';
