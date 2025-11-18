@@ -1,25 +1,71 @@
 // 🎤 SISTEMA HÍBRIDO TTS AVANÇADO - CENTRALIZADO
-class TTSHibrido {
+export class TTSHibrido {
     constructor() {
         this.primeiraFraseTTS = true;
         this.navegadorTTSPreparado = false;
         this.ultimoIdiomaTTS = 'pt-BR';
-        // REMOVIDO: this.somDigitacao e this.audioCarregado
+        this.somDigitacao = null;
+        this.audioCarregado = false;
     }
 
-    // 🎵 INICIAR SOM DE DIGITAÇÃO (AGORA CONTROLA MESA DE SOM)
+    // 🎵 CARREGAR SOM DE DIGITAÇÃO
+    async carregarSomDigitacao() {
+        return new Promise((resolve) => {
+            try {
+                this.somDigitacao = new Audio('assets/audio/keyboard.mp3');
+                this.somDigitacao.volume = 0.3;
+                this.somDigitacao.preload = 'auto';
+                
+                this.somDigitacao.addEventListener('canplaythrough', () => {
+                    console.log('🎵 Áudio de digitação carregado');
+                    this.audioCarregado = true;
+                    resolve(true);
+                });
+                
+                this.somDigitacao.addEventListener('error', () => {
+                    console.log('❌ Erro ao carregar áudio');
+                    resolve(false);
+                });
+                
+                this.somDigitacao.load();
+                
+            } catch (error) {
+                console.log('❌ Erro no áudio:', error);
+                resolve(false);
+            }
+        });
+    }
+
+    // 🎵 INICIAR LOOP DE DIGITAÇÃO
     iniciarSomDigitacao() {
-        if (window.mesaMix && window.mesaMix.audioPronto) {
-            window.mesaMix.aumentarVolume(); // 80% - processando
-            console.log('🎵 Som digitação: Volume 80% (processando)');
+        if (!this.audioCarregado || !this.somDigitacao) return;
+        
+        this.pararSomDigitacao();
+        
+        try {
+            this.somDigitacao.loop = true;
+            this.somDigitacao.currentTime = 0;
+            this.somDigitacao.play().catch(error => {
+                console.log('🔇 Navegador bloqueou áudio automático');
+            });
+            
+            console.log('🎵 Som de digitação iniciado');
+        } catch (error) {
+            console.log('❌ Erro ao tocar áudio:', error);
         }
     }
 
-    // 🎵 PARAR SOM DE DIGITAÇÃO (AGORA CONTROLA MESA DE SOM)
+    // 🎵 PARAR SOM DE DIGITAÇÃO
     pararSomDigitacao() {
-        if (window.mesaMix && window.mesaMix.audioPronto) {
-            window.mesaMix.diminuirVolume(); // 10% - falando/concluído
-            console.log('🎵 Som digitação: Volume 10% (falando)');
+        if (this.somDigitacao) {
+            try {
+                this.somDigitacao.pause();
+                this.somDigitacao.currentTime = 0;
+                this.somDigitacao.loop = false;
+                console.log('🎵 Som de digitação parado');
+            } catch (error) {
+                console.log('❌ Erro ao parar áudio:', error);
+            }
         }
     }
 
@@ -27,6 +73,7 @@ class TTSHibrido {
     falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma) {
         return new Promise((resolve) => {
             try {
+                // Para qualquer fala anterior
                 window.speechSynthesis.cancel();
                 
                 const utterance = new SpeechSynthesisUtterance(mensagem);
@@ -37,7 +84,7 @@ class TTSHibrido {
                 
                 // EVENTO: FALA COMEÇOU
                 utterance.onstart = () => {
-                    this.pararSomDigitacao(); // ✅ Muda para 10%
+                    this.pararSomDigitacao();
                     
                     if (elemento) {
                         elemento.style.animation = 'none';
@@ -61,6 +108,7 @@ class TTSHibrido {
                     resolve(true);
                 };
                 
+                // EVENTO: ERRO NA FALA
                 utterance.onerror = (error) => {
                     this.pararSomDigitacao();
                     console.log('❌ Erro no áudio Navegador TTS:', error);
@@ -89,9 +137,10 @@ class TTSHibrido {
         if (this.navegadorTTSPreparado) return;
         
         try {
+            // Fala silenciosa para carregar o motor de voz
             const utterance = new SpeechSynthesisUtterance('');
             utterance.lang = idioma;
-            utterance.volume = 0;
+            utterance.volume = 0; // Silencioso
             utterance.onend = () => {
                 this.navegadorTTSPreparado = true;
                 console.log(`✅ Navegador TTS preparado para ${idioma}`);
@@ -142,6 +191,7 @@ class TTSHibrido {
                 console.log(`🔊 Áudio Google TTS iniciado em ${idioma}`);
             };
             
+            // EVENTO: ÁUDIO TERMINOU
             audio.onended = () => {
                 console.log('🔚 Áudio Google TTS terminado');
                 if (imagemImpaciente) {
@@ -149,6 +199,7 @@ class TTSHibrido {
                 }
             };
             
+            // EVENTO: ERRO NO ÁUDIO
             audio.onerror = () => {
                 this.pararSomDigitacao();
                 console.log('❌ Erro no áudio Google TTS');
@@ -166,7 +217,7 @@ class TTSHibrido {
             
         } catch (error) {
             console.error('❌ Erro no Google TTS:', error);
-            throw error;
+            throw error; // Repassa o erro para o fallback
         }
     }
 
@@ -175,16 +226,16 @@ class TTSHibrido {
         try {
             console.log(`🎯 TTS Híbrido: "${mensagem.substring(0, 50)}..." em ${idioma}`);
             
-            // ✅ ANTES DE FALAR: Aumenta volume para 80% (processando)
-            this.iniciarSomDigitacao();
-            
+            // Atualiza último idioma usado
             this.ultimoIdiomaTTS = idioma;
             
             if (this.primeiraFraseTTS) {
                 console.log('🚀 PRIMEIRA FRASE: Usando Google TTS (rápido)');
                 
+                // ✅ 1. PRIMEIRA FRASE: Google TTS (rápido)
                 await this.falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma);
                 
+                // ✅ 2. PREPARA NAVEGADOR EM SEGUNDO PLANO
                 console.log(`🔄 Preparando navegador TTS para ${idioma}...`);
                 this.prepararNavegadorTTS(idioma);
                 
@@ -193,8 +244,10 @@ class TTSHibrido {
             } else {
                 console.log('💰 PRÓXIMAS FRASES: Usando Navegador TTS (grátis)');
                 
+                // ✅ 3. PRÓXIMAS FRASES: Navegador TTS (grátis)
                 const sucesso = await this.falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma);
                 
+                // ✅ 4. FALLBACK: Se navegador falhar, volta para Google
                 if (!sucesso) {
                     console.log('🔄 Fallback: Navegador falhou, usando Google TTS');
                     await this.falarComGoogleTTS(mensagem, elemento, imagemImpaciente, idioma);
@@ -206,6 +259,7 @@ class TTSHibrido {
         } catch (error) {
             console.error('❌ Erro no sistema híbrido TTS:', error);
             
+            // ✅ FALLBACK FINAL: Tenta navegador como última opção
             console.log('🔄 Tentando fallback final com navegador TTS...');
             await this.falarComNavegadorTTS(mensagem, elemento, imagemImpaciente, idioma);
         }
@@ -219,5 +273,5 @@ class TTSHibrido {
     }
 }
 
-// ✅ INSTÂNCIA GLOBAL (sem export)
-const ttsHibrido = new TTSHibrido();
+// Instância global para uso fácil
+export const ttsHibrido = new TTSHibrido();
