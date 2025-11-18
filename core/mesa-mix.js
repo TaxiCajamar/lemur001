@@ -14,8 +14,8 @@ class MesaMix {
             // 1. Criar contexto de áudio
             this.audioContext = new AudioContext();
             
-            // 2. Carregar o MP3 (mesmo arquivo do TTS)
-            const resposta = await fetch('assets/audio/keyboard.mp3');
+            // 2. Carregar o MP3 DIFERENTE para teste 🎵
+            const resposta = await fetch('assets/audio/Som.mp3');
             const buffer = await resposta.arrayBuffer();
             const audioBuffer = await this.audioContext.decodeAudioData(buffer);
             
