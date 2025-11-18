@@ -29,64 +29,68 @@ body {
   position: relative;
   overflow-y: auto;
 }
-
-/* ============================================= */
-/* 🦁 COMPONENTES SAFARI-SPECIFIC - RECEIVER    */
-/* ============================================= */
-
-/* 💬 CAMPO TEXTO WHATSAPP-STYLE */
-#chatInputContainer {
-  position: fixed;
-  bottom: -100px;
-  left: 50%;
-  transform: translateX(-50%);
-  transition: bottom 0.3s ease;
-  z-index: 10002;
-  background: white;
-  padding: 10px;
-  border-radius: 25px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  border: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-#chatInputContainer.visible {
-  bottom: 20px;
-}
-
-#textInput {
-  border: none;
-  outline: none;
-  padding: 8px 12px;
-  width: 250px;
-  font-size: 16px;
-  background: transparent;
-}
-
-#sendMessageButton {
-  background: #2196F3;
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  color: white;
+/* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) - MESMO DO RECEIVER */
+#tecladoTrigger {
+  position: absolute;
+  background-color: rgba(0, 150, 255, 0.3);
+  border: 2px dashed #0096FF;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 10000;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#tecladoTrigger:hover {
+  background-color: rgba(0, 150, 255, 0.5);
+}
+
+/* 🆕 ESTILO QUANDO BOTÃO ESTÁ ATIVO */
+#tecladoTrigger.ativo {
+  background-color: rgba(0, 150, 255, 0.3);
+  opacity: 1;
+  cursor: pointer;
+}
+
+#tecladoTrigger.ativo:hover {
+  background-color: rgba(0, 150, 255, 0.5);
+}
+
+/* 🆕 CAIXA DE TEXTO CENTRALIZADA - MESMA DO RECEIVER */
+#caixaTexto {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 90%;
+  height: 20%;
+  background: white;
+  border: 2px solid #0096FF;
+  border-radius: 15px;
+  padding: 20px;
+  z-index: 10001;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+#areaTexto {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 15px;
   font-size: 16px;
+  resize: none;
 }
 
-#sendMessageButton:active {
-  transform: scale(0.95);
+/* Feedback visual quando teclado está ativo */
+.teclado-ativo {
+  background-color: rgba(0, 255, 0, 0.3) !important;
+  border: 2px solid #00FF00 !important;
 }
 
-/* ===== CLASSE HIDDEN ===== */
-.hidden {
-    display: none !important;
-}
 
 /* =============================================
    COMPONENTES DE TEXTO E REDES SOCIAIS FIXAS
