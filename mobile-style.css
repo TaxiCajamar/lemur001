@@ -29,6 +29,48 @@ body {
   position: relative;
   overflow-y: auto;
 }
+/* 🎵 MESA DE MIXAGEM WEB AUDIO API */
+.mixer-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 15px;
+  border-radius: 15px;
+  border: 2px solid #0096FF;
+}
+
+.mixer-btn {
+  background: linear-gradient(45deg, #0096FF, #00D4FF);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  margin: 5px;
+  cursor: pointer;
+  font-size: 20px;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 150, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.mixer-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 150, 255, 0.5);
+}
+
+.mixer-btn:active {
+  transform: scale(0.95);
+}
+
+.volume-display {
+  color: white;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 5px;
+  font-family: Arial, sans-serif;
+}
 /* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) - MESMO DO RECEIVER */
 #tecladoTrigger {
   position: absolute;
