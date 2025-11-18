@@ -32,7 +32,7 @@ class MesaMix {
             
             // 5. Iniciar com volume 10%
             this.source.start();
-            this.gainNode.gain.value = 0.1; // 10%
+            this.gainNode.gain.value = 0.05; // 10%
             
             this.audioPronto = true;
             
@@ -104,7 +104,7 @@ class MesaMix {
     // 🔉 DIMINUIR VOLUME PARA 10% (TTS FALANDO)
     diminuirVolume() {
         if (this.gainNode && this.audioPronto) {
-            this.gainNode.gain.value = 0.1; // 10%
+            this.gainNode.gain.value = 0.05; // 10%
             console.log('🔉 Volume diminuído para 10% - TTS falando');
         }
     }
