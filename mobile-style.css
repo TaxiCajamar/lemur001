@@ -30,16 +30,21 @@ body {
   overflow-y: auto;
 }
 
-/* 🎵 MESA DE MIXAGEM WEB AUDIO API */
+/* 🎵 MESA DE MIXAGEM WEB AUDIO API - CORRIGIDO */
 .mixer-controls {
   position: fixed;
   bottom: 20px;
   left: 20px;
-  z-index: 1000;
-  background: rgba(0, 0, 0, 0.8);
+  z-index: 10000; /* ⬅️ AUMENTADO para ficar acima de tudo */
+  background: rgba(0, 0, 0, 0.9); /* ⬅️ Mais opaco para melhor visibilidade */
   padding: 15px;
   border-radius: 15px;
   border: 2px solid #0096FF;
+  box-shadow: 0 0 20px rgba(0, 150, 255, 0.5); /* ⬅️ Sombra para destacar */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 80px;
 }
 
 .mixer-btn {
@@ -54,6 +59,9 @@ body {
   color: white;
   box-shadow: 0 4px 15px rgba(0, 150, 255, 0.3);
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mixer-btn:hover {
@@ -71,8 +79,25 @@ body {
   text-align: center;
   margin-top: 5px;
   font-family: Arial, sans-serif;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 3px 8px;
+  border-radius: 10px;
+  min-width: 70px;
 }
 
+/* ⬇️ GARANTIR que nada cubra a mesa de mixagem */
+.box-principal {
+  overflow: visible !important; /* ⬅️ Importante para não cortar elementos fixed */
+}
+
+.recording-modal {
+  z-index: 9999; /* ⬅️ Menor que a mesa de mixagem */
+}
+
+.info-overlay {
+  z-index: 9998; /* ⬅️ Menor que a mesa de mixagem */
+}
 /* 🆕 ESTILO PARA O BOTÃO INVISÍVEL DE TESTE (AZUL CLARO) - MESMO DO RECEIVER */
 #tecladoTrigger {
   position: absolute;
