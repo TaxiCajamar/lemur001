@@ -63,7 +63,17 @@
     <button class="send-button" id="sendButton">📤</button>
   </div>
 
+  <!-- 🎵 MESA DE MIXAGEM WEB AUDIO API -->
+  <div class="mixer-controls">
+    <button id="startAudio" class="mixer-btn" title="Iniciar Áudio de Fundo">🎵</button>
+    <button id="volumeUp" class="mixer-btn" title="Aumentar Volume (80%)">🔊</button>
+    <button id="volumeDown" class="mixer-btn" title="Diminuir Volume (10%)">🔈</button>
+    <div id="volumeDisplay" class="volume-display">Volume: 0%</div>
+  </div>
+
   <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
+  <!-- ORDEM CORRETA: audio-mixer primeiro, depois os outros -->
+  <script src="core/audio-mixer.js"></script>
   <script src="core/teclado-nativo.js"></script>
   <script src="core/redes-sociais.js"></script>
   <script src="core/instruction-box.js"></script>
