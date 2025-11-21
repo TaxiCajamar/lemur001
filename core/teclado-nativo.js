@@ -89,46 +89,72 @@ window.inicializarTeclado = function() {
     window.addEventListener('resize', posicionarBotaoTeclado);
   }, 1000);
   
- // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
-const tecladoTrigger = document.getElementById('tecladoTrigger');
-const caixaTexto = document.getElementById('caixaTexto');
-const areaTexto = document.getElementById('areaTexto');
+  // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
+  const tecladoTrigger = document.getElementById('tecladoTrigger');
+  const caixaTexto = document.getElementById('caixaTexto');
+  const areaTexto = document.getElementById('areaTexto');
+  
+  // 🆕 VARIÁVEL DO TIMER
+  let timerEnvio = null;
+  
+  if (tecladoTrigger && caixaTexto) {
+    tecladoTrigger.addEventListener('click', function() {
+      if (tecladoTrigger.disabled) {
+        console.log('❌ Botão teclado desabilitado - WebRTC não conectado');
+        return;
+      }
+      
+      console.log('🎹 Abrindo teclado nativo...');
+      
+      // 🆕 SEMPRE MOSTRAR A CAIXA QUANDO ABRIR TECLADO
+      caixaTexto.style.display = 'flex';
+      areaTexto.focus();
+    });
 
-// 🆕 VARIÁVEL DO TIMER
-let timerEnvio = null;
-
-if (tecladoTrigger && caixaTexto) {
-  tecladoTrigger.addEventListener('click', function() {
-    if (tecladoTrigger.disabled) {
-      console.log('❌ Botão teclado desabilitado - WebRTC não conectado');
-      return;
-    }
-    
-    console.log('🎹 Abrindo teclado nativo...');
-    
-    // 🆕 SEMPRE MOSTRAR A CAIXA QUANDO ABRIR TECLADO
-    caixaTexto.style.display = 'flex';
-    areaTexto.focus();
-  });
-
-  // 🆕 DETECTAR QUANDO TECLADO É MINIMIZADO (FOCUS OUT)
-  areaTexto.addEventListener('blur', function() {
-    console.log('🎹 Teclado minimizado - fechando caixa');
-    caixaTexto.style.display = 'none';
-    areaTexto.value = '';
-  });
-
-  // 🆕 DETECTAR QUANDO USUÁRIO CANCELA (TOUCH FORA)
-  document.addEventListener('click', function(event) {
-    if (caixaTexto.style.display === 'flex' && 
-        !caixaTexto.contains(event.target) && 
-        event.target !== tecladoTrigger) {
-      console.log('🎹 Clique fora - fechando teclado e caixa');
+    // 🆕 DETECTAR QUANDO TECLADO É MINIMIZADO (FOCUS OUT)
+    areaTexto.addEventListener('blur', function() {
+      console.log('🎹 Teclado minimizado - fechando caixa');
       caixaTexto.style.display = 'none';
       areaTexto.value = '';
-      areaTexto.blur();
-    }
-  });
+    });
+
+    // 🆕 DETECTAR BOTÕES DE NAVEGAÇÃO DO SISTEMA (SETA VOLTAR, HOME, etc.)
+    window.addEventListener('beforeunload', function() {
+      console.log('🎹 Navegação do sistema - fechando teclado e caixa');
+      caixaTexto.style.display = 'none';
+      areaTexto.value = '';
+    });
+
+    // 🆕 DETECTAR MUDANÇAS DE VISIBILIDADE DA PÁGINA
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        console.log('🎹 Página minimizada - fechando teclado e caixa');
+        caixaTexto.style.display = 'none';
+        areaTexto.value = '';
+      }
+    });
+
+    // 🆕 DETECTAR RESIZE (pode indicar teclado abrindo/fechando no iOS)
+    window.addEventListener('resize', function() {
+      // Se o box está visível mas o textarea não tem foco, fecha ambos
+      if (caixaTexto.style.display === 'flex' && document.activeElement !== areaTexto) {
+        console.log('🎹 Teclado fechado por resize - fechando caixa');
+        caixaTexto.style.display = 'none';
+        areaTexto.value = '';
+      }
+    });
+
+    // 🆕 DETECTAR QUANDO USUÁRIO CANCELA (TOUCH FORA)
+    document.addEventListener('click', function(event) {
+      if (caixaTexto.style.display === 'flex' && 
+          !caixaTexto.contains(event.target) && 
+          event.target !== tecladoTrigger) {
+        console.log('🎹 Clique fora - fechando teclado e caixa');
+        caixaTexto.style.display = 'none';
+        areaTexto.value = '';
+        areaTexto.blur();
+      }
+    });
     
     // 🆕 ENVIO AUTOMÁTICO - SIMPLES
     areaTexto.addEventListener('input', function() {
