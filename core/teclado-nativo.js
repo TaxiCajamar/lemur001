@@ -89,32 +89,46 @@ window.inicializarTeclado = function() {
     window.addEventListener('resize', posicionarBotaoTeclado);
   }, 1000);
   
-  // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
-  const tecladoTrigger = document.getElementById('tecladoTrigger');
-  const caixaTexto = document.getElementById('caixaTexto');
-  const areaTexto = document.getElementById('areaTexto');
-  
-  // 🆕 VARIÁVEL DO TIMER
-  let timerEnvio = null;
-  
-  if (tecladoTrigger && caixaTexto) {
-    tecladoTrigger.addEventListener('click', function() {
-      // 🆕 VERIFICAR SE O BOTÃO ESTÁ HABILITADO
-      if (tecladoTrigger.disabled) {
-        console.log('❌ Botão teclado desabilitado - WebRTC não conectado');
-        return;
-      }
-      
-      console.log('🎹 Abrindo teclado nativo...');
-      
-      tecladoTrigger.classList.add('teclado-ativo');
-      caixaTexto.style.display = 'flex';
-      areaTexto.focus();
-      
-      setTimeout(() => {
-        tecladoTrigger.classList.remove('teclado-ativo');
-      }, 1000);
-    });
+ // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
+const tecladoTrigger = document.getElementById('tecladoTrigger');
+const caixaTexto = document.getElementById('caixaTexto');
+const areaTexto = document.getElementById('areaTexto');
+
+// 🆕 VARIÁVEL DO TIMER
+let timerEnvio = null;
+
+if (tecladoTrigger && caixaTexto) {
+  tecladoTrigger.addEventListener('click', function() {
+    if (tecladoTrigger.disabled) {
+      console.log('❌ Botão teclado desabilitado - WebRTC não conectado');
+      return;
+    }
+    
+    console.log('🎹 Abrindo teclado nativo...');
+    
+    // 🆕 SEMPRE MOSTRAR A CAIXA QUANDO ABRIR TECLADO
+    caixaTexto.style.display = 'flex';
+    areaTexto.focus();
+  });
+
+  // 🆕 DETECTAR QUANDO TECLADO É MINIMIZADO (FOCUS OUT)
+  areaTexto.addEventListener('blur', function() {
+    console.log('🎹 Teclado minimizado - fechando caixa');
+    caixaTexto.style.display = 'none';
+    areaTexto.value = '';
+  });
+
+  // 🆕 DETECTAR QUANDO USUÁRIO CANCELA (TOUCH FORA)
+  document.addEventListener('click', function(event) {
+    if (caixaTexto.style.display === 'flex' && 
+        !caixaTexto.contains(event.target) && 
+        event.target !== tecladoTrigger) {
+      console.log('🎹 Clique fora - fechando teclado e caixa');
+      caixaTexto.style.display = 'none';
+      areaTexto.value = '';
+      areaTexto.blur();
+    }
+  });
     
     // 🆕 ENVIO AUTOMÁTICO - SIMPLES
     areaTexto.addEventListener('input', function() {
