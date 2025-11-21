@@ -1,15 +1,11 @@
-// 🎯 FUNÇÕES GLOBAIS PARA TECLADO NATIVO - COMPARTILHADAS ENTRE CALLER E RECEIVER
-
-// 🎯 PONTE GLOBAL PARA PROCESSAMENTO DE TEXTO
+// 🎯 TECLADO NATIVO - SOLUÇÃO CORRETA
 window.processarTextoTeclado = async function(texto) {
   console.log('🎹 Processando texto do teclado:', texto);
   
   try {
-    // 🎯 SOLUÇÃO DIRETA: Simula o mesmo fluxo do microfone
     if (window.rtcCore && window.rtcCore.dataChannel && 
         window.rtcCore.dataChannel.readyState === 'open') {
       
-      // 1. Traduz o texto (usando a mesma API)
       const response = await fetch('https://chat-tradutor-7umw.onrender.com/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -23,29 +19,25 @@ window.processarTextoTeclado = async function(texto) {
       const translatedText = result.translatedText || texto;
       
       console.log('🌐 Texto traduzido:', translatedText);
-      
-      // 2. Envia via WebRTC (igual ao microfone)
       window.rtcCore.dataChannel.send(translatedText);
-      console.log('✅ Texto enviado para outro celular via WebRTC');
+      console.log('✅ Texto enviado via WebRTC');
       
     } else {
-      console.log('❌ WebRTC não está pronto. Tentando novamente...');
+      console.log('❌ WebRTC não está pronto');
       setTimeout(() => window.processarTextoTeclado(texto), 500);
     }
   } catch (error) {
-    console.error('❌ Erro ao processar texto do teclado:', error);
+    console.error('❌ Erro:', error);
   }
 };
 
-// 🆕 FUNÇÕES PARA CONTROLE DO BOTÃO TECLADO
+// 🎯 CONTROLE DO BOTÃO
 window.habilitarTeclado = function() {
   const tecladoTrigger = document.getElementById('tecladoTrigger');
   if (tecladoTrigger) {
     tecladoTrigger.disabled = false;
     tecladoTrigger.style.opacity = '1';
     tecladoTrigger.style.cursor = 'pointer';
-    tecladoTrigger.classList.add('ativo');
-    console.log('✅ Botão teclado habilitado - WebRTC conectado');
   }
 };
 
@@ -55,141 +47,72 @@ window.desabilitarTeclado = function() {
     tecladoTrigger.disabled = true;
     tecladoTrigger.style.opacity = '0.5';
     tecladoTrigger.style.cursor = 'not-allowed';
-    tecladoTrigger.classList.remove('ativo');
-    console.log('❌ Botão teclado desabilitado');
   }
 };
 
-// 🆕 INICIALIZAÇÃO DO TECLADO
+// 🎯 INICIALIZAÇÃO CORRETA
 window.inicializarTeclado = function() {
-  // 🆕 INICIALIZAR BOTÃO TECLADO COMO DESABILITADO
   window.desabilitarTeclado();
   
-  // 🆕 POSICIONAR O BOTÃO INVISÍVEL SOBRE O MICROFONE
+  // Posicionar botão sobre o microfone
   function posicionarBotaoTeclado() {
     const recordButton = document.getElementById('recordButton');
     const tecladoTrigger = document.getElementById('tecladoTrigger');
     
     if (recordButton && tecladoTrigger) {
       const rect = recordButton.getBoundingClientRect();
-      
       tecladoTrigger.style.position = 'fixed';
       tecladoTrigger.style.left = rect.left + 'px';
       tecladoTrigger.style.top = rect.top + 'px';
       tecladoTrigger.style.width = rect.width + 'px';
       tecladoTrigger.style.height = rect.height + 'px';
-      
-      console.log('✅ Botão teclado posicionado sobre o microfone');
     }
   }
   
-  // Aguarda um pouco para garantir que o DOM esteja pronto
   setTimeout(() => {
     posicionarBotaoTeclado();
     window.addEventListener('resize', posicionarBotaoTeclado);
   }, 1000);
   
-  // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
+  // 🎯 CONFIGURAÇÃO PRINCIPAL - SOLUÇÃO CORRETA
   const tecladoTrigger = document.getElementById('tecladoTrigger');
-  const caixaTexto = document.getElementById('caixaTexto');
-  const areaTexto = document.getElementById('areaTexto');
+  const inputTeclado = document.getElementById('inputTecladoNativo');
   
-  // 🆕 VARIÁVEL DO TIMER
-  let timerEnvio = null;
-  
-  if (tecladoTrigger && caixaTexto) {
+  if (tecladoTrigger && inputTeclado) {
     tecladoTrigger.addEventListener('click', function() {
-      if (tecladoTrigger.disabled) {
-        console.log('❌ Botão teclado desabilitado - WebRTC não conectado');
-        return;
-      }
+      if (tecladoTrigger.disabled) return;
       
       console.log('🎹 Abrindo teclado nativo...');
       
-      // 🆕 SEMPRE MOSTRAR A CAIXA QUANDO ABRIR TECLADO
-      caixaTexto.style.display = 'flex';
-      areaTexto.focus();
+      // 🎯 FOCO NO INPUT INVISÍVEL - ISSO ABRE O TECLADO NATIVO COMPLETO
+      inputTeclado.focus();
+      inputTeclado.value = ''; // Limpa texto anterior
     });
-
-    // 🆕 DETECTAR QUANDO TECLADO É MINIMIZADO (FOCUS OUT)
-    areaTexto.addEventListener('blur', function() {
-      console.log('🎹 Teclado minimizado - fechando caixa');
-      caixaTexto.style.display = 'none';
-      areaTexto.value = '';
-    });
-
-    // 🆕 DETECTAR BOTÕES DE NAVEGAÇÃO DO SISTEMA (SETA VOLTAR, HOME, etc.)
-    window.addEventListener('beforeunload', function() {
-      console.log('🎹 Navegação do sistema - fechando teclado e caixa');
-      caixaTexto.style.display = 'none';
-      areaTexto.value = '';
-    });
-
-    // 🆕 DETECTAR MUDANÇAS DE VISIBILIDADE DA PÁGINA
-    document.addEventListener('visibilitychange', function() {
-      if (document.hidden) {
-        console.log('🎹 Página minimizada - fechando teclado e caixa');
-        caixaTexto.style.display = 'none';
-        areaTexto.value = '';
-      }
-    });
-
-    // 🆕 DETECTAR RESIZE (pode indicar teclado abrindo/fechando no iOS)
-    window.addEventListener('resize', function() {
-      // Se o box está visível mas o textarea não tem foco, fecha ambos
-      if (caixaTexto.style.display === 'flex' && document.activeElement !== areaTexto) {
-        console.log('🎹 Teclado fechado por resize - fechando caixa');
-        caixaTexto.style.display = 'none';
-        areaTexto.value = '';
-      }
-    });
-
-    // 🆕 DETECTAR QUANDO USUÁRIO CANCELA (TOUCH FORA)
-    document.addEventListener('click', function(event) {
-      if (caixaTexto.style.display === 'flex' && 
-          !caixaTexto.contains(event.target) && 
-          event.target !== tecladoTrigger) {
-        console.log('🎹 Clique fora - fechando teclado e caixa');
-        caixaTexto.style.display = 'none';
-        areaTexto.value = '';
-        areaTexto.blur();
+    
+    // 🎯 CAPTURAR TEXTO DIGITADO (QUANDO USUÁRIO PRESSIONA ENTER)
+    inputTeclado.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const texto = inputTeclado.value.trim();
+        
+        if (texto !== '') {
+          console.log('📝 Texto digitado:', texto);
+          window.processarTextoTeclado(texto);
+          inputTeclado.value = ''; // Limpa o campo
+          inputTeclado.blur(); // Fecha teclado
+        }
       }
     });
     
-    // 🆕 ENVIO AUTOMÁTICO - SIMPLES
-    areaTexto.addEventListener('input', function() {
-      // Cancelar timer anterior
-      if (timerEnvio) clearTimeout(timerEnvio);
-      
-      // Iniciar novo timer
-      timerEnvio = setTimeout(function() {
-        const texto = areaTexto.value.trim();
-        if (texto !== '') {
-          console.log('⏰ Envio automático');
-          window.processarTextoTeclado(texto);
-          caixaTexto.style.display = 'none';
-          areaTexto.value = '';
-        }
-      }, 3000); // 3 segundos
-    });
-
-    // 🆕 ENVIAR COM ENTER
-    areaTexto.addEventListener('keydown', function(event) {
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        const texto = areaTexto.value.trim();
-        if (texto !== '') {
-          console.log('📝 Texto do teclado (Enter):', texto);
-          window.processarTextoTeclado(texto);
-          caixaTexto.style.display = 'none';
-          areaTexto.value = '';
-        }
-      }
+    // 🎯 QUANDO TECLADO FECHA (BLUR), LIMPA O CAMPO
+    inputTeclado.addEventListener('blur', function() {
+      console.log('🎹 Teclado fechado');
+      inputTeclado.value = '';
     });
   }
 };
 
-// 🆕 INICIALIZAR QUANDO O DOCUMENTO ESTIVER PRONTO
+// 🎯 INICIAR QUANDO PÁGINA CARREGAR
 document.addEventListener('DOMContentLoaded', function() {
   window.inicializarTeclado();
 });
