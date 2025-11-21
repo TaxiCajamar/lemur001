@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,49 +7,9 @@
   <title>Lemur EchoMe P2P Receiver</title>
   <link rel="stylesheet" href="mobile-style.css" />
   <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-  
-  <!-- 🎵 CSS EM LINHA PARA MESA DE SOM -->
-  <style>
-    .botao-som {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 1000;
-      padding: 8px 12px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      font-size: 12px;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-    .botao-som:hover {
-      background: #45a049;
-    }
-    .botao-som:active {
-      transform: scale(0.95);
-    }
-    
-    /* 🎯 ESTILO PARA O INPUT INVISÍVEL DO TECLADO */
-    #inputTecladoNativo {
-      position: fixed;
-      top: -100px;
-      left: -100px;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      pointer-events: none;
-    }
-  </style>
 </head>
 
 <body>
-
-  <!-- 🎵 BOTÃO PARA ATIVAR SOM AMBIENTE -->
-  <button id="ativarSomBtn" class="botao-som" onclick="mesaMix.iniciarAudio()">
-    🔈 Ativar Som Ambiente
-  </button>
 
   <div class="box-principal">
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
@@ -100,16 +61,13 @@
 
     <div id="texto-recebido"></div>
     <div class="language-flag" id="currentLanguageFlag">🇧🇷</div>
-    
-    <!-- 🎯 BOTÕES ORIGINAIS -->
     <button class="record-btn" id="recordButton">🎤</button>
-    
-    <!-- 🎯 BOTÃO INVISÍVEL SOBRE O MICROFONE PARA TECLADO -->
     <button id="tecladoTrigger" title="Abrir teclado nativo" disabled></button>
   </div>
 
-  <!-- 🎯 INPUT INVISÍVEL PARA TECLADO NATIVO -->
-  <input type="text" id="inputTecladoNativo" enterkeyhint="send">
+  <div id="caixaTexto">
+    <textarea id="areaTexto"></textarea>
+  </div>
 
   <div class="recording-modal hidden-until-ready" id="recordingModal">
     <div class="recording-indicator">
@@ -121,8 +79,6 @@
   </div>
 
   <!-- 🔥 IMPORTE OS ARQUIVOS EXTERNOS -->
-  <script src="core/mesa-mix.js"></script>  <!-- 🎵 MESA DE SOM -->
-  <script src="core/tts-hibrido.js"></script>
   <script src="core/teclado-nativo.js"></script>
   <script src="core/redes-sociais.js"></script>
   <script src="core/instruction-box.js"></script>
