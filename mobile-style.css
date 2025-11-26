@@ -31,36 +31,28 @@ body {
   overflow-y: auto;
 }
 
-.botoes-inferiores {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    background: #f5f5f5;
-    border-top: 1px solid #ddd;
-    width: 100%;
+/* BOTÃO FECHAR SIMPLES */
+.botao-fechar-simples {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: #ff4444;
+  color: white;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
 }
 
-.botao-inferior {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    min-width: 100px;
-}
-
-.botao-fechar {
-    background: #ff4444;
-    color: white;
-}
-
-.botao-direita {
-    background: #4CAF50;
-    color: white;
-}
-
-.botao-inferior:hover {
-    opacity: 0.8;
+.botao-fechar-simples:hover {
+  background: #cc0000;
 }
 /* 🎵 MESA DE MIXAGEM WEB AUDIO API */
 .mixer-controls {
