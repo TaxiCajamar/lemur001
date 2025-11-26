@@ -5,11 +5,9 @@ window.processarTextoTeclado = async function(texto) {
   console.log('🎹 Processando texto do teclado:', texto);
   
   try {
-    // 🎯 SOLUÇÃO DIRETA: Simula o mesmo fluxo do microfone
     if (window.rtcCore && window.rtcCore.dataChannel && 
         window.rtcCore.dataChannel.readyState === 'open') {
       
-      // 1. Traduz o texto (usando a mesma API)
       const response = await fetch('https://chat-tradutor-7umw.onrender.com/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -24,7 +22,6 @@ window.processarTextoTeclado = async function(texto) {
       
       console.log('🌐 Texto traduzido:', translatedText);
       
-      // 2. Envia via WebRTC (igual ao microfone)
       window.rtcCore.dataChannel.send(translatedText);
       console.log('✅ Texto enviado para outro celular via WebRTC');
       
@@ -44,7 +41,6 @@ window.habilitarTeclado = function() {
     tecladoTrigger.disabled = false;
     tecladoTrigger.style.opacity = '1';
     tecladoTrigger.style.cursor = 'pointer';
-    tecladoTrigger.classList.add('ativo');
     console.log('✅ Botão teclado habilitado - WebRTC conectado');
   }
 };
@@ -55,17 +51,32 @@ window.desabilitarTeclado = function() {
     tecladoTrigger.disabled = true;
     tecladoTrigger.style.opacity = '0.5';
     tecladoTrigger.style.cursor = 'not-allowed';
-    tecladoTrigger.classList.remove('ativo');
     console.log('❌ Botão teclado desabilitado');
   }
 };
 
-// 🆕 INICIALIZAÇÃO DO TECLADO
+// 🆕 BOTÃO SIMPLES PARA FECHAR O BOX
+window.criarBotaoFechar = function() {
+  const caixaTexto = document.getElementById('caixaTexto');
+  if (!caixaTexto) return;
+  
+  // Criar botão fechar
+  const botaoFechar = document.createElement('button');
+  botaoFechar.innerHTML = '×';
+  botaoFechar.className = 'botao-fechar-simples';
+  botaoFechar.onclick = function() {
+    caixaTexto.style.display = 'none';
+    document.getElementById('areaTexto').value = '';
+  };
+  
+  caixaTexto.appendChild(botaoFechar);
+};
+
+// 🆕 INICIALIZAÇÃO SIMPLIFICADA
 window.inicializarTeclado = function() {
-  // 🆕 INICIALIZAR BOTÃO TECLADO COMO DESABILITADO
   window.desabilitarTeclado();
   
-  // 🆕 POSICIONAR O BOTÃO INVISÍVEL SOBRE O MICROFONE
+  // Posicionar botão invisível sobre o microfone
   function posicionarBotaoTeclado() {
     const recordButton = document.getElementById('recordButton');
     const tecladoTrigger = document.getElementById('tecladoTrigger');
@@ -78,68 +89,54 @@ window.inicializarTeclado = function() {
       tecladoTrigger.style.top = rect.top + 'px';
       tecladoTrigger.style.width = rect.width + 'px';
       tecladoTrigger.style.height = rect.height + 'px';
-      
-      console.log('✅ Botão teclado posicionado sobre o microfone');
     }
   }
   
-  // Aguarda um pouco para garantir que o DOM esteja pronto
   setTimeout(() => {
     posicionarBotaoTeclado();
+    window.criarBotaoFechar(); // 🆕 CRIAR BOTÃO FECHAR
     window.addEventListener('resize', posicionarBotaoTeclado);
   }, 1000);
   
-  // 🆕 CONFIGURAR CLIQUE NO BOTÃO INVISÍVEL
+  // Configurar clique no botão invisível
   const tecladoTrigger = document.getElementById('tecladoTrigger');
   const caixaTexto = document.getElementById('caixaTexto');
   const areaTexto = document.getElementById('areaTexto');
   
-  // 🆕 VARIÁVEL DO TIMER
   let timerEnvio = null;
   
   if (tecladoTrigger && caixaTexto) {
     tecladoTrigger.addEventListener('click', function() {
-      // 🆕 VERIFICAR SE O BOTÃO ESTÁ HABILITADO
       if (tecladoTrigger.disabled) {
         console.log('❌ Botão teclado desabilitado - WebRTC não conectado');
         return;
       }
       
-      console.log('🎹 Abrindo teclado nativo...');
-      
-      tecladoTrigger.classList.add('teclado-ativo');
+      console.log('🎹 Abrindo caixa de texto...');
       caixaTexto.style.display = 'flex';
       areaTexto.focus();
-      
-      setTimeout(() => {
-        tecladoTrigger.classList.remove('teclado-ativo');
-      }, 1000);
     });
     
-    // 🆕 ENVIO AUTOMÁTICO - SIMPLES
+    // Envio automático após 3 segundos
     areaTexto.addEventListener('input', function() {
-      // Cancelar timer anterior
       if (timerEnvio) clearTimeout(timerEnvio);
       
-      // Iniciar novo timer
       timerEnvio = setTimeout(function() {
         const texto = areaTexto.value.trim();
         if (texto !== '') {
-          console.log('⏰ Envio automático');
           window.processarTextoTeclado(texto);
           caixaTexto.style.display = 'none';
           areaTexto.value = '';
         }
-      }, 3000); // 3 segundos
+      }, 2000);
     });
 
-    // 🆕 ENVIAR COM ENTER
+    // Enviar com Enter
     areaTexto.addEventListener('keydown', function(event) {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
         const texto = areaTexto.value.trim();
         if (texto !== '') {
-          console.log('📝 Texto do teclado (Enter):', texto);
           window.processarTextoTeclado(texto);
           caixaTexto.style.display = 'none';
           areaTexto.value = '';
@@ -149,7 +146,7 @@ window.inicializarTeclado = function() {
   }
 };
 
-// 🆕 INICIALIZAR QUANDO O DOCUMENTO ESTIVER PRONTO
+// 🆕 INICIALIZAR
 document.addEventListener('DOMContentLoaded', function() {
   window.inicializarTeclado();
 });
