@@ -30,6 +30,38 @@ body {
   position: relative;
   overflow-y: auto;
 }
+
+.botoes-inferiores {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background: #f5f5f5;
+    border-top: 1px solid #ddd;
+    width: 100%;
+}
+
+.botao-inferior {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    min-width: 100px;
+}
+
+.botao-fechar {
+    background: #ff4444;
+    color: white;
+}
+
+.botao-direita {
+    background: #4CAF50;
+    color: white;
+}
+
+.botao-inferior:hover {
+    opacity: 0.8;
+}
 /* 🎵 MESA DE MIXAGEM WEB AUDIO API */
 .mixer-controls {
   position: fixed;
