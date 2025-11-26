@@ -5,39 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lemur-EchoMeP2P-Caller</title>
   <link rel="stylesheet" href="mobile-style.css" />
-  
-  <!-- 🎵 CSS EM LINHA PARA MESA DE SOM -->
-  <style>
-    .botao-som {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 1000;
-      padding: 8px 12px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 20px;
-      font-size: 12px;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-    .botao-som:hover {
-      background: #45a049;
-    }
-    .botao-som:active {
-      transform: scale(0.95);
-    }
-  </style>
+   
 </head>
 <body>
 
-  <!-- 🎵 BOTÃO PARA ATIVAR SOM AMBIENTE -->
-  <button id="ativarSomBtn" class="botao-som" onclick="mesaMix.iniciarAudio()">
-    🔈 Ativar Som Ambiente
-  </button>
-
-  <div class="box-principal">
+    <div class="box-principal">
     <img src="assets/images/lemurBlu.png" alt="Lemur Logo" class="logo" />
     <img id="lemurWaiting" src="assets/images/lemurImpaciente.png" alt="Aguardando conexão" style="display: none;" />
     <img src="assets/images/Bridg.png" alt="ponte" class="ponte" />
